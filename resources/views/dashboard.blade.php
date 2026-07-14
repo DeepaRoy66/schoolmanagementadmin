@@ -11,11 +11,11 @@
             @if (auth()->user()->role === 'super_admin')
 
                 {{-- Welcome banner --}}
-                <div class="bg-indigo-600 rounded-2xl p-6 flex items-center justify-between">
+                <div class="bg-teal-600 rounded-2xl p-6 flex items-center justify-between">
                     <div>
-                        <p class="text-indigo-100 text-sm">Welcome back,</p>
+                        <p class="text-teal-100 text-sm">Welcome back,</p>
                         <h3 class="text-white text-xl font-bold mt-1">{{ auth()->user()->name }}</h3>
-                        <p class="text-indigo-100 text-sm mt-2">You're managing this platform as Super Admin.</p>
+                        <p class="text-teal-100 text-sm mt-2">You're managing this platform as Super Admin.</p>
                     </div>
                     <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
                         <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -28,8 +28,8 @@
                 {{-- Stat cards --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                     <div class="bg-white shadow-sm rounded-2xl p-5 flex items-center gap-4">
-                        <div class="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
-                            <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div class="w-11 h-11 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
                                       d="M3 21h18M5 21V7l8-4v18M19 21V10l-6-3M9 9h1m-1 4h1m-1 4h1" />
                             </svg>
@@ -86,7 +86,7 @@
                     <div class="lg:col-span-2 bg-white shadow-sm rounded-2xl p-6">
                         <div class="flex items-center justify-between mb-4">
                             <h4 class="text-sm font-semibold text-gray-900">Recently Added Schools</h4>
-                            <a href="{{ route('admin.schools.index') }}" class="text-xs font-medium text-indigo-600 hover:text-indigo-700">
+                            <a href="{{ route('admin.schools.index') }}" class="text-xs font-medium text-teal-600 hover:text-teal-700">
                                 View all
                             </a>
                         </div>
@@ -123,7 +123,7 @@
                         <h4 class="text-sm font-semibold text-gray-900 mb-4">Quick Actions</h4>
                         <div class="flex flex-col gap-2.5">
                             <a href="{{ route('admin.schools.create') }}"
-                               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700">
+                               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
@@ -144,11 +144,11 @@
 
             @elseif (auth()->user()->role === 'school_admin')
 
-                <div class="bg-indigo-600 rounded-2xl p-6 flex items-center justify-between">
+                <div class="bg-teal-600 rounded-2xl p-6 flex items-center justify-between">
                     <div>
-                        <p class="text-indigo-100 text-sm">Welcome back,</p>
+                        <p class="text-teal-100 text-sm">Welcome back,</p>
                         <h3 class="text-white text-xl font-bold mt-1">{{ auth()->user()->name }}</h3>
-                        <p class="text-indigo-100 text-sm mt-2">
+                        <p class="text-teal-100 text-sm mt-2">
                             Managing {{ auth()->user()->school->name ?? 'your school' }}
                         </p>
                     </div>
@@ -172,7 +172,7 @@
                             Manage Students
                         </a>
                         <a href="{{ route('school-admin.notices.index') }}"
-                           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700">
+                           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700">
                             Post Notice
                         </a>
                         <a href="{{ route('school-admin.timetables.index') }}"
