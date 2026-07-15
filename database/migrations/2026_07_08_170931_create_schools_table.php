@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('schools', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('school_code')->unique()->nullable();
             $table->string('address')->nullable();
             $table->enum('license_status', ['active', 'expired', 'trial'])->default('trial');
             $table->date('license_start')->nullable();

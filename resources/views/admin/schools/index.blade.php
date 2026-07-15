@@ -48,6 +48,7 @@
                         <thead>
                             <tr class="bg-gray-50/60 text-gray-500 text-xs uppercase tracking-wide">
                                 <th class="py-3 px-6 font-medium">Name</th>
+                                <th class="py-3 px-6 font-medium">Code</th>
                                 <th class="py-3 px-6 font-medium">License Status</th>
                                 <th class="py-3 px-6 font-medium">License Expiry</th>
                                 <th class="py-3 px-6 font-medium text-right">Actions</th>
@@ -63,6 +64,9 @@
                                             </div>
                                             <span class="font-medium text-gray-900">{{ $school->name }}</span>
                                         </div>
+                                    </td>
+                                    <td class="py-4 px-6 text-gray-500 font-mono text-xs">
+                                        {{ $school->school_code ?? '—' }}
                                     </td>
                                     <td class="py-4 px-6">
                                         @if ($school->license_status === 'active')
@@ -119,15 +123,15 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="py-16">
+                                    <td colspan="5" class="py-16">
                                         <div class="flex flex-col items-center gap-2 text-center">
                                             <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center">
                                                 <svg class="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 0v10.5a1.5 1.5 0 01-1.5 1.5H6a1.5 1.5 0 01-1.5-1.5V9" />
                                                 </svg>
                                             </div>
-                                            <p class="text-sm font-medium text-gray-500">Kunai school thapiyeko chaina</p>
-                                            <p class="text-xs text-gray-400">"Add New School" click garera suru garnus.</p>
+                                            <p class="text-sm font-medium text-gray-500">No schools found</p>
+                                            <p class="text-xs text-gray-400">"Add New School"</p>
                                         </div>
                                     </td>
                                 </tr>

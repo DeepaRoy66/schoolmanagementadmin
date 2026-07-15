@@ -23,6 +23,15 @@
                     </div>
 
                     <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">School Code</label>
+                        <input type="text" name="school_code" value="{{ old('school_code', $school->school_code) }}"
+                               class="w-full border-gray-300 rounded-lg">
+                        @error('school_code')
+                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
                         <input type="text" name="address" value="{{ old('address', $school->address) }}"
                                class="w-full border-gray-300 rounded-lg">

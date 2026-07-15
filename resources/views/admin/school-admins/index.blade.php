@@ -107,8 +107,8 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                                                 </svg>
                                             </div>
-                                            <p class="text-sm font-medium text-gray-500">Kunai school admin thapiyeko chaina</p>
-                                            <p class="text-xs text-gray-400">"Add School Admin" click garera suru garnus.</p>
+                                            <p class="text-sm font-medium text-gray-500">No school admins found.</p>
+                                            <p class="text-xs text-gray-400">"Add School Admin"</p>
                                         </div>
                                     </td>
                                 </tr>

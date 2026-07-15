@@ -41,6 +41,19 @@
                             @enderror
                         </div>
 
+                        {{-- School Code --}}
+                        <div class="lg:col-span-2">
+                            <label class="block text-sm text-gray-700 mb-1.5">School Code</label>
+                            <input type="text" name="school_code" value="{{ old('school_code') }}"
+                                   class="w-full border rounded-md px-3 py-2.5 text-sm text-gray-700 placeholder-gray-400 outline-none transition
+                                          {{ $errors->has('school_code') ? 'border-rose-400 focus:border-rose-500' : 'border-teal-400 focus:border-teal-500' }}"
+                                   placeholder="School Code">
+                            <p class="text-xs text-gray-400 mt-1">If left blank, the system will auto-generate a school code.</p>
+                            @error('school_code')
+                                <p class="text-rose-600 text-xs mt-1.5">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         {{-- Address --}}
                         <div class="lg:col-span-2">
                             <label class="block text-sm text-gray-700 mb-1.5">Address</label>
@@ -102,7 +115,7 @@
                             <input type="date" name="trial_ends_at" value="{{ old('trial_ends_at') }}"
                                    class="w-full border rounded-md px-3 py-2.5 text-sm text-gray-700 outline-none transition
                                           {{ $errors->has('trial_ends_at') ? 'border-rose-400 focus:border-rose-500' : 'border-teal-400 focus:border-teal-500' }}">
-                            <p class="text-xs text-gray-400 mt-1">Agar Trial ho vane</p>
+                            <p class="text-xs text-gray-400 mt-1">If this is a trial period, set the end date here.</p>
                             @error('trial_ends_at')
                                 <p class="text-rose-600 text-xs mt-1.5">{{ $message }}</p>
                             @enderror
