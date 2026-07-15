@@ -137,6 +137,21 @@
                 </div>
             </div>
 
+            {{-- Finance --}}
+            <div>
+                <p class="px-4 mb-3 text-xs font-semibold text-gray-400 tracking-widest uppercase">Finance</p>
+                <div class="space-y-1">
+                    <a href="{{ route('school-admin.fees.index') }}" 
+                       class="{{ $item }} {{ request()->routeIs('school-admin.fees.*') ? $active : $inactive }}">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5-1.343 1.5-3 1.5m0-6V6m0 1.5v9m0 1.5v-1.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Manage Fees
+                    </a>
+                </div>
+            </div>
+
         @else
             <div class="px-3">
                 <a href="{{ route('dashboard') }}" 

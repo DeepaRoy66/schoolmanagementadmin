@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\HomeworkController;
 use App\Http\Controllers\Api\ResultController;
 use App\Http\Controllers\Api\NoticeController;
+use App\Http\Controllers\Api\FeeController;
 use Illuminate\Support\Facades\Route;
 
 // Public - login garna kohi pani access garna sakcha
@@ -33,4 +34,5 @@ Route::middleware('auth:sanctum')->group(function () {
     // Shared endpoint - Teacher ra Student duitai le use garne
     Route::get('/notices', [NoticeController::class, 'index']);
     Route::get('/timetable', [TimetableController::class, 'index']);
+    Route::get('/student/fees', [FeeController::class, 'myFees']);
 });

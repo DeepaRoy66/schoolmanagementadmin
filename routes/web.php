@@ -10,6 +10,7 @@ use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\TimetableController;
+use App\Http\Controllers\FeeController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -58,6 +59,12 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
 
         Route::resource('timetables', TimetableController::class)
             ->except(['show', 'edit', 'update']);
+
+        Route::resource('fees', FeeController::class)
+            ->except(['show', 'edit', 'update']);
+
+        Route::patch('fees/{fee}/payment', [FeeController::class, 'updatePayment'])
+            ->name('fees.payment');
     });
 
 

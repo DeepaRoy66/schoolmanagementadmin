@@ -49,7 +49,7 @@
                     </div>
 
                     <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Password (login ko lagi)</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
                         <input type="password" name="password"
                                class="w-full border-gray-300 rounded-lg" required>
                         @error('password')
