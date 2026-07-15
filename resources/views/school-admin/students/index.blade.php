@@ -54,7 +54,7 @@
                         @empty
                             <tr>
                                 <td colspan="5" class="py-6 text-center text-gray-500">
-                                    Kunai student thapiyeko chaina.
+                                    No students added.
                                 </td>
                             </tr>
                         @endforelse

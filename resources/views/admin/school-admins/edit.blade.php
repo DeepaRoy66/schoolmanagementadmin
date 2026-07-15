@@ -47,7 +47,7 @@
 
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-1">
-                            New Password <span class="text-gray-400 font-normal">(khali chodnus, change garna nachahiye)</span>
+                            New Password <span class="text-gray-400 font-normal"></span>
                         </label>
                         <input type="password" name="password"
                                class="w-full border-gray-300 rounded-lg" placeholder="••••••••">

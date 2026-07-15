@@ -40,7 +40,7 @@
                             <p class="text-gray-400 text-xs mt-2">{{ $notice->created_at->format('M d, Y') }}</p>
                         </div>
                     @empty
-                        <p class="text-gray-500 text-center py-6">Kunai notice post gareko chaina.</p>
+                        <p class="text-gray-500 text-center py-6">No notices posted yet.</p>
                     @endforelse
                 </div>
 

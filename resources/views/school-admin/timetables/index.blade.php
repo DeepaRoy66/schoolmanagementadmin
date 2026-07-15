@@ -55,7 +55,7 @@
                         @empty
                             <tr>
                                 <td colspan="6" class="py-6 text-center text-gray-500">
-                                    Kunai timetable entry thapiyeko chaina.
+                                    None of the timetable entries have been added yet.
                                 </td>
                             </tr>
                         @endforelse
