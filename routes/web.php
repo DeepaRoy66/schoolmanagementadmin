@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Admin\SchoolController;
 use App\Http\Controllers\Admin\SchoolAdminController;
+use App\Http\Controllers\Admin\LicenseController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\NoticeController;
@@ -39,6 +40,21 @@ Route::middleware(['auth', 'role:super_admin'])
 
         Route::post('schools/{school}/renew', [SchoolController::class, 'renew'])
             ->name('schools.renew');
+
+        // -------------------------------
+        // Licenses
+        // -------------------------------
+        Route::get('licenses', [LicenseController::class, 'index'])
+            ->name('licenses.index');
+
+        Route::get('licenses/expiring', [LicenseController::class, 'expiring'])
+            ->name('licenses.expiring');
+
+        Route::post('licenses/{school}/renew', [LicenseController::class, 'renew'])
+            ->name('licenses.renew');
+
+        Route::patch('licenses/{school}/toggle', [LicenseController::class, 'toggleStatus'])
+            ->name('licenses.toggle');
     });
 
 

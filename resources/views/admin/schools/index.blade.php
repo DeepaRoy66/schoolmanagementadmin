@@ -124,16 +124,16 @@
                                     <td class="py-4 px-6">
                                         <div class="flex items-center justify-end gap-2">
                                             @if ($school->license_status === 'expired')
-                                                <button type="button"
-                                                        onclick="openRenewModal('{{ $school->id }}')"
-                                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
-                                                               bg-rose-50 text-rose-700 border border-rose-200
-                                                               hover:bg-rose-100 hover:border-rose-300 transition">
+                                                <a href="{{ route('admin.licenses.index') }}"
+                                                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+                                                          bg-rose-50 text-rose-700 border border-rose-200
+                                                          hover:bg-rose-100 hover:border-rose-300 transition"
+                                                   title="Manage this school's license">
                                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                     </svg>
-                                                    Renew
-                                                </button>
+                                                    License Expired
+                                                </a>
                                             @endif
                                             <a href="{{ route('admin.schools.edit', $school) }}"
                                                class="p-2 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition"
@@ -191,76 +191,4 @@
             </div>
         </div>
     </div>
-
-    {{-- Renew Modals --}}
-    @foreach ($schools as $school)
-        @if ($school->license_status === 'expired')
-            <div id="renew-modal-{{ $school->id }}"
-                 class="hidden fixed inset-0 z-50 items-center justify-center bg-gray-900/50 p-4">
-                <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-semibold text-gray-900 text-lg">Renew License</h3>
-                        <button type="button"
-                                onclick="closeRenewModal('{{ $school->id }}')"
-                                class="text-gray-400 hover:text-gray-600 transition">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <p class="text-sm text-gray-500 mb-5">{{ $school->name }}</p>
-
-                    <form action="{{ route('admin.schools.renew', $school) }}" method="POST">
-                        @csrf
-                        <div class="mb-5">
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                New Expiry Date
-                            </label>
-                            <input type="date" name="license_expiry"
-                                   class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                                   required>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <button type="submit"
-                                    class="bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition">
-                                Confirm Renew
-                            </button>
-                            <button type="button"
-                                    onclick="closeRenewModal('{{ $school->id }}')"
-                                    class="text-gray-500 text-sm hover:text-gray-700 transition">
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        @endif
-    @endforeach
-
-    <script>
-        function openRenewModal(id) {
-            const modal = document.getElementById('renew-modal-' + id);
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-        function closeRenewModal(id) {
-            const modal = document.getElementById('renew-modal-' + id);
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-        document.addEventListener('click', function (e) {
-            if (e.target.id && e.target.id.startsWith('renew-modal-')) {
-                closeRenewModal(e.target.id.replace('renew-modal-', ''));
-            }
-        });
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') {
-                document.querySelectorAll('[id^="renew-modal-"]').forEach(function (modal) {
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
-                });
-            }
-        });
-    </script>
 </x-app-layout>
