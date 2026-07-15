@@ -144,6 +144,7 @@
 
             @elseif (auth()->user()->role === 'school_admin')
 
+                {{-- Welcome banner --}}
                 <div class="bg-teal-600 rounded-2xl p-6 flex items-center justify-between">
                     <div>
                         <p class="text-teal-100 text-sm">Welcome back,</p>
@@ -160,6 +161,62 @@
                     </div>
                 </div>
 
+                {{-- Stat cards: only this school's own data --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div class="bg-white shadow-sm rounded-2xl p-5 flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400">Total Students</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $totalStudents }}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white shadow-sm rounded-2xl p-5 flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                      d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.42A12.083 12.083 0 0112 20a12.083 12.083 0 01-6.16-9.42L12 14z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400">Teaching Staff</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $totalTeachers }}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white shadow-sm rounded-2xl p-5 flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                      d="M8 9h8M8 13h6m-9 8V5a2 2 0 012-2h10a2 2 0 012 2v16l-4-3-3 3-3-3-4 3z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400">Notices</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $totalNotices }}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white shadow-sm rounded-2xl p-5 flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                      d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5-1.343 1.5-3 1.5m0-6V6m0 1.5v9m0 1.5v-1.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400">Fees Collected</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $totalFeesCollected }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Quick actions --}}
                 <div class="bg-white shadow-sm rounded-2xl p-6">
                     <h4 class="text-sm font-semibold text-gray-900 mb-4">Quick Actions</h4>
                     <div class="flex flex-wrap gap-3">
@@ -180,9 +237,9 @@
                             View Timetable
                         </a>
                         <a href="{{ route('school-admin.fees.index') }}"
-   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200">
-    Manage Fees
-</a>
+                           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200">
+                            Manage Fees
+                        </a>
                     </div>
                 </div>
 
