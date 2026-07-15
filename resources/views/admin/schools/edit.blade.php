@@ -42,20 +42,35 @@
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">License Start</label>
-                            <input type="date" name="license_start" value="{{ old('license_start', $school->license_start) }}"
+                            {{-- ->format('Y-m-d') is required: HTML date inputs only recognize that exact
+                                 format. Passing a Carbon instance/date-with-time string straight in makes the
+                                 browser silently show the field as empty, which is why the picked date "disappeared". --}}
+                            <input type="date" name="license_start"
+                                   value="{{ old('license_start', optional($school->license_start)->format('Y-m-d')) }}"
                                    class="w-full border-gray-300 rounded-lg">
+                            @error('license_start')
+                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">License Expiry</label>
-                            <input type="date" name="license_expiry" value="{{ old('license_expiry', $school->license_expiry) }}"
+                            <input type="date" name="license_expiry"
+                                   value="{{ old('license_expiry', optional($school->license_expiry)->format('Y-m-d')) }}"
                                    class="w-full border-gray-300 rounded-lg">
+                            @error('license_expiry')
+                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Trial Ends At</label>
-                        <input type="date" name="trial_ends_at" value="{{ old('trial_ends_at', $school->trial_ends_at) }}"
+                        <input type="date" name="trial_ends_at"
+                               value="{{ old('trial_ends_at', optional($school->trial_ends_at)->format('Y-m-d')) }}"
                                class="w-full border-gray-300 rounded-lg">
+                        @error('trial_ends_at')
+                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div class="flex items-center gap-3">
