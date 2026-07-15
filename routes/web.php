@@ -77,6 +77,9 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
         Route::resource('notices', NoticeController::class)
             ->except(['show', 'edit', 'update']);
 
+        Route::get('announcements', [AnnouncementController::class, 'index'])
+            ->name('announcements.index');
+
         Route::resource('timetables', TimetableController::class)
             ->except(['show', 'edit', 'update']);
 
