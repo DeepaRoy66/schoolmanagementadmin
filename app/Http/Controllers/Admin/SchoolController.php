@@ -10,10 +10,26 @@ use Illuminate\View\View;
 
 class SchoolController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $schools = School::latest()->paginate(10);
-        return view('admin.schools.index', compact('schools'));
+        $status = $request->query('status');
+
+        $schools = School::query()
+            ->when($status && in_array($status, ['active', 'trial', 'expired']), function ($query) use ($status) {
+                $query->where('license_status', $status);
+            })
+            ->latest()
+            ->paginate(10)
+            ->appends($request->only('status'));
+
+        $counts = [
+            'all'     => School::count(),
+            'active'  => School::where('license_status', 'active')->count(),
+            'trial'   => School::where('license_status', 'trial')->count(),
+            'expired' => School::where('license_status', 'expired')->count(),
+        ];
+
+        return view('admin.schools.index', compact('schools', 'counts'));
     }
 
     public function create(): View
