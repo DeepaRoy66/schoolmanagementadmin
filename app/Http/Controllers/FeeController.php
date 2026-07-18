@@ -33,6 +33,17 @@ class FeeController extends Controller
             'due_date' => 'nullable|date',
         ]);
 
+        // SECURITY: student real ma logged-in admin ko school ko ho ki confirm garne
+        $student = Student::where('id', $validated['student_id'])
+            ->where('school_id', auth()->user()->school_id)
+            ->first();
+
+        if (!$student) {
+            return redirect()->back()
+                ->withErrors(['student_id' => 'Invalid student selected.'])
+                ->withInput();
+        }
+
         $validated['school_id'] = auth()->user()->school_id;
         $validated['status'] = 'unpaid';
 
@@ -44,6 +55,8 @@ class FeeController extends Controller
 
     /**
      * Payment update garne - kati paisa tirey bhanera
+     * (Fee model ma SchoolScope cha, so $fee route-model-binding le automatically
+     *  aafno school ko fee bahek arku school ko fee ID dida 404 dincha)
      */
     public function updatePayment(Request $request, Fee $fee): RedirectResponse
     {

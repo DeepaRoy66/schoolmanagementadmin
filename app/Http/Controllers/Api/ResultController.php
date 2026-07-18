@@ -38,7 +38,22 @@ class ResultController extends Controller
             return response()->json(['message' => 'Teacher profile not found.'], 404);
         }
 
+        // SECURITY: aafno school ko student_id haru matra allowed list ma nikalne
+        $requestedIds = collect($validated['records'])->pluck('student_id')->unique();
+
+        $validStudentIds = Student::where('school_id', $user->school_id)
+            ->whereIn('id', $requestedIds)
+            ->pluck('id')
+            ->toArray();
+
+        $savedCount = 0;
+
         foreach ($validated['records'] as $record) {
+            // SECURITY: yo student real ma logged-in teacher ko school ko ho ki check
+            if (!in_array($record['student_id'], $validStudentIds)) {
+                continue;
+            }
+
             Result::updateOrCreate(
                 [
                     'student_id' => $record['student_id'],
@@ -53,13 +68,20 @@ class ResultController extends Controller
                     'remarks' => $record['remarks'] ?? null,
                 ]
             );
+
+            $savedCount++;
         }
 
-        return response()->json(['message' => 'Marks saved successfully.']);
+        if ($savedCount === 0) {
+            return response()->json(['message' => 'No valid students found to save marks for.'], 422);
+        }
+
+        return response()->json(['message' => 'Marks saved successfully.', 'saved' => $savedCount]);
     }
 
     /**
      * Teacher: euta exam/subject ko sabai student ko marks herne
+     * (Result model ma SchoolScope cha, so yo query automatically aafno school ma matra filter huncha)
      */
     public function viewByExam(Request $request): JsonResponse
     {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Student;
+use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -48,13 +49,28 @@ class AttendanceController extends Controller
             'records.*.remarks' => 'nullable|string|max:255',
         ]);
 
-        $teacher = \App\Models\Teacher::where('user_id', $user->id)->first();
+        $teacher = Teacher::where('user_id', $user->id)->first();
 
         if (!$teacher) {
             return response()->json(['message' => 'Teacher profile not found.'], 404);
         }
 
+        // SECURITY: aafno school ko student_id haru matra allowed list ma nikalne
+        $requestedIds = collect($validated['records'])->pluck('student_id')->unique();
+
+        $validStudentIds = Student::where('school_id', $user->school_id)
+            ->whereIn('id', $requestedIds)
+            ->pluck('id')
+            ->toArray();
+
+        $savedCount = 0;
+
         foreach ($validated['records'] as $record) {
+            // SECURITY: yo student real ma logged-in teacher ko school ko ho ki check
+            if (!in_array($record['student_id'], $validStudentIds)) {
+                continue; // arko school ko student ho, silently skip
+            }
+
             Attendance::updateOrCreate(
                 [
                     'student_id' => $record['student_id'],
@@ -67,9 +83,18 @@ class AttendanceController extends Controller
                     'remarks' => $record['remarks'] ?? null,
                 ]
             );
+
+            $savedCount++;
         }
 
-        return response()->json(['message' => 'Attendance saved successfully.']);
+        if ($savedCount === 0) {
+            return response()->json(['message' => 'No valid students found to mark attendance for.'], 422);
+        }
+
+        return response()->json([
+            'message' => 'Attendance saved successfully.',
+            'saved' => $savedCount,
+        ]);
     }
 
     /**
@@ -97,7 +122,7 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Teacher: euta specific din ko attendance herne (already mark gareko cha ki)
+     * Teacher: euta specific din ko attendance herne (aafno school ko matra)
      */
     public function viewByDate(Request $request): JsonResponse
     {
@@ -111,7 +136,9 @@ class AttendanceController extends Controller
             'date' => 'required|date',
         ]);
 
+        // SECURITY: school_id filter thapiyo - aghi yo thiyena (data leak thiyo)
         $attendance = Attendance::where('date', $validated['date'])
+            ->where('school_id', $user->school_id)
             ->with('student:id,name,roll_number')
             ->get(['id', 'student_id', 'status', 'remarks']);
 
