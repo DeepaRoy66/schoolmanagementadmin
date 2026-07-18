@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\HomeworkController;
 use App\Http\Controllers\Api\ResultController;
 use App\Http\Controllers\Api\NoticeController;
 use App\Http\Controllers\Api\FeeController;
+use App\Http\Controllers\Api\TimetableController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -16,7 +17,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    
+    // Teacher endpoints
     Route::get('/teacher/students', [AttendanceController::class, 'students']);
     Route::post('/teacher/attendance', [AttendanceController::class, 'markAttendance']);
     Route::get('/teacher/attendance', [AttendanceController::class, 'viewByDate']);
@@ -30,9 +31,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/student/attendance', [AttendanceController::class, 'myAttendance']);
     Route::get('/student/homework', [HomeworkController::class, 'myHomework']);
     Route::get('/student/results', [ResultController::class, 'myResults']);
+    Route::get('/student/fees', [FeeController::class, 'myFees']);
 
-    // Shared endpoint 
+    // Shared endpoints
     Route::get('/notices', [NoticeController::class, 'index']);
     Route::get('/timetable', [TimetableController::class, 'index']);
-    Route::get('/student/fees', [FeeController::class, 'myFees']);
 });

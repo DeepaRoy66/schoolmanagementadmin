@@ -39,6 +39,19 @@ class TimetableController extends Controller
             'end_time' => 'nullable',
         ]);
 
+        // SECURITY: teacher_id diyeko cha bhane, yo real ma aafno school ko teacher ho ki confirm garne
+        if (!empty($validated['teacher_id'])) {
+            $ownTeacher = Teacher::where('id', $validated['teacher_id'])
+                ->where('school_id', auth()->user()->school_id)
+                ->exists();
+
+            if (!$ownTeacher) {
+                return redirect()->back()
+                    ->withErrors(['teacher_id' => 'Invalid teacher selected.'])
+                    ->withInput();
+            }
+        }
+
         $validated['school_id'] = auth()->user()->school_id;
 
         Timetable::create($validated);
