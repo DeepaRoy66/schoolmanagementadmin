@@ -20,7 +20,7 @@ class ReportController extends Controller
         $totalTeachers = Teacher::count();
         $totalStudents = Student::count();
 
-        // Attendance summary - yo mahina ko
+        // Attendance summary 
         $thisMonthAttendance = Attendance::whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
             ->get();

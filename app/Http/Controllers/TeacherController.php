@@ -35,7 +35,7 @@ class TeacherController extends Controller
 
         $schoolId = auth()->user()->school_id;
 
-        // Pahila login account (User) banaune
+      
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -45,7 +45,6 @@ class TeacherController extends Controller
             'email_verified_at' => now(),
         ]);
 
-        // Ani Teacher profile banaune, User sanga link garera
         Teacher::create([
             'school_id' => $schoolId,
             'user_id' => $user->id,
@@ -80,7 +79,7 @@ class TeacherController extends Controller
 
         $teacher->update($validated);
 
-        // Sanga sanga User account ko naam/email pani update garne
+       
         if ($teacher->user) {
             $teacher->user->update([
                 'name' => $validated['name'],
@@ -94,7 +93,7 @@ class TeacherController extends Controller
 
     public function destroy(Teacher $teacher): RedirectResponse
     {
-        // Teacher delete garda, sanga sangai unko login account pani delete huncha
+       
         if ($teacher->user) {
             $teacher->user->delete();
         }
