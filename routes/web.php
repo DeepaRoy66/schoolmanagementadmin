@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\SchoolAdminController;
 use App\Http\Controllers\Admin\LicenseController;
 use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\SystemUsageController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\NoticeController;
@@ -94,7 +95,9 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
             ->except(['show', 'edit', 'update']);
 
         Route::patch('fees/{fee}/payment', [FeeController::class, 'updatePayment'])
-            ->name('fees.payment');
+        ->name('fees.payment');
+
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     });
 
 

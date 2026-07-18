@@ -143,7 +143,7 @@
                                                 </svg>
                                             </a>
                                             <form action="{{ route('admin.schools.destroy', $school) }}" method="POST"
-                                                  onsubmit="return confirm('School delete garne? Yo undo huna sakdaina.');">
+                                                  onsubmit="return confirm('Are you sure you want to delete this school?');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
