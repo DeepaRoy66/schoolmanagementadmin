@@ -8,15 +8,15 @@ use App\Http\Controllers\Api\NoticeController;
 use App\Http\Controllers\Api\FeeController;
 use Illuminate\Support\Facades\Route;
 
-// Public - login garna kohi pani access garna sakcha
-Route::post('/login', [AuthController::class, 'login']);
 
-// Protected - token chahincha
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Teacher endpoints
+    
     Route::get('/teacher/students', [AttendanceController::class, 'students']);
     Route::post('/teacher/attendance', [AttendanceController::class, 'markAttendance']);
     Route::get('/teacher/attendance', [AttendanceController::class, 'viewByDate']);
@@ -31,7 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/student/homework', [HomeworkController::class, 'myHomework']);
     Route::get('/student/results', [ResultController::class, 'myResults']);
 
-    // Shared endpoint - Teacher ra Student duitai le use garne
+    // Shared endpoint 
     Route::get('/notices', [NoticeController::class, 'index']);
     Route::get('/timetable', [TimetableController::class, 'index']);
     Route::get('/student/fees', [FeeController::class, 'myFees']);
