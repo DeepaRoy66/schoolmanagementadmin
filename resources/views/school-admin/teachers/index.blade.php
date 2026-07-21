@@ -30,6 +30,7 @@
                             <th class="py-2">Name</th>
                             <th class="py-2">Email</th>
                             <th class="py-2">Subject</th>
+                            <th class="py-2">Class Teacher Of</th>
                             <th class="py-2 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -39,6 +40,15 @@
                                 <td class="py-3 font-medium">{{ $teacher->name }}</td>
                                 <td class="py-3 text-gray-600">{{ $teacher->email }}</td>
                                 <td class="py-3 text-gray-600">{{ $teacher->subject ?? '—' }}</td>
+                                <td class="py-3">
+                                    @if ($teacher->class_teacher_of_class)
+                                        <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold">
+                                            {{ $teacher->class_teacher_of_class }} {{ $teacher->class_teacher_of_section }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400 text-xs">Subject teacher only</span>
+                                    @endif
+                                </td>
                                 <td class="py-3 text-right space-x-2">
                                     <a href="{{ route('school-admin.teachers.edit', $teacher) }}" class="text-blue-600 hover:underline">Edit</a>
                                     <form action="{{ route('school-admin.teachers.destroy', $teacher) }}" method="POST" class="inline"
@@ -51,7 +61,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="py-6 text-center text-gray-500">
+                                <td colspan="5" class="py-6 text-center text-gray-500">
                                    No teachers found.
                                 </td>
                             </tr>

@@ -31,11 +31,12 @@ class TeacherController extends Controller
             'phone' => 'nullable|string|max:20',
             'subject' => 'nullable|string|max:255',
             'password' => 'required|string|min:8',
+            'class_teacher_of_class' => 'nullable|string|max:255',
+            'class_teacher_of_section' => 'nullable|string|max:255',
         ]);
 
         $schoolId = auth()->user()->school_id;
 
-      
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -52,6 +53,8 @@ class TeacherController extends Controller
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
             'subject' => $validated['subject'] ?? null,
+            'class_teacher_of_class' => $validated['class_teacher_of_class'] ?? null,
+            'class_teacher_of_section' => $validated['class_teacher_of_section'] ?? null,
         ]);
 
         return redirect()->route('school-admin.teachers.index')
@@ -75,11 +78,12 @@ class TeacherController extends Controller
             'email' => 'required|string|email|max:255|unique:teachers,email,' . $teacher->id,
             'phone' => 'nullable|string|max:20',
             'subject' => 'nullable|string|max:255',
+            'class_teacher_of_class' => 'nullable|string|max:255',
+            'class_teacher_of_section' => 'nullable|string|max:255',
         ]);
 
         $teacher->update($validated);
 
-       
         if ($teacher->user) {
             $teacher->user->update([
                 'name' => $validated['name'],
@@ -93,7 +97,6 @@ class TeacherController extends Controller
 
     public function destroy(Teacher $teacher): RedirectResponse
     {
-       
         if ($teacher->user) {
             $teacher->user->delete();
         }

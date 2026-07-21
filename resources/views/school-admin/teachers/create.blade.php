@@ -48,6 +48,28 @@
                         @enderror
                     </div>
 
+                    <div class="grid grid-cols-2 gap-4 mb-1">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Class Teacher Of (Class)</label>
+                            <input type="text" name="class_teacher_of_class" value="{{ old('class_teacher_of_class') }}"
+                                   class="w-full border-gray-300 rounded-lg" placeholder="e.g. Grade 5">
+                            @error('class_teacher_of_class')
+                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Section</label>
+                            <input type="text" name="class_teacher_of_section" value="{{ old('class_teacher_of_section') }}"
+                                   class="w-full border-gray-300 rounded-lg" placeholder="e.g. A">
+                            @error('class_teacher_of_section')
+                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-400 mb-6">
+                       Leave these fields empty if this teacher is only a subject teacher.
+                    </p>
+
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
                         <input type="password" name="password"

@@ -23,6 +23,8 @@ class Teacher extends Model
         'phone',
         'subject',
         'is_active',
+        'class_teacher_of_class',
+        'class_teacher_of_section',
     ];
 
     public function school()
@@ -33,5 +35,13 @@ class Teacher extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Yo teacher kunai class ko Class Teacher ho ki (attendance mark garna pauney)
+     */
+    public function isClassTeacher(): bool
+    {
+        return !empty($this->class_teacher_of_class);
     }
 }
