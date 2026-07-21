@@ -45,7 +45,7 @@ class AttendanceController extends Controller
             'date' => 'required|date',
             'records' => 'required|array|min:1',
             'records.*.student_id' => 'required|exists:students,id',
-            'records.*.status' => 'required|in:present,absent,late',
+            'records.*.status' => 'required|in:present,absent,leave',
             'records.*.remarks' => 'nullable|string|max:255',
         ]);
 
