@@ -58,7 +58,7 @@
                         </div>
                     </div>
                     <p class="text-xs text-gray-400 mb-6">
-                        Khali chodnus yadi yo teacher subject teacher matra ho.
+                        Leave these fields empty if this teacher is only a subject teacher.
                     </p>
 
                     <div class="flex items-center gap-3">
