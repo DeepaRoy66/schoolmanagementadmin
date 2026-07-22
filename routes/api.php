@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\HomeworkController;
 use App\Http\Controllers\Api\ResultController;
 use App\Http\Controllers\Api\NoticeController;
 use App\Http\Controllers\Api\FeeController;
+use App\Http\Controllers\Api\TeacherDashboardController;
 use App\Http\Controllers\Api\TimetableController;
 use App\Http\Controllers\Api\MaterialController;
 use Illuminate\Support\Facades\Route;
@@ -30,12 +31,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/teacher/materials', [MaterialController::class, 'index']);
     Route::post('/teacher/materials', [MaterialController::class, 'store']);
     Route::delete('/teacher/materials/{material}', [MaterialController::class, 'destroy']);
+    Route::get('/teacher/dashboard-summary', [TeacherDashboardController::class, 'summary']);
+    Route::get('/teacher/total-classes', [TeacherDashboardController::class, 'totalClasses']); // naya
 
     // Student endpoints
     Route::get('/student/attendance', [AttendanceController::class, 'myAttendance']);
+    Route::get('/student/attendance/summary', [AttendanceController::class, 'myAttendanceSummary']); // naya
     Route::get('/student/homework', [HomeworkController::class, 'myHomework']);
     Route::get('/student/results', [ResultController::class, 'myResults']);
     Route::get('/student/fees', [FeeController::class, 'myFees']);
+    Route::get('/student/fees/summary', [FeeController::class, 'summary']); // naya
     Route::get('/student/materials', [MaterialController::class, 'myMaterials']);
 
     // Shared endpoints

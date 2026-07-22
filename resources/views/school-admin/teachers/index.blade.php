@@ -1,79 +1,66 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Teachers
+            All Teachers
         </h2>
     </x-slot>
 
     <div class="py-8">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            @if (session('status'))
-                <div class="mb-4 p-4 bg-green-100 text-green-800 rounded-lg text-sm">
-                    {{ session('status') }}
-                </div>
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold text-gray-900">All Teachers</h1>
+                <a href="{{ route('school-admin.teachers.create') }}"
+                   class="px-4 py-2 rounded-2xl bg-[#2dd4bf] text-white text-sm font-medium shadow-md hover:opacity-90">
+                    + Add Teacher
+                </a>
+            </div>
+
+            @if (session('success'))
+                <div class="mb-4 px-4 py-3 rounded-2xl bg-emerald-50 text-emerald-700 text-sm">{{ session('success') }}</div>
             @endif
 
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
-
-                <div class="flex justify-between items-center mb-6">
-                    <p class="text-gray-600 text-sm">Total teachers: {{ $teachers->total() }}</p>
-                    <a href="{{ route('school-admin.teachers.create') }}"
-                       class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
-                        + Add Teacher
-                    </a>
-                </div>
-
-                <table class="w-full text-sm text-left">
-                    <thead>
-                        <tr class="border-b text-gray-500">
-                            <th class="py-2">Name</th>
-                            <th class="py-2">Email</th>
-                            <th class="py-2">Subject</th>
-                            <th class="py-2">Class Teacher Of</th>
-                            <th class="py-2 text-right">Actions</th>
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wider">
+                        <tr>
+                            <th class="text-left px-6 py-3">Name</th>
+                            <th class="text-left px-6 py-3">Contact</th>
+                            <th class="text-left px-6 py-3">Designation</th>
+                            <th class="text-left px-6 py-3">Class Teacher Of</th>
+                            <th class="text-right px-6 py-3">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-gray-100">
                         @forelse ($teachers as $teacher)
-                            <tr class="border-b">
-                                <td class="py-3 font-medium">{{ $teacher->name }}</td>
-                                <td class="py-3 text-gray-600">{{ $teacher->email }}</td>
-                                <td class="py-3 text-gray-600">{{ $teacher->subject ?? '—' }}</td>
-                                <td class="py-3">
-                                    @if ($teacher->class_teacher_of_class)
-                                        <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold">
-                                            {{ $teacher->class_teacher_of_class }} {{ $teacher->class_teacher_of_section }}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 font-medium text-gray-900">{{ $teacher->full_name }}</td>
+                                <td class="px-6 py-4 text-gray-600">{{ $teacher->phone }} · {{ $teacher->email }}</td>
+                                <td class="px-6 py-4 text-gray-600">{{ $teacher->designation ?? '—' }}</td>
+                                <td class="px-6 py-4">
+                                    @if ($teacher->classTeacherAssignment)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#2dd4bf]/10 text-[#2dd4bf]">
+                                            {{ $teacher->classTeacherAssignment->schoolClass->name ?? '' }} - {{ $teacher->classTeacherAssignment->section->name ?? '' }}
                                         </span>
                                     @else
-                                        <span class="text-gray-400 text-xs">Subject teacher only</span>
+                                        <span class="text-gray-400 text-xs">Not assigned</span>
                                     @endif
                                 </td>
-                                <td class="py-3 text-right space-x-2">
-                                    <a href="{{ route('school-admin.teachers.edit', $teacher) }}" class="text-blue-600 hover:underline">Edit</a>
-                                    <form action="{{ route('school-admin.teachers.destroy', $teacher) }}" method="POST" class="inline"
-                                          onsubmit="return confirm('Yo Teacher delete garne?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:underline">Delete</button>
-                                    </form>
+                                <td class="px-6 py-4 text-right space-x-3">
+                                    <a href="{{ route('school-admin.teachers.edit', $teacher) }}" class="text-gray-500 hover:underline">Edit</a>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="py-6 text-center text-gray-500">
-                                   No teachers found.
-                                </td>
+                                <td colspan="5" class="px-6 py-8 text-center text-gray-400">Kunai teacher thapieko chaina</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
-
-                <div class="mt-4">
-                    {{ $teachers->links() }}
-                </div>
-
             </div>
+
+            <div class="mt-4">{{ $teachers->links() }}</div>
+
         </div>
     </div>
 </x-app-layout>

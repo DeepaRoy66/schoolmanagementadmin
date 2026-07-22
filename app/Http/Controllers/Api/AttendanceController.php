@@ -12,7 +12,7 @@ use Illuminate\Http\JsonResponse;
 class AttendanceController extends Controller
 {
     /**
-     * Teacher: aafno school ko student list dine (attendance mark garna)
+     * Teacher: aafno class-section ko student list dine (attendance mark garna)
      */
     public function students(Request $request): JsonResponse
     {
@@ -22,8 +22,20 @@ class AttendanceController extends Controller
             return response()->json(['message' => 'Only teachers can access this.'], 403);
         }
 
+        $teacher = Teacher::where('user_id', $user->id)->first();
+
+        if (!$teacher) {
+            return response()->json(['message' => 'Teacher profile not found.'], 404);
+        }
+
+        if (!$teacher->isClassTeacher()) {
+            return response()->json(['message' => 'You are not assigned as a class teacher.'], 403);
+        }
+
         $students = Student::where('school_id', $user->school_id)
-            ->select('id', 'name', 'class', 'roll_number')
+            ->where('class', $teacher->class_teacher_of_class)
+            ->where('section', $teacher->class_teacher_of_section)
+            ->select('id', 'name', 'class', 'section', 'roll_number')
             ->orderBy('name')
             ->get();
 
@@ -41,6 +53,16 @@ class AttendanceController extends Controller
             return response()->json(['message' => 'Only teachers can mark attendance.'], 403);
         }
 
+        $teacher = Teacher::where('user_id', $user->id)->first();
+
+        if (!$teacher) {
+            return response()->json(['message' => 'Teacher profile not found.'], 404);
+        }
+
+        if (!$teacher->isClassTeacher()) {
+            return response()->json(['message' => 'You are not assigned as a class teacher.'], 403);
+        }
+
         $validated = $request->validate([
             'date' => 'required|date',
             'records' => 'required|array|min:1',
@@ -49,16 +71,12 @@ class AttendanceController extends Controller
             'records.*.remarks' => 'nullable|string|max:255',
         ]);
 
-        $teacher = Teacher::where('user_id', $user->id)->first();
-
-        if (!$teacher) {
-            return response()->json(['message' => 'Teacher profile not found.'], 404);
-        }
-
-        // SECURITY: aafno school ko student_id haru matra allowed list ma nikalne
+        // SECURITY: aafno class-section ko student_id haru matra allowed list ma nikalne
         $requestedIds = collect($validated['records'])->pluck('student_id')->unique();
 
         $validStudentIds = Student::where('school_id', $user->school_id)
+            ->where('class', $teacher->class_teacher_of_class)
+            ->where('section', $teacher->class_teacher_of_section)
             ->whereIn('id', $requestedIds)
             ->pluck('id')
             ->toArray();
@@ -66,9 +84,9 @@ class AttendanceController extends Controller
         $savedCount = 0;
 
         foreach ($validated['records'] as $record) {
-            // SECURITY: yo student real ma logged-in teacher ko school ko ho ki check
+            // SECURITY: yo student real ma logged-in teacher ko class-section ko ho ki check
             if (!in_array($record['student_id'], $validStudentIds)) {
-                continue; // arko school ko student ho, silently skip
+                continue; // arko class/section ko student ho, silently skip
             }
 
             Attendance::updateOrCreate(
@@ -122,6 +140,36 @@ class AttendanceController extends Controller
     }
 
     /**
+     * NAYA: Student attendance summary (total/present/absent/leave)
+     */
+    public function myAttendanceSummary(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'student') {
+            return response()->json(['message' => 'Only students can access this.'], 403);
+        }
+
+        $student = Student::where('user_id', $user->id)->first();
+
+        if (!$student) {
+            return response()->json(['message' => 'Student profile not found.'], 404);
+        }
+
+        $counts = Attendance::where('student_id', $student->id)
+            ->selectRaw('status, count(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        return response()->json([
+            'total_days' => $counts->sum(),
+            'present' => $counts->get('present', 0),
+            'absent' => $counts->get('absent', 0),
+            'leave' => $counts->get('leave', 0),
+        ]);
+    }
+
+    /**
      * Teacher: euta specific din ko attendance herne (aafno school ko matra)
      */
     public function viewByDate(Request $request): JsonResponse
@@ -136,7 +184,6 @@ class AttendanceController extends Controller
             'date' => 'required|date',
         ]);
 
-        // SECURITY: school_id filter thapiyo - aghi yo thiyena (data leak thiyo)
         $attendance = Attendance::where('date', $validated['date'])
             ->where('school_id', $user->school_id)
             ->with('student:id,name,roll_number')

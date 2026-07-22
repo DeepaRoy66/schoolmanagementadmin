@@ -27,20 +27,42 @@
                 <table class="w-full text-sm text-left">
                     <thead>
                         <tr class="border-b text-gray-500">
+                            <th class="py-2">ID</th>
                             <th class="py-2">Name</th>
                             <th class="py-2">Email</th>
                             <th class="py-2">Class</th>
+                            <th class="py-2">Section</th>
                             <th class="py-2">Roll No.</th>
+                            <th class="py-2">Status</th>
                             <th class="py-2 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($students as $student)
                             <tr class="border-b">
-                                <td class="py-3 font-medium">{{ $student->name }}</td>
+                                <td class="py-3 text-gray-500">{{ $student->student_uid ?? '—' }}</td>
+                                <td class="py-3 font-medium">{{ $student->full_name }}</td>
                                 <td class="py-3 text-gray-600">{{ $student->email }}</td>
-                                <td class="py-3 text-gray-600">{{ $student->class ?? '—' }}</td>
+                                <td class="py-3 text-gray-600">{{ $student->schoolClass->name ?? '—' }}</td>
+                                <td class="py-3 text-gray-600">{{ $student->section->name ?? '—' }}</td>
                                 <td class="py-3 text-gray-600">{{ $student->roll_number ?? '—' }}</td>
+                                <td class="py-3">
+                                    @php
+                                        $statusColors = [
+                                            'active' => 'bg-green-100 text-green-700',
+                                            'inactive' => 'bg-gray-100 text-gray-600',
+                                            'dropped_out' => 'bg-red-100 text-red-700',
+                                        ];
+                                        $statusLabels = [
+                                            'active' => 'Active',
+                                            'inactive' => 'Inactive',
+                                            'dropped_out' => 'Dropped Out',
+                                        ];
+                                    @endphp
+                                    <span class="px-2 py-1 rounded text-xs {{ $statusColors[$student->status] ?? 'bg-gray-100 text-gray-600' }}">
+                                        {{ $statusLabels[$student->status] ?? ucfirst($student->status) }}
+                                    </span>
+                                </td>
                                 <td class="py-3 text-right space-x-2">
                                     <a href="{{ route('school-admin.students.edit', $student) }}" class="text-blue-600 hover:underline">Edit</a>
                                     <form action="{{ route('school-admin.students.destroy', $student) }}" method="POST" class="inline"
@@ -53,7 +75,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="py-6 text-center text-gray-500">
+                                <td colspan="8" class="py-6 text-center text-gray-500">
                                     No students added.
                                 </td>
                             </tr>

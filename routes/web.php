@@ -15,6 +15,10 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\TimetableController;
 use App\Http\Controllers\FeeController;
+use App\Http\Controllers\ClassController;
+use App\Http\Controllers\SectionController;
+use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\SubjectAllocationController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -80,6 +84,34 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
 
         Route::resource('teachers', TeacherController::class);
 
+        // -------------------------------
+        // Subject Allocation (Class-Section x Subject -> Teacher matrix)
+        // Handled by SubjectAllocationController. Names below no longer
+        // re-prepend "school-admin." since the group already adds that
+        // prefix (the old duplicate prefix produced an invalid route name).
+        // -------------------------------
+        Route::get('/subject-allocations', [SubjectAllocationController::class, 'index'])
+            ->name('subject-allocations.index');
+
+        Route::get('/subject-allocations/create', [SubjectAllocationController::class, 'create'])
+            ->name('subject-allocations.create');
+
+        Route::post('/subject-allocations', [SubjectAllocationController::class, 'store'])
+            ->name('subject-allocations.store');
+
+        // -------------------------------
+        // Assign Class Teacher
+        // (attendance access per class-section)
+        // -------------------------------
+        Route::get('class-teacher', [TeacherController::class, 'assignClassTeacherForm'])
+            ->name('class-teacher.form');
+
+        Route::post('class-teacher', [TeacherController::class, 'assignClassTeacher'])
+            ->name('class-teacher.store');
+
+        Route::delete('class-teacher/{id}', [TeacherController::class, 'removeClassTeacher'])
+            ->name('class-teacher.remove');
+
         Route::resource('students', StudentController::class);
 
         Route::resource('notices', NoticeController::class)
@@ -95,9 +127,16 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
             ->except(['show', 'edit', 'update']);
 
         Route::patch('fees/{fee}/payment', [FeeController::class, 'updatePayment'])
-        ->name('fees.payment');
+            ->name('fees.payment');
 
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::resource('subjects', SubjectController::class)->except(['show']);
+
+        // -------------------------------
+        // Classes & Sections
+        // -------------------------------
+        Route::resource('classes', ClassController::class)->except(['show', 'edit', 'update']);
+        Route::resource('sections', SectionController::class)->except(['show', 'edit', 'update']);
     });
 
 
