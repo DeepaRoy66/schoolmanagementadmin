@@ -52,7 +52,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-8 text-center text-gray-400">Kunai teacher thapieko chaina</td>
+                                <td colspan="5" class="px-6 py-8 text-center text-gray-400">No teacher added yet</td>
                             </tr>
                         @endforelse
                     </tbody>

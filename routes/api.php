@@ -32,15 +32,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/teacher/materials', [MaterialController::class, 'store']);
     Route::delete('/teacher/materials/{material}', [MaterialController::class, 'destroy']);
     Route::get('/teacher/dashboard-summary', [TeacherDashboardController::class, 'summary']);
-    Route::get('/teacher/total-classes', [TeacherDashboardController::class, 'totalClasses']); // naya
-
-    // Student endpoints
+    Route::get('/teacher/total-classes', [TeacherDashboardController::class, 'totalClasses']); 
+       // Student endpoints
     Route::get('/student/attendance', [AttendanceController::class, 'myAttendance']);
-    Route::get('/student/attendance/summary', [AttendanceController::class, 'myAttendanceSummary']); // naya
+    Route::get('/student/attendance/summary', [AttendanceController::class, 'myAttendanceSummary']);
     Route::get('/student/homework', [HomeworkController::class, 'myHomework']);
     Route::get('/student/results', [ResultController::class, 'myResults']);
     Route::get('/student/fees', [FeeController::class, 'myFees']);
-    Route::get('/student/fees/summary', [FeeController::class, 'summary']); // naya
+    Route::get('/student/fees/summary', [FeeController::class, 'summary']); 
     Route::get('/student/materials', [MaterialController::class, 'myMaterials']);
 
     // Shared endpoints
