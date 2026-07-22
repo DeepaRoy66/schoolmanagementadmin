@@ -34,7 +34,7 @@
                                 <td class="py-3 font-medium">{{ $section->name }}</td>
                                 <td class="py-3 text-right">
                                     <form action="{{ route('school-admin.sections.destroy', $section) }}" method="POST" class="inline"
-                                          onsubmit="return confirm('Yo section delete garne?');">
+                                          onsubmit="return confirm('Do you want to delete this section?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600 hover:underline">Delete</button>

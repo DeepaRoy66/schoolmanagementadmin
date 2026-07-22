@@ -17,12 +17,14 @@
 
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
                 <p class="text-sm text-gray-500 mb-4">
-                    After selecting a teacher, you can assign them as the class teacher for a specific class and section. This will grant them access to manage attendance for that class. Please select the teacher, then choose the corresponding class and section. Once you've filled in the details, click "Save Assignment" to complete the process.
+                    Class ra Section select garepachi, tesko attendance access paune teacher
+                    assign garnus. Euta section ko euta matra class teacher huna sakcha —
+                    pahile dekhi assigned bhaye replace garnu agadi confirm garnuparcha.
                 </p>
 
                 @if ($errors->any())
                     <div class="mb-4 p-4 bg-red-100 text-red-800 rounded-lg text-sm">
-                        <p class="font-medium mb-1">Form submission failed. Please correct the following errors:</p>
+                        <p class="font-medium mb-1">Form submit hudaina, yi error haru fix garnus:</p>
                         <ul class="list-disc list-inside">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
@@ -52,7 +54,7 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Section</label>
                         <select name="section_id" id="section_id" class="w-full border-gray-300 rounded-lg" required>
-                            <option value="">-- Select Section --</option>
+                            <option value="">-- Pahile Class select garnus --</option>
                         </select>
                         @error('section_id')
                             <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
@@ -87,7 +89,7 @@
                 <h3 class="text-sm font-semibold text-gray-800 mb-4">Current Class Teachers</h3>
 
                 @if ($assignments->isEmpty())
-                    <p class="text-sm text-gray-500">No current class teachers assigned.</p>
+                    <p class="text-sm text-gray-500">Halsam kunai class teacher assign gareko xaina.</p>
                 @else
                     <table class="w-full text-sm">
                         <thead>
@@ -131,9 +133,12 @@
             ])
         );
 
-        // Section -> already assigned teacher naam (conflict check ko lagi)
+        // Section -> already assigned teacher naam (conflict check ko lagi).
+        // Key "class_id-section_id" ho, section_id matra hoina - kina bhane euta
+        // section (jastai "Section A") multiple classes ma share hunsakcha, ra
+        // tiniharu sabai faraak-faraak assignment hun sakchan.
         const sectionAssignments = @json(
-            $assignments->mapWithKeys(fn ($a) => [$a->section_id => $a->teacher->full_name])
+            $assignments->mapWithKeys(fn ($a) => [$a->class_id . '-' . $a->section_id => $a->teacher->full_name])
         );
 
         const classSelect = document.getElementById('class_id');
@@ -159,10 +164,14 @@
             checkConflict();
         }
 
+        function conflictKey() {
+            return classSelect.value + '-' + sectionSelect.value;
+        }
+
         function checkConflict() {
-            const sectionId = sectionSelect.value;
-            if (sectionId && sectionAssignments[sectionId]) {
-                conflictWarning.textContent = 'This section already has a class teacher assigned: ' + sectionAssignments[sectionId] + '. Saving will replace the current assignment.';
+            const key = conflictKey();
+            if (sectionSelect.value && sectionAssignments[key]) {
+                conflictWarning.textContent = 'Yo section ko class teacher pahile dekhi ' + sectionAssignments[key] + ' hunuhuncha. Save garda replace huncha.';
                 conflictWarning.classList.remove('hidden');
             } else {
                 conflictWarning.classList.add('hidden');
@@ -176,9 +185,9 @@
 
         // Final confirm before submit if conflict exists
         document.getElementById('assignForm').addEventListener('submit', function (e) {
-            const sectionId = sectionSelect.value;
-            if (sectionId && sectionAssignments[sectionId]) {
-                const ok = confirm('Yo section ko class teacher replace garne? "' + sectionAssignments[sectionId] + '" ko attendance access hatera naya teacher lai dine.');
+            const key = conflictKey();
+            if (sectionSelect.value && sectionAssignments[key]) {
+                const ok = confirm('Yo section ko class teacher replace garne? "' + sectionAssignments[key] + '" ko attendance access hatera naya teacher lai dine.');
                 if (!ok) e.preventDefault();
             }
         });

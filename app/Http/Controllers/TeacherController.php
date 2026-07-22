@@ -165,12 +165,16 @@ class TeacherController extends Controller
             'teacher_id' => ['required', 'exists:teachers,id'],
         ]);
 
-        // Euta section ko euta matra class teacher huna sakcha - naya teacher le
-        // purano lai replace garcha (unique constraint on section_id le enforce garcha).
+        // Euta class-section (class_id + section_id combo) ko euta matra class teacher
+        // huna sakcha - naya teacher le purano lai replace garcha. section_id matra
+        // use gareko xaina kina bhane sections classes bich share huncha (Class 10 -
+        // Section A ra Class 3 - Section A duitai faraak assignment hun sakcha).
         ClassTeacherAssignment::updateOrCreate(
-            ['section_id' => $validated['section_id']],
             [
                 'class_id'   => $validated['class_id'],
+                'section_id' => $validated['section_id'],
+            ],
+            [
                 'teacher_id' => $validated['teacher_id'],
                 'school_id'  => auth()->user()->school_id,
             ]
