@@ -8,11 +8,45 @@ use App\Models\Student;
 use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Models\ClassTeacherAssignment;
 
 class AttendanceController extends Controller
 {
     /**
-     * Teacher: aafno class-section ko student list dine (attendance mark garna)
+     * Teacher: aafno assigned classes ra sections ko list dine
+     */
+    public function assignedClasses(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'teacher') {
+            return response()->json(['message' => 'Only teachers can access this.'], 403);
+        }
+
+        $teacher = Teacher::where('user_id', $user->id)->first();
+
+        if (!$teacher) {
+            return response()->json(['message' => 'Teacher profile not found.'], 404);
+        }
+
+        $assignments = ClassTeacherAssignment::with(['schoolClass:id,name', 'section:id,name'])
+            ->where('teacher_id', $teacher->id)
+            ->get();
+
+        return response()->json(
+            $assignments->map(function ($assignment) {
+                return [
+                    'class_id' => $assignment->class_id,
+                    'class_name' => $assignment->schoolClass?->name,
+                    'section_id' => $assignment->section_id,
+                    'section_name' => $assignment->section?->name,
+                ];
+            })
+        );
+    }
+
+    /**
+     * Teacher: given class-section ko student list dine (attendance mark garna)
      */
     public function students(Request $request): JsonResponse
     {
@@ -28,18 +62,38 @@ class AttendanceController extends Controller
             return response()->json(['message' => 'Teacher profile not found.'], 404);
         }
 
-        if (!$teacher->isClassTeacher()) {
-            return response()->json(['message' => 'You are not assigned as a class teacher.'], 403);
+        $validated = $request->validate([
+            'class_id' => 'required|exists:classes,id',
+            'section_id' => 'required|exists:sections,id',
+        ]);
+
+        $assigned = ClassTeacherAssignment::where('teacher_id', $teacher->id)
+            ->where('class_id', $validated['class_id'])
+            ->where('section_id', $validated['section_id'])
+            ->exists();
+
+        if (!$assigned) {
+            return response()->json(['message' => 'This class is not assigned to you.'], 403);
         }
 
-        $students = Student::where('school_id', $user->school_id)
-            ->where('class', $teacher->class_teacher_of_class)
-            ->where('section', $teacher->class_teacher_of_section)
-            ->select('id', 'name', 'class', 'section', 'roll_number')
-            ->orderBy('name')
+        $students = Student::with(['schoolClass:id,name', 'section:id,name'])
+            ->where('school_id', $user->school_id)
+            ->where('class_id', $validated['class_id'])
+            ->where('section_id', $validated['section_id'])
+            ->orderBy('first_name')
             ->get();
 
-        return response()->json($students);
+        return response()->json(
+            $students->map(function ($student) {
+                return [
+                    'id' => $student->id,
+                    'name' => $student->full_name,
+                    'roll_number' => $student->roll_number,
+                    'class' => $student->schoolClass?->name,
+                    'section' => $student->section?->name,
+                ];
+            })
+        );
     }
 
     /**
@@ -59,11 +113,9 @@ class AttendanceController extends Controller
             return response()->json(['message' => 'Teacher profile not found.'], 404);
         }
 
-        if (!$teacher->isClassTeacher()) {
-            return response()->json(['message' => 'You are not assigned as a class teacher.'], 403);
-        }
-
         $validated = $request->validate([
+            'class_id' => 'required|exists:classes,id',
+            'section_id' => 'required|exists:sections,id',
             'date' => 'required|date',
             'records' => 'required|array|min:1',
             'records.*.student_id' => 'required|exists:students,id',
@@ -74,9 +126,20 @@ class AttendanceController extends Controller
         // SECURITY: aafno class-section ko student_id haru matra allowed list ma nikalne
         $requestedIds = collect($validated['records'])->pluck('student_id')->unique();
 
+        $assignment = ClassTeacherAssignment::where('teacher_id', $teacher->id)
+            ->where('class_id', $validated['class_id'])
+            ->where('section_id', $validated['section_id'])
+            ->first();
+
+        if (!$assignment) {
+            return response()->json([
+                'message' => 'No class assigned to this teacher.'
+            ], 403);
+        }
+
         $validStudentIds = Student::where('school_id', $user->school_id)
-            ->where('class', $teacher->class_teacher_of_class)
-            ->where('section', $teacher->class_teacher_of_section)
+            ->where('class_id', $validated['class_id'])
+            ->where('section_id', $validated['section_id'])
             ->whereIn('id', $requestedIds)
             ->pluck('id')
             ->toArray();
@@ -170,7 +233,7 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Teacher: euta specific din ko attendance herne (aafno school ko matra)
+     * Teacher: euta specific din ko attendance herne (aafno assigned class-section ko matra)
      */
     public function viewByDate(Request $request): JsonResponse
     {
@@ -180,15 +243,84 @@ class AttendanceController extends Controller
             return response()->json(['message' => 'Only teachers can access this.'], 403);
         }
 
+        $teacher = Teacher::where('user_id', $user->id)->first();
+
+        if (!$teacher) {
+            return response()->json(['message' => 'Teacher profile not found.'], 404);
+        }
+
         $validated = $request->validate([
+            'class_id' => 'required|exists:classes,id',
+            'section_id' => 'required|exists:sections,id',
             'date' => 'required|date',
         ]);
 
+        // SECURITY: yo class-section teacher lai assign bhako ho ki check
+        $assigned = ClassTeacherAssignment::where('teacher_id', $teacher->id)
+            ->where('class_id', $validated['class_id'])
+            ->where('section_id', $validated['section_id'])
+            ->exists();
+
+        if (!$assigned) {
+            return response()->json(['message' => 'This class is not assigned to you.'], 403);
+        }
+
         $attendance = Attendance::where('date', $validated['date'])
             ->where('school_id', $user->school_id)
-            ->with('student:id,name,roll_number')
+            ->whereHas('student', function ($query) use ($validated) {
+                $query->where('class_id', $validated['class_id'])
+                    ->where('section_id', $validated['section_id']);
+            })
+            ->with('student:id,first_name,middle_name,last_name,roll_number')
             ->get(['id', 'student_id', 'status', 'remarks']);
 
-        return response()->json($attendance);
+        return response()->json(
+            $attendance->map(function ($record) {
+                return [
+                    'id' => $record->id,
+                    'student_id' => $record->student_id,
+                    'student_name' => $record->student?->full_name,
+                    'roll_number' => $record->student?->roll_number,
+                    'status' => $record->status,
+                    'remarks' => $record->remarks,
+                ];
+            })
+        );
+    }
+
+    public function sections(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'teacher') {
+            return response()->json([
+                'message' => 'Only teachers can access this.'
+            ], 403);
+        }
+
+        $teacher = Teacher::where('user_id', $user->id)->first();
+
+        if (!$teacher) {
+            return response()->json([
+                'message' => 'Teacher profile not found.'
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'class_id' => 'required|exists:classes,id',
+        ]);
+
+        $sections = ClassTeacherAssignment::with('section:id,name')
+            ->where('teacher_id', $teacher->id)
+            ->where('class_id', $validated['class_id'])
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'section_id' => $item->section_id,
+                    'section_name' => $item->section?->name,
+                ];
+            });
+
+        return response()->json($sections);
     }
 }

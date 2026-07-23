@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ClassTeacherAssignment;
 use App\Models\Result;
 use App\Models\Student;
 use App\Models\Teacher;
@@ -12,14 +13,32 @@ use Illuminate\Http\JsonResponse;
 class ResultController extends Controller
 {
     /**
-     * Teacher: euta exam/subject ko lagi multiple student ko marks entry garne
+     * Teacher: Multiple students ko marks save/update
      */
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
 
         if ($user->role !== 'teacher') {
-            return response()->json(['message' => 'Only teachers can enter marks.'], 403);
+            return response()->json([
+                'message' => 'Only teachers can enter marks.'
+            ], 403);
+        }
+
+        $teacher = Teacher::where('user_id', $user->id)->first();
+
+        if (!$teacher) {
+            return response()->json([
+                'message' => 'Teacher profile not found.'
+            ], 404);
+        }
+
+        $assignment = ClassTeacherAssignment::where('teacher_id', $teacher->id)->first();
+
+        if (!$assignment) {
+            return response()->json([
+                'message' => 'You are not assigned as a class teacher.'
+            ], 403);
         }
 
         $validated = $request->validate([
@@ -32,16 +51,13 @@ class ResultController extends Controller
             'records.*.remarks' => 'nullable|string|max:255',
         ]);
 
-        $teacher = Teacher::where('user_id', $user->id)->first();
-
-        if (!$teacher) {
-            return response()->json(['message' => 'Teacher profile not found.'], 404);
-        }
-
-        // SECURITY: aafno school ko student_id haru matra allowed list ma nikalne
-        $requestedIds = collect($validated['records'])->pluck('student_id')->unique();
+        $requestedIds = collect($validated['records'])
+            ->pluck('student_id')
+            ->unique();
 
         $validStudentIds = Student::where('school_id', $user->school_id)
+            ->where('class_id', $assignment->class_id)
+            ->where('section_id', $assignment->section_id)
             ->whereIn('id', $requestedIds)
             ->pluck('id')
             ->toArray();
@@ -49,7 +65,7 @@ class ResultController extends Controller
         $savedCount = 0;
 
         foreach ($validated['records'] as $record) {
-            // SECURITY: yo student real ma logged-in teacher ko school ko ho ki check
+
             if (!in_array($record['student_id'], $validStudentIds)) {
                 continue;
             }
@@ -73,22 +89,28 @@ class ResultController extends Controller
         }
 
         if ($savedCount === 0) {
-            return response()->json(['message' => 'No valid students found to save marks for.'], 422);
+            return response()->json([
+                'message' => 'No valid students found to save marks for.'
+            ], 422);
         }
 
-        return response()->json(['message' => 'Marks saved successfully.', 'saved' => $savedCount]);
+        return response()->json([
+            'message' => 'Marks saved successfully.',
+            'saved' => $savedCount
+        ]);
     }
 
     /**
-     * Teacher: euta exam/subject ko sabai student ko marks herne
-     * (Result model ma SchoolScope cha, so yo query automatically aafno school ma matra filter huncha)
+     * Teacher: View Result by Exam
      */
     public function viewByExam(Request $request): JsonResponse
     {
         $user = $request->user();
 
         if ($user->role !== 'teacher') {
-            return response()->json(['message' => 'Only teachers can access this.'], 403);
+            return response()->json([
+                'message' => 'Only teachers can access this.'
+            ], 403);
         }
 
         $validated = $request->validate([
@@ -96,34 +118,76 @@ class ResultController extends Controller
             'subject' => 'required|string',
         ]);
 
+        $teacher = Teacher::where('user_id', $user->id)->first();
+
+        if (!$teacher) {
+            return response()->json([
+                'message' => 'Teacher profile not found.'
+            ], 404);
+        }
+
+        $assignment = ClassTeacherAssignment::where('teacher_id', $teacher->id)->first();
+
+        if (!$assignment) {
+            return response()->json([
+                'message' => 'You are not assigned as a class teacher.'
+            ], 403);
+        }
+
         $results = Result::where('exam_name', $validated['exam_name'])
             ->where('subject', $validated['subject'])
-            ->with('student:id,name,roll_number')
-            ->get(['id', 'student_id', 'marks_obtained', 'full_marks', 'remarks']);
+            ->whereHas('student', function ($query) use ($assignment) {
+                $query->where('class_id', $assignment->class_id)
+                      ->where('section_id', $assignment->section_id);
+            })
+            ->with('student:id,first_name,middle_name,last_name,roll_number')
+            ->get();
 
-        return response()->json($results);
+        return response()->json(
+            $results->map(function ($result) {
+                return [
+                    'id' => $result->id,
+                    'student_id' => $result->student_id,
+                    'student_name' => $result->student?->full_name,
+                    'roll_number' => $result->student?->roll_number,
+                    'marks_obtained' => $result->marks_obtained,
+                    'full_marks' => $result->full_marks,
+                    'remarks' => $result->remarks,
+                ];
+            })
+        );
     }
 
     /**
-     * Student: aafno sabai result herne
+     * Student: My Results
      */
     public function myResults(Request $request): JsonResponse
     {
         $user = $request->user();
 
         if ($user->role !== 'student') {
-            return response()->json(['message' => 'Only students can access this.'], 403);
+            return response()->json([
+                'message' => 'Only students can access this.'
+            ], 403);
         }
 
         $student = Student::where('user_id', $user->id)->first();
 
         if (!$student) {
-            return response()->json(['message' => 'Student profile not found.'], 404);
+            return response()->json([
+                'message' => 'Student profile not found.'
+            ], 404);
         }
 
         $results = Result::where('student_id', $student->id)
             ->orderBy('exam_name')
-            ->get(['exam_name', 'subject', 'marks_obtained', 'full_marks', 'remarks']);
+            ->get([
+                'exam_name',
+                'subject',
+                'marks_obtained',
+                'full_marks',
+                'remarks'
+            ]);
 
         return response()->json($results);
     }

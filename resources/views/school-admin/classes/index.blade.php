@@ -51,7 +51,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="py-6 text-center text-gray-500">Kunai class thapiyeko chaina.</td>
+                                <td colspan="3" class="py-6 text-center text-gray-500">No class added yet.</td>
                             </tr>
                         @endforelse
                     </tbody>

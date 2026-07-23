@@ -17,9 +17,7 @@
 
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
                 <p class="text-sm text-gray-500 mb-4">
-                    Class ra Section select garepachi, tesko attendance access paune teacher
-                    assign garnus. Euta section ko euta matra class teacher huna sakcha —
-                    pahile dekhi assigned bhaye replace garnu agadi confirm garnuparcha.
+                    After assigning a class teacher, the teacher will have access to the attendance and other features for that class and section. If a class already has a class teacher, assigning a new one will replace the previous teacher.
                 </p>
 
                 @if ($errors->any())
@@ -54,7 +52,7 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Section</label>
                         <select name="section_id" id="section_id" class="w-full border-gray-300 rounded-lg" required>
-                            <option value="">-- Pahile Class select garnus --</option>
+                            <option value="">-- Select Section --</option>
                         </select>
                         @error('section_id')
                             <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
@@ -89,7 +87,7 @@
                 <h3 class="text-sm font-semibold text-gray-800 mb-4">Current Class Teachers</h3>
 
                 @if ($assignments->isEmpty())
-                    <p class="text-sm text-gray-500">Halsam kunai class teacher assign gareko xaina.</p>
+                    <p class="text-sm text-gray-500">No class teachers assigned yet.</p>
                 @else
                     <table class="w-full text-sm">
                         <thead>
@@ -171,7 +169,7 @@
         function checkConflict() {
             const key = conflictKey();
             if (sectionSelect.value && sectionAssignments[key]) {
-                conflictWarning.textContent = 'Yo section ko class teacher pahile dekhi ' + sectionAssignments[key] + ' hunuhuncha. Save garda replace huncha.';
+                conflictWarning.textContent = 'This section already has a class teacher assigned: ' + sectionAssignments[key] + '. Saving will replace the current teacher.';
                 conflictWarning.classList.remove('hidden');
             } else {
                 conflictWarning.classList.add('hidden');
@@ -187,7 +185,7 @@
         document.getElementById('assignForm').addEventListener('submit', function (e) {
             const key = conflictKey();
             if (sectionSelect.value && sectionAssignments[key]) {
-                const ok = confirm('Yo section ko class teacher replace garne? "' + sectionAssignments[key] + '" ko attendance access hatera naya teacher lai dine.');
+                const ok = confirm('Replace the current class teacher? "' + sectionAssignments[key] + '" ko attendance access hatera naya teacher lai dine.');
                 if (!ok) e.preventDefault();
             }
         });

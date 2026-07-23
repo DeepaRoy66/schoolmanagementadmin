@@ -131,7 +131,7 @@ class TeacherController extends Controller
 
         return redirect()
             ->route('school-admin.teachers.index')
-            ->with('success', 'Teacher profile update bhayo.');
+            ->with('success', 'Teacher profile updated successfully.');
     }
 
     public function destroy(Teacher $teacher)
@@ -140,7 +140,7 @@ class TeacherController extends Controller
 
         return redirect()
             ->route('school-admin.teachers.index')
-            ->with('success', 'Teacher deactivate bhayo.');
+            ->with('success', 'Teacher deactivated successfully.');
     }
 
     // -------------------------------
@@ -182,7 +182,7 @@ class TeacherController extends Controller
 
         return redirect()
             ->route('school-admin.class-teacher.form')
-            ->with('success', 'Class teacher assign bhayo.');
+            ->with('success', 'Class teacher assigned successfully.');
     }
 
     public function removeClassTeacher($id)
@@ -191,6 +191,6 @@ class TeacherController extends Controller
 
         return redirect()
             ->route('school-admin.class-teacher.form')
-            ->with('success', 'Class teacher remove bhayo.');
+            ->with('success', 'Class teacher removed successfully.');
     }
 }

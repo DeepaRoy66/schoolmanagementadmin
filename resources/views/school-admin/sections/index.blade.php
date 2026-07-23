@@ -43,7 +43,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="2" class="py-6 text-center text-gray-500">Kunai section thapiyeko chaina.</td>
+                                <td colspan="2" class="py-6 text-center text-gray-500">No section added yet.</td>
                             </tr>
                         @endforelse
                     </tbody>

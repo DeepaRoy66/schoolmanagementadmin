@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+use App\Models\Teacher;
+use App\Models\ClassTeacherAssignment;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -69,20 +71,43 @@ class AuthController extends Controller
     /**
      * Login gareko user ko info dine
      */
-    public function me(Request $request): JsonResponse
-    {
-        $user = $request->user();
 
-        return response()->json([
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->role,
-            'school_id' => $user->school_id,
-            'school_name' => $user->school->name ?? null,
-        ]);
+public function me(Request $request): JsonResponse
+{
+    $user = $request->user();
+
+    $response = [
+        'id' => $user->id,
+        'name' => $user->name,
+        'email' => $user->email,
+        'role' => $user->role,
+        'school_id' => $user->school_id,
+        'school_name' => $user->school->name ?? null,
+    ];
+
+    // Teacher ko lagi assigned classes pathaune
+    if ($user->role === 'teacher') {
+
+        $teacher = Teacher::where('user_id', $user->id)->first();
+
+        if ($teacher) {
+
+            $response['assigned_classes'] = ClassTeacherAssignment::with('schoolClass:id,name')
+                ->where('teacher_id', $teacher->id)
+                ->get()
+                ->unique('class_id')
+                ->map(function ($item) {
+                    return [
+                        'class_id' => $item->class_id,
+                        'class_name' => $item->schoolClass?->name,
+                    ];
+                })
+                ->values();
+        }
     }
 
+    return response()->json($response);
+}
     /**
      * Logout - current token delete garne
      */

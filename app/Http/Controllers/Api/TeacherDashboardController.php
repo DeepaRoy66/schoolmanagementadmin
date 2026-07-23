@@ -8,6 +8,7 @@ use App\Models\Homework;
 use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Models\ClassTeacherAssignment;
 
 class TeacherDashboardController extends Controller
 {
@@ -51,26 +52,52 @@ class TeacherDashboardController extends Controller
     /**
      * Teacher: total classes count (class-teacher bhaeko class matra)
      */
-    public function totalClasses(Request $request): JsonResponse
-    {
-        $user = $request->user();
+ public function totalClasses(Request $request): JsonResponse
+{
+    $user = $request->user();
 
-        if ($user->role !== 'teacher') {
-            return response()->json(['message' => 'Only teachers can access this.'], 403);
-        }
-
-        $teacher = Teacher::where('user_id', $user->id)->first();
-
-        if (!$teacher) {
-            return response()->json(['message' => 'Teacher profile not found.'], 404);
-        }
-
-        $totalClasses = $teacher->isClassTeacher() ? 1 : 0;
-
+    if ($user->role !== 'teacher') {
         return response()->json([
-            'total_classes' => $totalClasses,
-            'class' => $teacher->class_teacher_of_class,
-            'section' => $teacher->class_teacher_of_section,
-        ]);
+            'message' => 'Only teachers can access this.'
+        ], 403);
     }
+
+    $teacher = Teacher::where('user_id', $user->id)->first();
+
+    if (!$teacher) {
+        return response()->json([
+            'message' => 'Teacher profile not found.'
+        ], 404);
+    }
+
+    $assignments = ClassTeacherAssignment::with([
+        'schoolClass:id,name',
+        'section:id,name'
+    ])
+    ->where('teacher_id', $teacher->id)
+    ->get();
+
+    $classes = $assignments
+        ->groupBy('class_id')
+        ->map(function ($items) {
+
+            $first = $items->first();
+
+            return [
+                'class_id' => $first->class_id,
+                'class_name' => $first->schoolClass?->name,
+                'sections' => $items
+                    ->pluck('section.name')
+                    ->filter()
+                    ->unique()
+                    ->values(),
+            ];
+        })
+        ->values();
+
+    return response()->json([
+        'total_sections' => $assignments->count(),
+        'classes' => $classes,
+    ]);
+}
 }

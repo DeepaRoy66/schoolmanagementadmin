@@ -33,7 +33,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/teacher/materials/{material}', [MaterialController::class, 'destroy']);
     Route::get('/teacher/dashboard-summary', [TeacherDashboardController::class, 'summary']);
     Route::get('/teacher/total-classes', [TeacherDashboardController::class, 'totalClasses']); 
-       // Student endpoints
+    Route::get('/teacher/assigned-classes', [AttendanceController::class, 'assignedClasses']); 
+    Route::get('/teacher/sections', [AttendanceController::class, 'sections']);
+    // Student endpoints
     Route::get('/student/attendance', [AttendanceController::class, 'myAttendance']);
     Route::get('/student/attendance/summary', [AttendanceController::class, 'myAttendanceSummary']);
     Route::get('/student/homework', [HomeworkController::class, 'myHomework']);
