@@ -19,7 +19,7 @@ class FeeController extends Controller
 
     public function create(): View
     {
-        $students = Student::orderBy('name')->get();
+        $students = Student::orderBy('first_name')->orderBy('last_name')->get();
 
         return view('school-admin.fees.create', compact('students'));
     }
@@ -33,7 +33,6 @@ class FeeController extends Controller
             'due_date' => 'nullable|date',
         ]);
 
-        
         $student = Student::where('id', $validated['student_id'])
             ->where('school_id', auth()->user()->school_id)
             ->first();
@@ -53,7 +52,6 @@ class FeeController extends Controller
             ->with('status', 'Fee record created.');
     }
 
-  
     public function updatePayment(Request $request, Fee $fee): RedirectResponse
     {
         $validated = $request->validate([
@@ -83,5 +81,33 @@ class FeeController extends Controller
 
         return redirect()->route('school-admin.fees.index')
             ->with('status', 'Fee record deleted.');
+    }
+
+    public function reports(): View
+    {
+        $schoolId = auth()->user()->school_id;
+
+        $totalFees = Fee::where('school_id', $schoolId)->sum('amount');
+        $totalCollected = Fee::where('school_id', $schoolId)->sum('paid_amount');
+        $totalPending = $totalFees - $totalCollected;
+
+        $statusCounts = Fee::where('school_id', $schoolId)
+            ->selectRaw('status, count(*) as total, sum(amount) as total_amount, sum(paid_amount) as total_paid')
+            ->groupBy('status')
+            ->get();
+
+        $recentFees = Fee::with('student')
+            ->where('school_id', $schoolId)
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return view('school-admin.fees.reports', compact(
+            'totalFees',
+            'totalCollected',
+            'totalPending',
+            'statusCounts',
+            'recentFees'
+        ));
     }
 }

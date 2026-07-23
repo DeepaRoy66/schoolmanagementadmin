@@ -15,6 +15,9 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\TimetableController;
 use App\Http\Controllers\FeeController;
+use App\Http\Controllers\FeeCategoryController;
+use App\Http\Controllers\StudentFeeController;
+use App\Http\Controllers\FeePaymentController;
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SubjectController;
@@ -123,12 +126,24 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
         Route::resource('timetables', TimetableController::class)
             ->except(['show', 'edit', 'update']);
 
-        Route::resource('fees', FeeController::class)
-            ->except(['show', 'edit', 'update']);
+        // -------------------------------
+        // Fee Management
+        // -------------------------------
+        Route::get('fees/reports', [StudentFeeController::class, 'reports'])
+            ->name('fees.reports');
 
-        Route::patch('fees/{fee}/payment', [FeeController::class, 'updatePayment'])
-            ->name('fees.payment');
+        Route::resource('fee-categories', FeeCategoryController::class)
+            ->except(['show']);
 
+        Route::resource('student-fees', StudentFeeController::class)
+            ->except(['show']);
+
+        Route::resource('fee-payments', FeePaymentController::class)
+            ->except(['show']);
+
+        // -------------------------------
+        // Reports & Subjects
+        // -------------------------------
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
         Route::resource('subjects', SubjectController::class)->except(['show']);
 

@@ -38,7 +38,7 @@
                     <tbody>
                         @forelse ($fees as $fee)
                             <tr class="border-b">
-                                <td class="py-3 font-medium">{{ $fee->student->name ?? '—' }}</td>
+                                <td class="py-3 font-medium">{{ $fee->student ? $fee->student->first_name . ' ' . $fee->student->last_name : '—' }}</td>
                                 <td class="py-3">{{ $fee->title }}</td>
                                 <td class="py-3">Rs. {{ number_format($fee->amount, 2) }}</td>
                                 <td class="py-3">Rs. {{ number_format($fee->paid_amount, 2) }}</td>
@@ -67,7 +67,7 @@
                             @if ($fee->status !== 'paid')
                                 <div id="pay-modal-{{ $fee->id }}" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                                     <div class="bg-white rounded-lg p-6 w-full max-w-sm">
-                                        <h3 class="font-semibold text-gray-800 mb-4">Record Payment: {{ $fee->student->name ?? '' }}</h3>
+                                        <h3 class="font-semibold text-gray-800 mb-4">Record Payment: {{ $fee->student ? $fee->student->first_name . ' ' . $fee->student->last_name : '' }}</h3>
                                         <p class="text-sm text-gray-500 mb-4">Total: Rs. {{ number_format($fee->amount, 2) }} | Already paid: Rs. {{ number_format($fee->paid_amount, 2) }}</p>
 
                                         <form action="{{ route('school-admin.fees.payment', $fee) }}" method="POST">

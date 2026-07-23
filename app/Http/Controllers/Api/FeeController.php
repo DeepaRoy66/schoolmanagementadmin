@@ -3,48 +3,37 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Fee;
+use App\Models\StudentFee;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class FeeController extends Controller
 {
-    public function myFees(Request $request): JsonResponse
+    private function getStudentOrFail(Request $request)
     {
         $user = $request->user();
 
         if ($user->role !== 'student') {
-            return response()->json(['message' => 'Only students can access this.'], 403);
+            abort(response()->json(['message' => 'Only students can access this.'], 403));
         }
 
         $student = Student::where('user_id', $user->id)->first();
 
         if (!$student) {
-            return response()->json(['message' => 'Student profile not found.'], 404);
+            abort(response()->json(['message' => 'Student profile not found.'], 404));
         }
 
-        $fees = Fee::where('student_id', $student->id)
-            ->get(['id', 'title', 'amount', 'paid_amount', 'status', 'due_date']);
-
-        return response()->json($fees);
+        return $student;
     }
 
-    public function summary(Request $request): JsonResponse
+    public function myFees(Request $request): JsonResponse
     {
-        $user = $request->user();
+        $student = $this->getStudentOrFail($request);
 
-        if ($user->role !== 'student') {
-            return response()->json(['message' => 'Only students can access this.'], 403);
-        }
-
-        $student = Student::where('user_id', $user->id)->first();
-
-        if (!$student) {
-            return response()->json(['message' => 'Student profile not found.'], 404);
-        }
-
-        $fees = Fee::where('student_id', $student->id)->get();
+        $fees = StudentFee::with('feeCategory')
+            ->where('student_id', $student->id)
+            ->get();
 
         $total = $fees->sum('amount');
         $paid = $fees->sum('paid_amount');
@@ -52,17 +41,22 @@ class FeeController extends Controller
 
         $categories = $fees->map(function ($fee) {
             return [
-                'title' => $fee->title,
+                'id' => $fee->id,
+                'category' => $fee->feeCategory->name ?? 'Uncategorized',
                 'amount' => $fee->amount,
                 'paid_amount' => $fee->paid_amount,
+                'remaining' => $fee->amount - $fee->paid_amount,
                 'status' => $fee->status,
+                'due_date' => $fee->due_date,
             ];
         });
 
         return response()->json([
-            'total' => $total,
-            'paid' => $paid,
-            'remaining' => $remaining,
+            'summary' => [
+                'total' => round($total, 2),
+                'paid' => round($paid, 2),
+                'remaining' => round($remaining, 2),
+            ],
             'categories' => $categories,
         ]);
     }

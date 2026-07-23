@@ -278,19 +278,50 @@
             </div>
 
             {{-- Finance --}}
-            <div>
-                <p class="px-4 mb-3 text-xs font-semibold text-gray-400 tracking-widest uppercase">Finance</p>
-                <div class="space-y-1">
-                    <a href="{{ route('school-admin.fees.index') }}" 
-                       class="{{ $item }} {{ request()->routeIs('school-admin.fees.*') ? $active : $inactive }}">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                  d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5-1.343 1.5-3 1.5m0-6V6m0 1.5v9m0 1.5v-1.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Manage Fees
-                    </a>
-                </div>
-            </div>
+<div>
+    <p class="px-4 mb-3 text-xs font-semibold text-gray-400 tracking-widest uppercase">Finance</p>
+    <div class="space-y-1">
+
+       
+
+        <a href="{{ route('school-admin.fee-categories.index') }}"
+           class="{{ $item }} {{ request()->routeIs('school-admin.fee-categories.*') ? $active : $inactive }}">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 6h16M4 10h16M4 14h10M4 18h10" />
+            </svg>
+            Fee Categories
+        </a>
+
+        <a href="{{ route('school-admin.student-fees.index') }}"
+           class="{{ $item }} {{ request()->routeIs('school-admin.student-fees.*') ? $active : $inactive }}">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-6.32 4M18 21v-3m0 0v-3m0 3h3m-3 0h-3" />
+            </svg>
+            Student Fees
+        </a>
+
+        <a href="{{ route('school-admin.fee-payments.index') }}"
+           class="{{ $item }} {{ request()->routeIs('school-admin.fee-payments.*') ? $active : $inactive }}">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a1.5 1.5 0 001.5-1.5V6.75a1.5 1.5 0 00-1.5-1.5h-15a1.5 1.5 0 00-1.5 1.5v10.5a1.5 1.5 0 001.5 1.5z" />
+            </svg>
+            Payments
+        </a>
+
+        <a href="{{ route('school-admin.fees.reports') }}"
+           class="{{ $item }} {{ request()->routeIs('school-admin.fees.reports') ? $active : $inactive }}">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Fee Reports
+        </a>
+
+    </div>
+</div>
 
         @else
             <div class="px-3">
