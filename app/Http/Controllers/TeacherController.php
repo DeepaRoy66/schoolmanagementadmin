@@ -74,7 +74,7 @@ class TeacherController extends Controller
 
         return redirect()
             ->route('school-admin.teachers.index')
-            ->with('success', 'Teacher successfully thapiyo.');
+            ->with('success', 'Teacher created successfully.');
     }
 
     public function show(Teacher $teacher)
