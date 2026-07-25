@@ -2,27 +2,20 @@
 
 namespace App\Models;
 
-use App\Models\Scopes\SchoolScope;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Homework extends Model
 {
-    use HasFactory;
-
     protected $table = 'homeworks';
-
-    protected static function booted(): void
-    {
-        static::addGlobalScope(new SchoolScope);
-    }
 
     protected $fillable = [
         'school_id',
         'teacher_id',
         'title',
         'description',
-        'class',
+        'class_id',
         'subject',
         'due_date',
     ];
@@ -31,8 +24,24 @@ class Homework extends Model
         'due_date' => 'date',
     ];
 
-    public function teacher()
+    public function school(): BelongsTo
+    {
+        return $this->belongsTo(School::class);
+    }
+
+    public function teacher(): BelongsTo
     {
         return $this->belongsTo(Teacher::class);
     }
+
+    public function submissions(): HasMany
+    {
+        return $this->hasMany(HomeworkSubmission::class);
+    
+    }
+
+    public function schoolClass()
+{
+    return $this->belongsTo(SchoolClass::class, 'class_id');
+}
 }

@@ -23,6 +23,7 @@ class Material extends Model
         'title',
         'description',
         'class',
+        'class_id',
         'subject',
         'file_path',
         'file_name',
@@ -31,5 +32,10 @@ class Material extends Model
     public function teacher()
     {
         return $this->belongsTo(Teacher::class);
+    }
+
+    public function schoolClass()
+    {
+        return $this->belongsTo(SchoolClass::class, 'class_id');
     }
 }

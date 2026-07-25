@@ -50,7 +50,7 @@ class MaterialController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'class' => 'nullable|string|max:255',
+            'class_id' => 'nullable|exists:classes,id',
             'subject' => 'nullable|string|max:255',
             'file' => 'required|file|max:10240|mimes:pdf,doc,docx,ppt,pptx,jpg,jpeg,png',
         ]);
@@ -69,7 +69,7 @@ class MaterialController extends Controller
             'teacher_id' => $teacher->id,
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
-            'class' => $validated['class'] ?? null,
+            'class_id' => $validated['class_id'] ?? null,
             'subject' => $validated['subject'] ?? null,
             'file_path' => $path,
             'file_name' => $file->getClientOriginalName(),
@@ -119,7 +119,7 @@ class MaterialController extends Controller
         }
 
         $materials = Material::where('school_id', $user->school_id)
-            ->where('class', $student->class)
+            ->where('class_id', $student->class_id)
             ->latest()
             ->get(['id', 'title', 'description', 'subject', 'file_path', 'file_name', 'created_at']);
 

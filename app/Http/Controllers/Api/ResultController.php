@@ -33,16 +33,10 @@ class ResultController extends Controller
             ], 404);
         }
 
-        $assignment = ClassTeacherAssignment::where('teacher_id', $teacher->id)->first();
-
-        if (!$assignment) {
-            return response()->json([
-                'message' => 'You are not assigned as a class teacher.'
-            ], 403);
-        }
-
         $validated = $request->validate([
-            'exam_name' => 'required|string|max:255',
+            'class_id' => 'required|exists:classes,id',
+            'section_id' => 'required|exists:sections,id',
+            'exam_name' => 'required|string|in:First Term,Second Term,Third Term,Weekly Test',
             'subject' => 'required|string|max:255',
             'full_marks' => 'required|numeric|min:1',
             'records' => 'required|array|min:1',
@@ -51,13 +45,24 @@ class ResultController extends Controller
             'records.*.remarks' => 'nullable|string|max:255',
         ]);
 
+        $assignment = ClassTeacherAssignment::where('teacher_id', $teacher->id)
+            ->where('class_id', $validated['class_id'])
+            ->where('section_id', $validated['section_id'])
+            ->first();
+
+        if (!$assignment) {
+            return response()->json([
+                'message' => 'This class-section is not assigned to you.'
+            ], 403);
+        }
+
         $requestedIds = collect($validated['records'])
             ->pluck('student_id')
             ->unique();
 
         $validStudentIds = Student::where('school_id', $user->school_id)
-            ->where('class_id', $assignment->class_id)
-            ->where('section_id', $assignment->section_id)
+            ->where('class_id', $validated['class_id'])
+            ->where('section_id', $validated['section_id'])
             ->whereIn('id', $requestedIds)
             ->pluck('id')
             ->toArray();
@@ -101,7 +106,7 @@ class ResultController extends Controller
     }
 
     /**
-     * Teacher: View Result by Exam
+     * Teacher: View Result by Exam (specific class-section)
      */
     public function viewByExam(Request $request): JsonResponse
     {
@@ -114,6 +119,8 @@ class ResultController extends Controller
         }
 
         $validated = $request->validate([
+            'class_id' => 'required|exists:classes,id',
+            'section_id' => 'required|exists:sections,id',
             'exam_name' => 'required|string',
             'subject' => 'required|string',
         ]);
@@ -126,19 +133,22 @@ class ResultController extends Controller
             ], 404);
         }
 
-        $assignment = ClassTeacherAssignment::where('teacher_id', $teacher->id)->first();
+        $assignment = ClassTeacherAssignment::where('teacher_id', $teacher->id)
+            ->where('class_id', $validated['class_id'])
+            ->where('section_id', $validated['section_id'])
+            ->first();
 
         if (!$assignment) {
             return response()->json([
-                'message' => 'You are not assigned as a class teacher.'
+                'message' => 'This class-section is not assigned to you.'
             ], 403);
         }
 
         $results = Result::where('exam_name', $validated['exam_name'])
             ->where('subject', $validated['subject'])
-            ->whereHas('student', function ($query) use ($assignment) {
-                $query->where('class_id', $assignment->class_id)
-                      ->where('section_id', $assignment->section_id);
+            ->whereHas('student', function ($query) use ($validated) {
+                $query->where('class_id', $validated['class_id'])
+                      ->where('section_id', $validated['section_id']);
             })
             ->with('student:id,first_name,middle_name,last_name,roll_number')
             ->get();
@@ -159,7 +169,7 @@ class ResultController extends Controller
     }
 
     /**
-     * Student: My Results
+     * Student: My Results (grouped: terminal_examination -> first/second/third_term, + weekly_test)
      */
     public function myResults(Request $request): JsonResponse
     {
@@ -180,15 +190,29 @@ class ResultController extends Controller
         }
 
         $results = Result::where('student_id', $student->id)
-            ->orderBy('exam_name')
-            ->get([
-                'exam_name',
-                'subject',
-                'marks_obtained',
-                'full_marks',
-                'remarks'
-            ]);
+            ->get(['exam_name', 'subject', 'marks_obtained', 'full_marks', 'remarks']);
 
-        return response()->json($results);
+        $formatSubject = function ($result) {
+            return [
+                'subject' => $result->subject,
+                'marks_obtained' => $result->marks_obtained,
+                'full_marks' => $result->full_marks,
+                'remarks' => $result->remarks,
+            ];
+        };
+
+        $firstTerm = $results->where('exam_name', 'First Term')->map($formatSubject)->values();
+        $secondTerm = $results->where('exam_name', 'Second Term')->map($formatSubject)->values();
+        $thirdTerm = $results->where('exam_name', 'Third Term')->map($formatSubject)->values();
+        $weeklyTest = $results->where('exam_name', 'Weekly Test')->map($formatSubject)->values();
+
+        return response()->json([
+            'terminal_examination' => [
+                'first_term' => $firstTerm,
+                'second_term' => $secondTerm,
+                'third_term' => $thirdTerm,
+            ],
+            'weekly_test' => $weeklyTest,
+        ]);
     }
 }
