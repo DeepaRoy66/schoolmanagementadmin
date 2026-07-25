@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 use App\Models\Teacher;
 use App\Models\ClassTeacherAssignment;
+use App\Models\TeacherSubjectAllocation;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -51,7 +52,7 @@ class AuthController extends Controller
             }
         }
 
-        
+        // Last login timestamp update garne
         $user->update(['last_login_at' => now()]);
 
         // Naya token banaune
@@ -71,6 +72,9 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Login gareko user ko info dine
+     */
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -80,18 +84,20 @@ class AuthController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'role' => $user->role,
+            'photo' => $user->photo ? asset('storage/' . $user->photo) : null,
             'school_id' => $user->school_id,
             'school_name' => $user->school->name ?? null,
         ];
 
-        
+        // Teacher ko lagi assigned classes + subjects pathaune
         if ($user->role === 'teacher') {
 
             $teacher = Teacher::where('user_id', $user->id)->first();
 
             if ($teacher) {
 
-                $response['assigned_classes'] = ClassTeacherAssignment::with('schoolClass:id,name')
+                // Assigned classes (from ClassTeacherAssignment)
+                $assignedClasses = ClassTeacherAssignment::with('schoolClass:id,name')
                     ->where('teacher_id', $teacher->id)
                     ->get()
                     ->unique('class_id')
@@ -102,13 +108,38 @@ class AuthController extends Controller
                         ];
                     })
                     ->values();
+
+                // Subjects allocated to this teacher, grouped by class
+                $subjectAllocations = TeacherSubjectAllocation::with('subject:id,class_id,subject_name,subject_code')
+                    ->where('teacher_id', $teacher->id)
+                    ->get();
+
+                $subjectsByClass = $subjectAllocations
+                    ->filter(fn($alloc) => $alloc->subject !== null)
+                    ->groupBy(fn($alloc) => $alloc->subject->class_id)
+                    ->map(function ($allocations) {
+                        return $allocations->map(function ($alloc) {
+                            return [
+                                'subject_id' => $alloc->subject->id,
+                                'subject_name' => $alloc->subject->subject_name,
+                                'subject_code' => $alloc->subject->subject_code,
+                            ];
+                        })->unique('subject_id')->values();
+                    });
+
+                $response['assigned_classes'] = $assignedClasses->map(function ($class) use ($subjectsByClass) {
+                    $class['subjects'] = $subjectsByClass->get($class['class_id'], collect())->values();
+                    return $class;
+                })->values();
             }
         }
 
         return response()->json($response);
     }
 
-
+    /**
+     * Logout - current token delete garne
+     */
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();
