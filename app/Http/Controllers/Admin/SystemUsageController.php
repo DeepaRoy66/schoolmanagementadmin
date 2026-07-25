@@ -45,7 +45,7 @@ class SystemUsageController extends Controller
         // --- Most recently active schools (based on any user's last_login_at) ---
         $recentlyActive = School::query()
             ->withMax('users as last_activity', 'last_login_at')
-            ->having('last_activity', '!=', null)
+            ->havingNotNull('last_activity')
             ->orderByDesc('last_activity')
             ->take(5)
             ->get();
