@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\StudentFee;
 use App\Models\Student;
 use App\Models\FeeCategory;
+use App\Models\SchoolClass;
+use App\Models\Section;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -50,7 +52,21 @@ class StudentFeeController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('school-admin.student-fees.create', compact('students', 'feeCategories'));
+        $classes = SchoolClass::where('school_id', auth()->user()->school_id)
+            ->orderBy('name')
+            ->get();
+
+        // Eager-load the many-to-many `classes` relationship so the view can
+        // read $section->classes without firing a query per section (N+1),
+        // and so the class -> section cascade in the blade has the data it needs.
+        $sections = Section::with('classes')
+            ->where('school_id', auth()->user()->school_id)
+            ->orderBy('name')
+            ->get();
+
+        return view('school-admin.student-fees.create', compact(
+            'students', 'feeCategories', 'classes', 'sections'
+        ));
     }
 
     /**
@@ -71,6 +87,33 @@ class StudentFeeController extends Controller
             'due_date' => ['required', 'date'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
+
+        // Check for an existing fee with the same student + category + due date.
+        // This catches accidental double-submits while still allowing genuinely
+        // separate assignments (e.g. First Term / Second Term exam fees) as
+        // long as they carry different due dates.
+        $duplicate = StudentFee::where('school_id', auth()->user()->school_id)
+            ->where('student_id', $validated['student_id'])
+            ->where('fee_category_id', $validated['fee_category_id'])
+            ->where('due_date', $validated['due_date'])
+            ->first();
+
+        if ($duplicate && ! $request->boolean('confirm_duplicate')) {
+            $student = Student::find($validated['student_id']);
+            $category = FeeCategory::find($validated['fee_category_id']);
+
+            return back()
+                ->withInput()
+                ->with('duplicate_warning', [
+                    'message' => sprintf(
+                        '%s already has a "%s" fee due on %s (Rs. %s). Submit again to add this as an additional fee anyway.',
+                        $student->first_name . ' ' . $student->last_name,
+                        $category->name,
+                        \Carbon\Carbon::parse($validated['due_date'])->format('M d, Y'),
+                        number_format($duplicate->amount, 2)
+                    ),
+                ]);
+        }
 
         StudentFee::create([
             'school_id' => auth()->user()->school_id,
