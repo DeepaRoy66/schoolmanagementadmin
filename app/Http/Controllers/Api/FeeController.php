@@ -27,37 +27,40 @@ class FeeController extends Controller
         return $student;
     }
 
-    public function myFees(Request $request): JsonResponse
-    {
-        $student = $this->getStudentOrFail($request);
+  public function myFees(Request $request): JsonResponse
+{
+    $student = $this->getStudentOrFail($request);
+    $student->load('schoolClass:id,name');
 
-        $fees = StudentFee::with('feeCategory')
-            ->where('student_id', $student->id)
-            ->get();
+    $fees = StudentFee::with('feeCategory')
+        ->where('student_id', $student->id)
+        ->get();
 
-        $total = $fees->sum('amount');
-        $paid = $fees->sum('paid_amount');
-        $remaining = $total - $paid;
+    $total = $fees->sum('amount');
+    $paid = $fees->sum('paid_amount');
+    $remaining = $total - $paid;
 
-        $categories = $fees->map(function ($fee) {
-            return [
-                'id' => $fee->id,
-                'category' => $fee->feeCategory->name ?? 'Uncategorized',
-                'amount' => $fee->amount,
-                'paid_amount' => $fee->paid_amount,
-                'remaining' => $fee->amount - $fee->paid_amount,
-                'status' => $fee->status,
-                'due_date' => $fee->due_date,
-            ];
-        });
+    $categories = $fees->map(function ($fee) {
+        return [
+            'id' => $fee->id,
+            'category' => $fee->feeCategory->name ?? 'Uncategorized',
+            'amount' => $fee->amount,
+            'paid_amount' => $fee->paid_amount,
+            'remaining' => $fee->amount - $fee->paid_amount,
+            'status' => $fee->status,
+            'due_date' => $fee->due_date,
+        ];
+    });
 
-        return response()->json([
-            'summary' => [
-                'total' => round($total, 2),
-                'paid' => round($paid, 2),
-                'remaining' => round($remaining, 2),
-            ],
-            'categories' => $categories,
-        ]);
-    }
+    return response()->json([
+        'class_id' => $student->class_id,
+        'class_name' => $student->schoolClass?->name,
+        'summary' => [
+            'total' => round($total, 2),
+            'paid' => round($paid, 2),
+            'remaining' => round($remaining, 2),
+        ],
+        'categories' => $categories,
+    ]);
+}
 }

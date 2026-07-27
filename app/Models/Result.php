@@ -23,6 +23,7 @@ class Result extends Model
         'teacher_id',
         'exam_name',
         'subject',
+        'subject_id',
         'marks_obtained',
         'full_marks',
         'remarks',
@@ -36,5 +37,10 @@ class Result extends Model
     public function teacher()
     {
         return $this->belongsTo(Teacher::class);
+    }
+
+    public function subject()
+    {
+        return $this->belongsTo(Subject::class);
     }
 }

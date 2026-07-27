@@ -206,32 +206,33 @@ class AttendanceController extends Controller
      * NAYA: Student attendance summary (total/present/absent/leave)
      */
     public function myAttendanceSummary(Request $request): JsonResponse
-    {
-        $user = $request->user();
+{
+    $user = $request->user();
 
-        if ($user->role !== 'student') {
-            return response()->json(['message' => 'Only students can access this.'], 403);
-        }
-
-        $student = Student::where('user_id', $user->id)->first();
-
-        if (!$student) {
-            return response()->json(['message' => 'Student profile not found.'], 404);
-        }
-
-        $counts = Attendance::where('student_id', $student->id)
-            ->selectRaw('status, count(*) as count')
-            ->groupBy('status')
-            ->pluck('count', 'status');
-
-        return response()->json([
-            'total_days' => $counts->sum(),
-            'present' => $counts->get('present', 0),
-            'absent' => $counts->get('absent', 0),
-            'leave' => $counts->get('leave', 0),
-        ]);
+    if ($user->role !== 'student') {
+        return response()->json(['message' => 'Only students can access this.'], 403);
     }
 
+    $student = Student::with('schoolClass:id,name')->where('user_id', $user->id)->first();
+
+    if (!$student) {
+        return response()->json(['message' => 'Student profile not found.'], 404);
+    }
+
+    $counts = Attendance::where('student_id', $student->id)
+        ->selectRaw('status, count(*) as count')
+        ->groupBy('status')
+        ->pluck('count', 'status');
+
+    return response()->json([
+        'class_id' => $student->class_id,
+        'class_name' => $student->schoolClass?->name,
+        'total_days' => $counts->sum(),
+        'present' => $counts->get('present', 0),
+        'absent' => $counts->get('absent', 0),
+        'leave' => $counts->get('leave', 0),
+    ]);
+}
     /**
      * Teacher: euta specific din ko attendance herne (aafno assigned class-section ko matra)
      */

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 use App\Models\Teacher;
+use App\Models\Student;
 use App\Models\ClassTeacherAssignment;
 use App\Models\TeacherSubjectAllocation;
 
@@ -89,27 +90,13 @@ class AuthController extends Controller
             'school_name' => $user->school->name ?? null,
         ];
 
-        // Teacher ko lagi assigned classes + subjects pathaune
+        // Teacher ko lagi assigned classes + sections + subjects pathaune
         if ($user->role === 'teacher') {
 
             $teacher = Teacher::where('user_id', $user->id)->first();
 
             if ($teacher) {
 
-                // Assigned classes (from ClassTeacherAssignment)
-                $assignedClasses = ClassTeacherAssignment::with('schoolClass:id,name')
-                    ->where('teacher_id', $teacher->id)
-                    ->get()
-                    ->unique('class_id')
-                    ->map(function ($item) {
-                        return [
-                            'class_id' => $item->class_id,
-                            'class_name' => $item->schoolClass?->name,
-                        ];
-                    })
-                    ->values();
-
-                // Subjects allocated to this teacher, grouped by class
                 $subjectAllocations = TeacherSubjectAllocation::with('subject:id,class_id,subject_name,subject_code')
                     ->where('teacher_id', $teacher->id)
                     ->get();
@@ -127,10 +114,35 @@ class AuthController extends Controller
                         })->unique('subject_id')->values();
                     });
 
-                $response['assigned_classes'] = $assignedClasses->map(function ($class) use ($subjectsByClass) {
-                    $class['subjects'] = $subjectsByClass->get($class['class_id'], collect())->values();
-                    return $class;
-                })->values();
+                $response['assigned_classes'] = ClassTeacherAssignment::with(['schoolClass:id,name', 'section:id,name'])
+                    ->where('teacher_id', $teacher->id)
+                    ->get()
+                    ->map(function ($item) use ($subjectsByClass) {
+                        return [
+                            'class_id' => $item->class_id,
+                            'class_name' => $item->schoolClass?->name,
+                            'section_id' => $item->section_id,
+                            'section_name' => $item->section?->name,
+                            'subjects' => $subjectsByClass->get($item->class_id, collect())->values(),
+                        ];
+                    })
+                    ->values();
+            }
+        }
+
+        // Student ko lagi aafno class/section pathaune
+        if ($user->role === 'student') {
+
+            $student = Student::with(['schoolClass:id,name', 'section:id,name'])
+                ->where('user_id', $user->id)
+                ->first();
+
+            if ($student) {
+                $response['class_id'] = $student->class_id;
+                $response['class_name'] = $student->schoolClass?->name;
+                $response['section_id'] = $student->section_id;
+                $response['section_name'] = $student->section?->name;
+                $response['roll_number'] = $student->roll_number;
             }
         }
 

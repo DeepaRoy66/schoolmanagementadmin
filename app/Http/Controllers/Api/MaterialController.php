@@ -104,29 +104,33 @@ class MaterialController extends Controller
     /**
      * Student: aafno class ko notes/files herne
      */
-    public function myMaterials(Request $request): JsonResponse
-    {
-        $user = $request->user();
+ public function myMaterials(Request $request): JsonResponse
+{
+    $user = $request->user();
 
-        if ($user->role !== 'student') {
-            return response()->json(['message' => 'Only students can access this.'], 403);
-        }
-
-        $student = Student::where('user_id', $user->id)->first();
-
-        if (!$student) {
-            return response()->json(['message' => 'Student profile not found.'], 404);
-        }
-
-        $materials = Material::where('school_id', $user->school_id)
-            ->where('class_id', $student->class_id)
-            ->latest()
-            ->get(['id', 'title', 'description', 'subject', 'file_path', 'file_name', 'created_at']);
-
-        $materials->each(function ($m) {
-            $m->file_url = asset('storage/' . $m->file_path);
-        });
-
-        return response()->json($materials);
+    if ($user->role !== 'student') {
+        return response()->json(['message' => 'Only students can access this.'], 403);
     }
+
+    $student = Student::with('schoolClass:id,name')->where('user_id', $user->id)->first();
+
+    if (!$student) {
+        return response()->json(['message' => 'Student profile not found.'], 404);
+    }
+
+    $materials = Material::where('school_id', $user->school_id)
+        ->where('class_id', $student->class_id)
+        ->latest()
+        ->get(['id', 'title', 'description', 'subject', 'file_path', 'file_name', 'created_at']);
+
+    $materials->each(function ($m) {
+        $m->file_url = asset('storage/' . $m->file_path);
+    });
+
+    return response()->json([
+        'class_id' => $student->class_id,
+        'class_name' => $student->schoolClass?->name,
+        'materials' => $materials,
+    ]);
+}
 }

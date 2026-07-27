@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ClassTeacherAssignment;
 use App\Models\Homework;
 use App\Models\HomeworkSubmission;
 use App\Models\Student;
@@ -46,7 +47,7 @@ class HomeworkController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'class_id' => 'nullable|exists:classes,id',
+            'class_id' => 'required|exists:classes,id',
             'subject' => 'nullable|string|max:255',
             'due_date' => 'nullable|date',
         ]);
@@ -57,12 +58,21 @@ class HomeworkController extends Controller
             return response()->json(['message' => 'Teacher profile not found.'], 404);
         }
 
+        // SECURITY: teacher yo class ma assigned cha ki check
+        $assigned = ClassTeacherAssignment::where('teacher_id', $teacher->id)
+            ->where('class_id', $validated['class_id'])
+            ->exists();
+
+        if (!$assigned) {
+            return response()->json(['message' => 'This class is not assigned to you.'], 403);
+        }
+
         $homework = Homework::create([
             'school_id' => $user->school_id,
             'teacher_id' => $teacher->id,
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
-            'class_id' => $validated['class_id'] ?? null,
+            'class_id' => $validated['class_id'],
             'subject' => $validated['subject'] ?? null,
             'due_date' => $validated['due_date'] ?? null,
         ]);
@@ -101,7 +111,7 @@ class HomeworkController extends Controller
             return response()->json(['message' => 'Only students can access this.'], 403);
         }
 
-        $student = Student::where('user_id', $user->id)->first();
+        $student = Student::with('schoolClass:id,name')->where('user_id', $user->id)->first();
 
         if (!$student) {
             return response()->json(['message' => 'Student profile not found.'], 404);
@@ -136,7 +146,11 @@ class HomeworkController extends Controller
             ];
         });
 
-        return response()->json($homeworks);
+        return response()->json([
+            'class_id' => $student->class_id,
+            'class_name' => $student->schoolClass?->name,
+            'homeworks' => $homeworks,
+        ]);
     }
 
     /**
@@ -156,7 +170,6 @@ class HomeworkController extends Controller
             return response()->json(['message' => 'Student profile not found.'], 404);
         }
 
-        // Ownership check: homework must belong to student's school and class
         if ($homework->school_id !== $user->school_id || $homework->class_id !== $student->class_id) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
