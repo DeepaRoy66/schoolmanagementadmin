@@ -150,6 +150,31 @@ class AuthController extends Controller
     }
 
     /**
+ * Password change garne (login vaisakepachi, App bhitra bata)
+ */
+public function changePassword(Request $request): JsonResponse
+{
+    $validated = $request->validate([
+        'current_password' => 'required|string',
+        'new_password' => 'required|string|min:8|confirmed',
+    ]);
+
+    $user = $request->user();
+
+    if (!Hash::check($validated['current_password'], $user->password)) {
+        return response()->json([
+            'message' => 'Current password is incorrect.',
+            'errors' => ['current_password' => ['Current password is incorrect.']],
+        ], 422);
+    }
+
+    $user->password = Hash::make($validated['new_password']);
+    $user->save();
+
+    return response()->json(['message' => 'Password changed successfully.']);
+}
+
+    /**
      * Logout - current token delete garne
      */
     public function logout(Request $request): JsonResponse

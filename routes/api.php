@@ -18,6 +18,7 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
 
     // Teacher endpoints
     Route::get('/teacher/students', [AttendanceController::class, 'students']);

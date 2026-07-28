@@ -22,6 +22,14 @@ class FeeCategoryController extends Controller
     }
 
     /**
+     * Show the form for creating a new fee category.
+     */
+    public function create()
+    {
+        return view('school-admin.fee-categories.create');
+    }
+
+    /**
      * Store a newly created fee category.
      */
     public function store(Request $request)

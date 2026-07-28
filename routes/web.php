@@ -125,6 +125,8 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
 
         Route::resource('timetables', TimetableController::class)
             ->except(['show', 'edit', 'update']);
+            Route::get('/fee-categories/create', [FeeCategoryController::class, 'create'])
+    ->name('school-admin.fee-categories.create');
 
         // -------------------------------
         // Fee Management

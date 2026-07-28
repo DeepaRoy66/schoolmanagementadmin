@@ -1,28 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-500 flex items-center justify-center shadow-md shadow-teal-500/20">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 5v14M5 12h14"></path>
-                </svg>
-            </div>
-            <div>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">Assign New Fee</h2>
-                <p class="text-xs text-gray-400">Create a fee record for a student</p>
-            </div>
-        </div>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Assign New Fee</h2>
     </x-slot>
 
     <div class="py-8">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
 
             @if ($errors->any())
-                <div class="mb-5 p-4 rounded-2xl bg-red-50 border border-red-100 text-red-700 text-sm flex gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
+                <div class="mb-4 p-4 rounded bg-red-50 border border-red-100 text-red-700 text-sm">
                     <ul class="list-disc list-inside space-y-0.5">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -32,11 +17,8 @@
             @endif
 
             @if (session('duplicate_warning'))
-                <div class="mb-5 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
-                    <p class="font-medium mb-2 flex items-center gap-1.5">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.007v.008H12v-.008zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        Possible duplicate
-                    </p>
+                <div class="mb-4 p-4 rounded bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+                    <p class="font-medium mb-2">Possible duplicate</p>
                     <p class="mb-3">{{ session('duplicate_warning')['message'] }}</p>
                     <label class="flex items-center gap-2 text-amber-900 cursor-pointer">
                         <input type="checkbox" name="confirm_duplicate" value="1" form="studentFeeForm"
@@ -50,21 +32,18 @@
 
                 {{-- Main form --}}
                 <form id="studentFeeForm" action="{{ route('school-admin.student-fees.store') }}" method="POST"
-                      class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                      class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 divide-y divide-gray-100">
                     @csrf
 
-                    {{-- Step 1: Who & What --}}
-                    <div class="p-6 sm:p-8">
-                        <div class="flex items-center gap-2.5 mb-5">
-                            <span class="w-7 h-7 rounded-full bg-teal-50 text-[#2dd4bf] text-xs font-bold flex items-center justify-center">1</span>
-                            <h3 class="text-sm font-semibold text-gray-800">Who is this fee for?</h3>
-                        </div>
+                    {{-- Who & What --}}
+                    <div class="p-6">
+                        
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Class</label>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Class</label>
                                 <select id="classSelect"
-                                        class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm focus:bg-white focus:border-[#2dd4bf] focus:ring-[#2dd4bf] transition-colors">
+                                        class="w-full rounded-md border-gray-300 text-sm focus:border-teal-500 focus:ring-teal-500">
                                     <option value="">-- All Classes --</option>
                                     @foreach($classes as $class)
                                         <option value="{{ $class->id }}" @selected(old('class_id') == $class->id)>
@@ -75,9 +54,9 @@
                             </div>
 
                             <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Section</label>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Section</label>
                                 <select id="sectionSelect"
-                                        class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm focus:bg-white focus:border-[#2dd4bf] focus:ring-[#2dd4bf] transition-colors">
+                                        class="w-full rounded-md border-gray-300 text-sm focus:border-teal-500 focus:ring-teal-500">
                                     <option value="">-- All Sections --</option>
                                     @foreach($sections as $section)
                                         <option value="{{ $section->id }}" data-classes="{{ $section->classes->pluck('id')->implode(',') }}"
@@ -89,9 +68,9 @@
                             </div>
 
                             <div class="sm:col-span-2">
-                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Student</label>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Student</label>
                                 <select name="student_id" id="studentSelect" required
-                                        class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm focus:bg-white focus:border-[#2dd4bf] focus:ring-[#2dd4bf] transition-colors">
+                                        class="w-full rounded-md border-gray-300 text-sm focus:border-teal-500 focus:ring-teal-500">
                                     <option value="">-- Select Student --</option>
                                     @foreach($students as $student)
                                         <option value="{{ $student->id }}"
@@ -102,13 +81,13 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                <p id="noStudentsHint" class="mt-1.5 text-xs text-gray-400 hidden">No students found for the selected class/section.</p>
+                                <p id="noStudentsHint" class="mt-1 text-xs text-gray-400 hidden">No students found for the selected class/section.</p>
                             </div>
 
                             <div class="sm:col-span-2">
-                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Fee Category</label>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Fee Category</label>
                                 <select name="fee_category_id" required
-                                        class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm focus:bg-white focus:border-[#2dd4bf] focus:ring-[#2dd4bf] transition-colors">
+                                        class="w-full rounded-md border-gray-300 text-sm focus:border-teal-500 focus:ring-teal-500">
                                     <option value="">-- Select Category --</option>
                                     @foreach($feeCategories as $category)
                                         <option value="{{ $category->id }}" @selected(old('fee_category_id') == $category->id)>
@@ -120,63 +99,51 @@
                         </div>
                     </div>
 
-                    {{-- Step 2: Amount & Due Date --}}
-                    <div class="p-6 sm:p-8 border-t border-gray-100 bg-gray-50/50">
-                        <div class="flex items-center gap-2.5 mb-5">
-                            <span class="w-7 h-7 rounded-full bg-teal-50 text-[#2dd4bf] text-xs font-bold flex items-center justify-center">2</span>
-                            <h3 class="text-sm font-semibold text-gray-800">Amount &amp; schedule</h3>
-                        </div>
+                    {{-- Amount & Due Date --}}
+                    <div class="p-6">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-4">Amount &amp; schedule</h3>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Amount</label>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Amount</label>
                                 <div class="relative">
-                                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">Rs.</span>
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">Rs.</span>
                                     <input type="number" step="0.01" min="0.01" name="amount" id="amountInput" value="{{ old('amount') }}" required
-                                           placeholder="0.00"
-                                           class="w-full rounded-xl border-gray-200 bg-white pl-11 text-sm font-medium focus:border-[#2dd4bf] focus:ring-[#2dd4bf] transition-colors">
+                                           placeholder=""
+                                           class="w-full rounded-md border-gray-300 pl-14 text-sm focus:border-teal-500 focus:ring-teal-500">
                                 </div>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Due Date</label>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Due Date</label>
                                 <input type="date" name="due_date" id="dueDateInput" value="{{ old('due_date') }}" required
-                                       class="w-full rounded-xl border-gray-200 bg-white text-sm focus:border-[#2dd4bf] focus:ring-[#2dd4bf] transition-colors">
+                                       class="w-full rounded-md border-gray-300 text-sm focus:border-teal-500 focus:ring-teal-500">
                             </div>
                         </div>
                     </div>
 
                     {{-- Notes --}}
-                    <div class="p-6 sm:p-8 border-t border-gray-100">
-                        <label class="block text-xs font-medium text-gray-500 mb-1.5">Notes <span class="text-gray-300 font-normal">(optional)</span></label>
+                    <div class="p-6">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Notes <span class="text-gray-400 font-normal">(optional)</span></label>
                         <textarea name="notes" rows="3"
                                   placeholder="Any additional remarks..."
-                                  class="w-full rounded-xl border-gray-200 bg-gray-50 text-sm focus:bg-white focus:border-[#2dd4bf] focus:ring-[#2dd4bf] transition-colors">{{ old('notes') }}</textarea>
+                                  class="w-full rounded-md border-gray-300 text-sm focus:border-teal-500 focus:ring-teal-500">{{ old('notes') }}</textarea>
                     </div>
 
-                    <div class="flex items-center gap-3 p-6 sm:p-8 border-t border-gray-100">
+                    <div class="flex items-center gap-3 p-6">
                         <button type="submit"
-                                class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2dd4bf] text-white text-sm font-medium rounded-xl hover:bg-teal-500 active:bg-teal-600 transition-colors shadow-sm shadow-teal-500/30">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
+                                class="px-5 py-2 bg-teal-600 text-white text-sm font-medium rounded-md hover:bg-teal-700 transition-colors">
                             Assign Fee
                         </button>
                         <a href="{{ route('school-admin.student-fees.index') }}"
-                           class="text-sm text-gray-500 hover:text-gray-700 hover:underline">Cancel</a>
+                           class="text-sm text-gray-500 hover:text-gray-700">Cancel</a>
                     </div>
                 </form>
 
                 {{-- Summary sidebar --}}
                 <div class="lg:col-span-1 lg:sticky lg:top-6 space-y-4">
-                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-                        <h3 class="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#2dd4bf]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M9 11l3 3L22 4"></path>
-                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                            </svg>
-                            Summary
-                        </h3>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-4">Summary</h3>
                         <dl class="space-y-3 text-sm">
                             <div class="flex justify-between">
                                 <dt class="text-gray-400">Student</dt>
@@ -197,7 +164,7 @@
                         </dl>
                     </div>
 
-                    <div class="bg-teal-50/60 rounded-3xl border border-teal-100 p-5 text-xs text-teal-800 leading-relaxed">
+                    <div class="bg-teal-50 rounded-lg border border-teal-100 p-4 text-xs text-teal-800 leading-relaxed">
                         Tip: pick a class and section first to narrow the student list down quickly.
                     </div>
                 </div>
