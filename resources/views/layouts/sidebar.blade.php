@@ -307,6 +307,16 @@
     Fee Names
 </a>
 
+<a href="{{ route('school-admin.fee-rates.index') }}"
+   class="{{ $item }} {{ request()->routeIs('school-admin.fee-rates.*') ? $active : $inactive }}">
+    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5S13.657 14 12 14m0-6c1.11 0 2.08.402 2.599 1M12 8V6.5M12 14v1.5m0-1.5c-1.11 0-2.08-.402-2.599-1M12 21a9 9 0 100-18 9 9 0 000 18z" />
+    </svg>
+    Fee Rates
+</a>
+
+
         <a href="{{ route('school-admin.fee-categories.index') }}"
            class="{{ $item }} {{ request()->routeIs('school-admin.fee-categories.*') ? $active : $inactive }}">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

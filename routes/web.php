@@ -25,6 +25,7 @@ use App\Http\Controllers\SubjectAllocationController;
 use App\Http\Controllers\BillingPeriodController;
 use App\Http\Controllers\FeeGroupController;
 use App\Http\Controllers\FeeNameController;
+use App\Http\Controllers\FeeRateController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -158,6 +159,8 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
             ->except(['show']);
             Route::resource('fee-groups', FeeGroupController::class);
 Route::resource('fee-names', FeeNameController::class);
+
+Route::resource('fee-rates', FeeRateController::class)->except(['show']);
 
         // -------------------------------
         // Reports & Subjects
