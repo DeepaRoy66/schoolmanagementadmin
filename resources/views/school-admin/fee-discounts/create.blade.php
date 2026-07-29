@@ -115,7 +115,7 @@
                 <button type="submit" class="btn btn-primary mt-4">Save</button>
             </form>
         @elseif (request('student_id'))
-            <p class="text-gray-500">Yo student ko class ko lagi kunai active fee rate feliyena.</p>
+            <p class="text-gray-500">Your selected student does not have any active fee rates for the selected billing period.</p>
         @endif
     </div>
 </x-app-layout>
