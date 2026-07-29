@@ -26,6 +26,7 @@ use App\Http\Controllers\BillingPeriodController;
 use App\Http\Controllers\FeeGroupController;
 use App\Http\Controllers\FeeNameController;
 use App\Http\Controllers\FeeRateController;
+use App\Http\Controllers\FeeDiscountController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -157,10 +158,28 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
 
         Route::resource('fee-groups', FeeGroupController::class)
             ->except(['show']);
-            Route::resource('fee-groups', FeeGroupController::class);
-Route::resource('fee-names', FeeNameController::class);
 
-Route::resource('fee-rates', FeeRateController::class)->except(['show']);
+        Route::resource('fee-names', FeeNameController::class);
+
+        Route::resource('fee-rates', FeeRateController::class)->except(['show']);
+
+        // -------------------------------
+        // Fee Discounts
+        // -------------------------------
+        Route::get('fee-discounts/create', [FeeDiscountController::class, 'create'])
+            ->name('fee-discounts.create');
+
+        Route::post('fee-discounts', [FeeDiscountController::class, 'store'])
+            ->name('fee-discounts.store');
+
+        Route::get('fee-discounts/sections', [FeeDiscountController::class, 'sections'])
+            ->name('fee-discounts.sections');
+
+        Route::get('fee-discounts/students', [FeeDiscountController::class, 'students'])
+            ->name('fee-discounts.students');
+
+        Route::get('fee-discounts/fee-rows', [FeeDiscountController::class, 'feeRows'])
+            ->name('fee-discounts.fee-rows');
 
         // -------------------------------
         // Reports & Subjects
