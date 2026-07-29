@@ -22,6 +22,9 @@ use App\Http\Controllers\ClassController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\SubjectAllocationController;
+use App\Http\Controllers\BillingPeriodController;
+use App\Http\Controllers\FeeGroupController;
+use App\Http\Controllers\FeeNameController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -125,14 +128,22 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
 
         Route::resource('timetables', TimetableController::class)
             ->except(['show', 'edit', 'update']);
-            Route::get('/fee-categories/create', [FeeCategoryController::class, 'create'])
-    ->name('school-admin.fee-categories.create');
+
+        Route::resource('billing-periods', BillingPeriodController::class);
 
         // -------------------------------
         // Fee Management
         // -------------------------------
         Route::get('fees/reports', [StudentFeeController::class, 'reports'])
             ->name('fees.reports');
+
+        // NOTE: fee-categories.create and fee-groups.create are provided by
+        // the resource registrations below (school-admin.fee-categories.create
+        // / school-admin.fee-groups.create). Do not re-declare them manually
+        // here - doing so either double-prefixes the route name
+        // ("school-admin.school-admin.fee-categories.create", unreachable)
+        // or silently shadows the resource's own create route since this
+        // block runs first.
 
         Route::resource('fee-categories', FeeCategoryController::class)
             ->except(['show']);
@@ -142,6 +153,11 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
 
         Route::resource('fee-payments', FeePaymentController::class)
             ->except(['show']);
+
+        Route::resource('fee-groups', FeeGroupController::class)
+            ->except(['show']);
+            Route::resource('fee-groups', FeeGroupController::class);
+Route::resource('fee-names', FeeNameController::class);
 
         // -------------------------------
         // Reports & Subjects
