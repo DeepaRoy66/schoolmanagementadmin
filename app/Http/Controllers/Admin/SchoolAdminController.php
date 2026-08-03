@@ -54,6 +54,7 @@ class SchoolAdminController extends Controller
             'school_id' => $validated['school_id'],
             'role' => 'school_admin',
             'email_verified_at' => now(),
+            'must_change_password' => false,
         ]);
 
         return redirect()->route('admin.school-admins.index')

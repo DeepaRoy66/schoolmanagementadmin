@@ -27,6 +27,7 @@ use App\Http\Controllers\FeeGroupController;
 use App\Http\Controllers\FeeNameController;
 use App\Http\Controllers\FeeRateController;
 use App\Http\Controllers\FeeDiscountController;
+use App\Http\Controllers\FeeAssignController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -180,6 +181,24 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
 
         Route::get('fee-discounts/fee-rows', [FeeDiscountController::class, 'feeRows'])
             ->name('fee-discounts.fee-rows');
+
+        // -------------------------------
+        // Fee Assign
+        // -------------------------------
+        Route::get('fee-assign', [FeeAssignController::class, 'index'])
+            ->name('fee-assign.index');
+
+        Route::get('fee-assign/create', [FeeAssignController::class, 'create'])
+            ->name('fee-assign.create');
+
+        Route::post('fee-assign', [FeeAssignController::class, 'store'])
+            ->name('fee-assign.store');
+
+        Route::post('fee-assign/bulk-void', [FeeAssignController::class, 'bulkVoid'])
+            ->name('fee-assign.bulk-void');
+
+        Route::get('fee-assign/invoice', [FeeAssignController::class, 'invoice'])
+            ->name('fee-assign.invoice');
 
         // -------------------------------
         // Reports & Subjects

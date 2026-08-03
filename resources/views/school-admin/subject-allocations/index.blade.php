@@ -12,7 +12,7 @@
                 <!-- Top Header -->
                 <div class="flex justify-between items-center mb-4">
                     <p class="text-sm text-gray-500">
-                        Kun teacher le kun class-section ma kun subject padhaucha, tyo yaha set garnus.
+                        Assign teachers to subjects for each class and section.
                     </p>
 
                     <a href="{{ route('school-admin.subject-allocations.create') }}"

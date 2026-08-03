@@ -112,7 +112,7 @@ class FeeDiscountController extends Controller
             $percent = $row['discount_percent'] ?? 0;
             $amount = $row['discount_amount'] ?? 0;
 
-            // Duitai khali chha bhane skip garne (kehi discount navako fee)
+            
             if ($percent == 0 && $amount == 0) {
                 continue;
             }

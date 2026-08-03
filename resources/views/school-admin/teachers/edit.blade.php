@@ -148,7 +148,7 @@
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
                         <input type="password" name="password" class="w-full border-gray-300 rounded-lg">
-                        <p class="text-xs text-gray-400 mt-1">Khali rakhnus password change garna nachahane bhaye.</p>
+                        <p class="text-xs text-gray-400 mt-1">Leave blank to keep current password</p>
                         @error('password')
                             <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
                         @enderror

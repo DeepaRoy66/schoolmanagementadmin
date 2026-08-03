@@ -18,6 +18,7 @@ class SuperAdminSeeder extends Seeder
                 'role' => 'super_admin',
                 'school_id' => null,
                 'email_verified_at' => now(),
+                'must_change_password' => false,
             ]
         );
     }

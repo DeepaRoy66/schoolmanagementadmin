@@ -59,17 +59,29 @@ class AuthController extends Controller
         // Naya token banaune
         $token = $user->createToken('mobile-app')->plainTextToken;
 
+        $userData = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'must_change_password' => (bool) $user->must_change_password,
+            'school_id' => $user->school_id,
+            'school_name' => $user->school->name ?? null,
+        ];
+
+        // Teacher login hunda class teacher ho ki hoina tyo pathaune
+        if ($user->role === 'teacher') {
+            $teacher = Teacher::where('user_id', $user->id)->first();
+
+            $userData['is_class_teacher'] = $teacher
+                ? ClassTeacherAssignment::where('teacher_id', $teacher->id)->exists()
+                : false;
+        }
+
         return response()->json([
             'message' => 'Login successful.',
             'token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-                'school_id' => $user->school_id,
-                'school_name' => $user->school->name ?? null,
-            ],
+            'user' => $userData,
         ]);
     }
 
@@ -85,6 +97,7 @@ class AuthController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'role' => $user->role,
+            'must_change_password' => (bool) $user->must_change_password,
             'photo' => $user->photo ? asset('storage/' . $user->photo) : null,
             'school_id' => $user->school_id,
             'school_name' => $user->school->name ?? null,
@@ -114,9 +127,11 @@ class AuthController extends Controller
                         })->unique('subject_id')->values();
                     });
 
-                $response['assigned_classes'] = ClassTeacherAssignment::with(['schoolClass:id,name', 'section:id,name'])
+                $assignedClasses = ClassTeacherAssignment::with(['schoolClass:id,name', 'section:id,name'])
                     ->where('teacher_id', $teacher->id)
-                    ->get()
+                    ->get();
+
+                $response['assigned_classes'] = $assignedClasses
                     ->map(function ($item) use ($subjectsByClass) {
                         return [
                             'class_id' => $item->class_id,
@@ -127,6 +142,11 @@ class AuthController extends Controller
                         ];
                     })
                     ->values();
+
+                // Yo teacher class teacher ho ki hoina
+                $response['is_class_teacher'] = $assignedClasses->isNotEmpty();
+            } else {
+                $response['is_class_teacher'] = false;
             }
         }
 
@@ -150,29 +170,30 @@ class AuthController extends Controller
     }
 
     /**
- * Password change garne (login vaisakepachi, App bhitra bata)
- */
-public function changePassword(Request $request): JsonResponse
-{
-    $validated = $request->validate([
-        'current_password' => 'required|string',
-        'new_password' => 'required|string|min:8|confirmed',
-    ]);
+     * Password change garne (login vaisakepachi, App bhitra bata)
+     */
+    public function changePassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
 
-    $user = $request->user();
+        $user = $request->user();
 
-    if (!Hash::check($validated['current_password'], $user->password)) {
-        return response()->json([
-            'message' => 'Current password is incorrect.',
-            'errors' => ['current_password' => ['Current password is incorrect.']],
-        ], 422);
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return response()->json([
+                'message' => 'Current password is incorrect.',
+                'errors' => ['current_password' => ['Current password is incorrect.']],
+            ], 422);
+        }
+
+        $user->password = Hash::make($validated['new_password']);
+        $user->must_change_password = false;
+        $user->save();
+
+        return response()->json(['message' => 'Password changed successfully.']);
     }
-
-    $user->password = Hash::make($validated['new_password']);
-    $user->save();
-
-    return response()->json(['message' => 'Password changed successfully.']);
-}
 
     /**
      * Logout - current token delete garne

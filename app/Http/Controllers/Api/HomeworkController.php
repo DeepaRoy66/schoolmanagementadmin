@@ -26,9 +26,18 @@ class HomeworkController extends Controller
 
         $teacher = Teacher::where('user_id', $user->id)->first();
 
+        if (!$teacher) {
+            return response()->json(['message' => 'Teacher profile not found.'], 404);
+        }
+
         $homeworks = Homework::where('teacher_id', $teacher->id)
+            ->with('schoolClass:id,name')
             ->orderBy('due_date', 'desc')
             ->get();
+
+        $homeworks->each(function ($hw) {
+            $hw->class_name = $hw->schoolClass?->name;
+        });
 
         return response()->json($homeworks);
     }
@@ -76,6 +85,9 @@ class HomeworkController extends Controller
             'subject' => $validated['subject'] ?? null,
             'due_date' => $validated['due_date'] ?? null,
         ]);
+
+        $homework->load('schoolClass:id,name');
+        $homework->class_name = $homework->schoolClass?->name;
 
         return response()->json([
             'message' => 'Homework assigned successfully.',

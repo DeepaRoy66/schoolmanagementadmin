@@ -38,4 +38,9 @@ class Material extends Model
     {
         return $this->belongsTo(SchoolClass::class, 'class_id');
     }
+
+    public function files()
+{
+    return $this->hasMany(MaterialFile::class);
+}
 }
