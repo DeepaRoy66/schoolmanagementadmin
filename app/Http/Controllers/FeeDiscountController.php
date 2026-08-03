@@ -8,6 +8,7 @@ use App\Models\FeeRate;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Student;
+use App\Models\StudentFee;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -67,12 +68,19 @@ class FeeDiscountController extends Controller
                 $feeRows = $rates->map(function ($rate) use ($existingDiscounts) {
                     $discount = $existingDiscounts->get($rate->fee_name_id);
 
+                    $discountPercent = $discount->discount_percent ?? 0;
+                    $discountAmount = $discount->discount_amount ?? 0;
+
+                    $netAmount = $rate->amount - $discountAmount - ($rate->amount * $discountPercent / 100);
+                    $netAmount = max(0, round($netAmount, 2));
+
                     return (object) [
                         'fee_name_id' => $rate->fee_name_id,
                         'fee_name' => $rate->feeName->name,
                         'amount_before' => $rate->amount,
-                        'discount_percent' => $discount->discount_percent ?? 0,
-                        'discount_amount' => $discount->discount_amount ?? 0,
+                        'discount_percent' => $discountPercent,
+                        'discount_amount' => $discountAmount,
+                        'net_amount' => $netAmount,
                         'remarks' => $discount->remarks ?? '',
                     ];
                 });
@@ -100,11 +108,11 @@ class FeeDiscountController extends Controller
         $schoolId = auth()->user()->school_id;
 
         // SECURITY: student aafnai school ko ho ki confirm garne
-        $ownStudent = Student::where('id', $validated['student_id'])
+        $student = Student::where('id', $validated['student_id'])
             ->where('school_id', $schoolId)
-            ->exists();
+            ->first();
 
-        if (!$ownStudent) {
+        if (!$student) {
             return redirect()->back()->withErrors(['student_id' => 'Invalid student.'])->withInput();
         }
 
@@ -130,6 +138,42 @@ class FeeDiscountController extends Controller
                     'remarks' => $row['remarks'] ?? null,
                 ]
             );
+
+            // If this fee has already been assigned to the student (a
+            // StudentFee row exists for this student+fee+billing period),
+            // recompute its amount right now from the original FeeRate
+            // minus this discount — so the discount takes effect
+            // immediately even on fees assigned before the discount was set.
+            $studentFee = StudentFee::where('student_id', $validated['student_id'])
+                ->where('fee_name_id', $row['fee_name_id'])
+                ->where('billing_period_id', $validated['billing_period_id'])
+                ->where('school_id', $schoolId)
+                ->first();
+
+            if ($studentFee) {
+                $rate = FeeRate::where('class_id', $student->class_id)
+                    ->where('billing_period_id', $validated['billing_period_id'])
+                    ->where('fee_name_id', $row['fee_name_id'])
+                    ->where('is_active', true)
+                    ->first();
+
+                // Always discount off the original rate (not off whatever the
+                // amount currently is), so re-saving a discount never compounds.
+                $originalAmount = $rate->amount ?? $studentFee->amount;
+
+                $discountedAmount = $originalAmount - $amount - ($originalAmount * $percent / 100);
+                $discountedAmount = max(0, round($discountedAmount, 2));
+
+                // Never drop the amount below what's already been paid,
+                // to avoid a negative balance.
+                $discountedAmount = max($discountedAmount, (float) $studentFee->paid_amount);
+
+                $studentFee->amount = $discountedAmount;
+                $studentFee->status = $studentFee->paid_amount >= $discountedAmount
+                    ? 'paid'
+                    : ($studentFee->paid_amount > 0 ? 'partial' : 'unpaid');
+                $studentFee->save();
+            }
         }
 
         return redirect()->route('school-admin.fee-discounts.create', [

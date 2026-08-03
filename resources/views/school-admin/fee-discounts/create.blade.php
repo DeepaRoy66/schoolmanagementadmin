@@ -136,6 +136,7 @@
                                     <th class="py-2 text-right">Amount (Before Discount)</th>
                                     <th class="py-2 text-center">Discount (%)</th>
                                     <th class="py-2 text-center">Discount (Amount)</th>
+                                    <th class="py-2 text-right">Amount (After Discount)</th>
                                     <th class="py-2">Remarks</th>
                                 </tr>
                             </thead>
@@ -156,6 +157,9 @@
                                                    name="discounts[{{ $i }}][discount_amount]"
                                                    value="{{ $row->discount_amount }}"
                                                    class="w-24 border-gray-300 rounded-lg text-right">
+                                        </td>
+                                        <td class="py-3 text-right font-semibold text-green-700">
+                                            Rs. {{ number_format($row->net_amount, 2) }}
                                         </td>
                                         <td class="py-3">
                                             <input type="text" name="discounts[{{ $i }}][remarks]"

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BillingPeriod;
+use App\Models\FeeDiscount;
 use App\Models\FeeRate;
 use App\Models\Invoice;
 use App\Models\SchoolClass;
@@ -179,6 +180,14 @@ class FeeAssignController extends Controller
 
         DB::transaction(function () use ($studentIds, $feeRates, $validated, $schoolId, &$assignedCount, &$skippedCount) {
             foreach ($studentIds as $studentId) {
+                // Any discounts this student already has for this billing
+                // period, keyed by fee_name_id, so an already-set discount
+                // is applied immediately at assign time too.
+                $discounts = FeeDiscount::where('student_id', $studentId)
+                    ->where('billing_period_id', $validated['billing_period_id'])
+                    ->get()
+                    ->keyBy('fee_name_id');
+
                 // Build the list of fee rates this student doesn't already have for this period
                 $ratesToAssign = [];
                 foreach ($feeRates as $rate) {
@@ -220,12 +229,23 @@ class FeeAssignController extends Controller
                 // 2) Create each fee line item, linked to this invoice
                 $total = 0;
                 foreach ($ratesToAssign as $rate) {
+                    $amount = $rate->amount;
+
+                    // Apply any pre-existing discount for this fee right away,
+                    // so the invoice reflects the net amount from the start.
+                    $discount = $discounts->get($rate->fee_name_id);
+                    if ($discount) {
+                        $amount -= ($discount->discount_amount ?? 0);
+                        $amount -= $rate->amount * (($discount->discount_percent ?? 0) / 100);
+                        $amount = max(0, round($amount, 2));
+                    }
+
                     StudentFee::create([
                         'school_id' => $schoolId,
                         'student_id' => $studentId,
                         'fee_name_id' => $rate->fee_name_id,
                         'billing_period_id' => $validated['billing_period_id'],
-                        'amount' => $rate->amount,
+                        'amount' => $amount,
                         'status' => 'unpaid',
                         'billing_date' => $validated['billing_date'],
                         'due_date' => $validated['due_date'],
@@ -234,7 +254,7 @@ class FeeAssignController extends Controller
                         'invoice_id' => $invoice->id,
                     ]);
 
-                    $total += $rate->amount;
+                    $total += $amount;
                     $assignedCount++;
                 }
 
