@@ -128,8 +128,7 @@
                 @if ($netPayable <= 0)
                     <p class="text-sm text-gray-500">This student has no outstanding balance.</p>
                 @else
-                    <form method="POST" action="{{ route('school-admin.fee-payments.store') }}" class="space-y-4"
-                          onsubmit="window.open('about:blank', 'receiptWindow');">
+                    <form method="POST" action="{{ route('school-admin.fee-payments.store') }}" class="space-y-4">
                         @csrf
                         <input type="hidden" name="student_id" value="{{ $student->id }}">
 
@@ -187,11 +186,12 @@
         </div>
     </div>
 
-    {{-- Auto-open receipt: navigates the same blank tab opened synchronously on
-         form submit, so the browser does not treat this as a blocked popup. --}}
+    {{-- Auto-open receipt in a new tab right after a successful payment save --}}
     @if (session('success') && session('payment_group'))
         <script>
-            window.open("{{ route('school-admin.fee-payments.receipt', session('payment_group')) }}", 'receiptWindow');
+            window.addEventListener('DOMContentLoaded', function () {
+                window.open("{{ route('school-admin.fee-payments.receipt', session('payment_group')) }}", '_blank');
+            });
         </script>
     @endif
 </x-app-layout>

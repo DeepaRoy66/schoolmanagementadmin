@@ -8,6 +8,7 @@ class FeePayment extends Model
 {
     protected $fillable = [
         'student_fee_id',
+        'payment_group',
         'school_id',
         'amount',
         'payment_date',

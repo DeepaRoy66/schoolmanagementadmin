@@ -85,7 +85,7 @@ class FeePaymentController extends Controller
 
         // Full ledger (not just pending) so the student's fee history shows
         // like the reference — one row per fee category with its own balance.
-        $studentFees = StudentFee::with('feeCategory')
+        $studentFees = StudentFee::with('feeName')
             ->where('student_id', $student->id)
             ->orderBy('id')
             ->get();
@@ -93,6 +93,67 @@ class FeePaymentController extends Controller
         $netPayable = $studentFees->sum(fn ($fee) => $fee->amount - $fee->paid_amount);
 
         return view('school-admin.fee-payments.pay', compact('student', 'studentFees', 'netPayable'));
+    }
+
+    // Printable receipt for one Save action — groups every FeePayment row
+    // created together under the same payment_group.
+    public function receipt(string $paymentGroup): View
+    {
+        $schoolId = auth()->user()->school_id;
+
+        $payments = FeePayment::with('studentFee.student.schoolClass', 'studentFee.student.section')
+            ->where('payment_group', $paymentGroup)
+            ->where('school_id', $schoolId)
+            ->orderBy('id')
+            ->get();
+
+        abort_if($payments->isEmpty(), 404);
+
+        $student = $payments->first()->studentFee->student;
+        $paidAmount = $payments->sum('amount');
+        $paymentDate = $payments->first()->payment_date;
+
+        // Remaining balance = current outstanding across all this student's fees
+        // (already reflects this payment, since paid_amount was updated in store()).
+        $remainingBalance = StudentFee::where('student_id', $student->id)
+            ->get()
+            ->sum(fn ($fee) => $fee->amount - $fee->paid_amount);
+
+        $preBalance = $remainingBalance + $paidAmount;
+
+        return view('school-admin.fee-payments.receipt', [
+            'student' => $student,
+            'paidAmount' => $paidAmount,
+            'paymentDate' => $paymentDate,
+            'preBalance' => $preBalance,
+            'remainingBalance' => $remainingBalance,
+            'amountInWords' => $this->numberToWords((int) round($paidAmount)),
+            'receiptNo' => strtoupper(substr($paymentGroup, 0, 8)),
+        ]);
+    }
+
+    // Simple English number-to-words for the "In Words" line on the receipt.
+    private function numberToWords(int $number): string
+    {
+        if ($number === 0) {
+            return 'Zero';
+        }
+
+        $ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+                 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
+                 'Seventeen', 'Eighteen', 'Nineteen'];
+        $tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+        $toWords = function (int $n) use (&$toWords, $ones, $tens): string {
+            if ($n < 20) return $ones[$n];
+            if ($n < 100) return trim($tens[intdiv($n, 10)] . ' ' . $ones[$n % 10]);
+            if ($n < 1000) return trim($ones[intdiv($n, 100)] . ' Hundred ' . $toWords($n % 100));
+            if ($n < 100000) return trim($toWords(intdiv($n, 1000)) . ' Thousand ' . $toWords($n % 1000));
+            if ($n < 10000000) return trim($toWords(intdiv($n, 100000)) . ' Lakh ' . $toWords($n % 100000));
+            return trim($toWords(intdiv($n, 10000000)) . ' Crore ' . $toWords($n % 10000000));
+        };
+
+        return $toWords($number);
     }
 
     public function store(Request $request): RedirectResponse
@@ -126,7 +187,12 @@ class FeePaymentController extends Controller
                 ]);
         }
 
-        DB::transaction(function () use ($pendingFees, $validated) {
+        // One transaction can touch several StudentFee rows (allocation splits
+        // across fees), so every FeePayment created here shares this UUID —
+        // the receipt is built by grouping on it, not on a single row.
+        $paymentGroup = (string) \Illuminate\Support\Str::uuid();
+
+        DB::transaction(function () use ($pendingFees, $validated, $paymentGroup) {
             $remaining = $validated['amount'];
 
             foreach ($pendingFees as $fee) {
@@ -143,6 +209,7 @@ class FeePaymentController extends Controller
 
                 FeePayment::create([
                     'student_fee_id' => $fee->id,
+                    'payment_group' => $paymentGroup,
                     'school_id' => auth()->user()->school_id,
                     'amount' => $allocate,
                     'payment_date' => $validated['payment_date'],
@@ -161,7 +228,8 @@ class FeePaymentController extends Controller
 
         return redirect()
             ->route('school-admin.fee-payments.pay-form', $validated['student_id'])
-            ->with('success', 'Payment recorded successfully.');
+            ->with('success', 'Payment recorded successfully.')
+            ->with('payment_group', $paymentGroup);
     }
 
     public function destroy(FeePayment $feePayment): RedirectResponse
