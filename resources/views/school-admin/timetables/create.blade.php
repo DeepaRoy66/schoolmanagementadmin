@@ -12,14 +12,35 @@
                 <form method="POST" action="{{ route('school-admin.timetables.store') }}">
                     @csrf
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Class</label>
-                        <input type="text" name="class" value="{{ old('class') }}"
-                               class="w-full border-gray-300 rounded-lg" placeholder="e.g. Grade 5" required>
-                        @error('class')
-                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                    <div class="mb-4 grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Class</label>
+                            <select id="class_select" class="w-full border-gray-300 rounded-lg" required>
+                                <option value="">-- Select Class --</option>
+                                @foreach ($classes as $class)
+                                    <option
+                                        value="{{ $class->id }}"
+                                        data-name="{{ $class->name }}"
+                                        data-sections='@json($class->sections->pluck("name"))'
+                                        data-subjects='@json($class->subjects->pluck("subject_name"))'
+                                    >
+                                        {{ $class->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Section</label>
+                            <select id="section_select" class="w-full border-gray-300 rounded-lg">
+                                <option value="">-- Select Section --</option>
+                            </select>
+                        </div>
                     </div>
+
+                    <input type="hidden" name="class" id="class_hidden" value="{{ old('class') }}">
+                    @error('class')
+                        <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                    @enderror
 
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Day</label>
@@ -44,8 +65,10 @@
 
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                        <input type="text" name="subject" value="{{ old('subject') }}"
-                               class="w-full border-gray-300 rounded-lg" required>
+                        <select id="subject_select" class="w-full border-gray-300 rounded-lg" required>
+                            <option value="">-- Select Class First --</option>
+                        </select>
+                        <input type="hidden" name="subject" id="subject_hidden" value="{{ old('subject') }}">
                         @error('subject')
                             <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
                         @enderror
@@ -57,7 +80,7 @@
                             <option value="">-- None --</option>
                             @foreach ($teachers as $teacher)
                                 <option value="{{ $teacher->id }}" {{ old('teacher_id') == $teacher->id ? 'selected' : '' }}>
-                                    {{ $teacher->name }}
+                                    {{ $teacher->full_name }}
                                 </option>
                             @endforeach
                         </select>
@@ -88,4 +111,60 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const classSelect = document.getElementById('class_select');
+            const sectionSelect = document.getElementById('section_select');
+            const subjectSelect = document.getElementById('subject_select');
+            const classHidden = document.getElementById('class_hidden');
+            const subjectHidden = document.getElementById('subject_hidden');
+
+            function fillSelect(selectEl, items, placeholder) {
+                selectEl.innerHTML = '<option value="">' + placeholder + '</option>';
+                items.forEach(function (item) {
+                    const opt = document.createElement('option');
+                    opt.value = item;
+                    opt.textContent = item;
+                    selectEl.appendChild(opt);
+                });
+            }
+
+            function updateClassHidden() {
+                const selectedClassOption = classSelect.options[classSelect.selectedIndex];
+                const className = selectedClassOption ? selectedClassOption.dataset.name : '';
+                const sectionName = sectionSelect.value;
+                classHidden.value = className
+                    ? (sectionName ? className + ' - ' + sectionName : className)
+                    : '';
+            }
+
+            classSelect.addEventListener('change', function () {
+                const selected = this.options[this.selectedIndex];
+
+                if (!selected || !selected.value) {
+                    fillSelect(sectionSelect, [], '-- Select Section --');
+                    fillSelect(subjectSelect, [], '-- Select Class First --');
+                    updateClassHidden();
+                    subjectHidden.value = '';
+                    return;
+                }
+
+                const sections = JSON.parse(selected.dataset.sections || '[]');
+                const subjects = JSON.parse(selected.dataset.subjects || '[]');
+
+                fillSelect(sectionSelect, sections, '-- Select Section --');
+                fillSelect(subjectSelect, subjects, subjects.length ? '-- Select Subject --' : '-- No Subjects Found --');
+
+                updateClassHidden();
+                subjectHidden.value = '';
+            });
+
+            sectionSelect.addEventListener('change', updateClassHidden);
+
+            subjectSelect.addEventListener('change', function () {
+                subjectHidden.value = this.value;
+            });
+        });
+    </script>
 </x-app-layout>

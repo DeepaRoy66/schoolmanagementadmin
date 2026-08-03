@@ -42,7 +42,7 @@
                                 <td class="py-3">{{ $entry->day }}</td>
                                 <td class="py-3">{{ $entry->period }}</td>
                                 <td class="py-3">{{ $entry->subject }}</td>
-                                <td class="py-3 text-gray-600">{{ $entry->teacher->name ?? '—' }}</td>
+                               <td class="py-3 text-gray-600">{{ $entry->teacher->full_name ?? '—' }}</td>
                                 <td class="py-3 text-right">
                                     <form action="{{ route('school-admin.timetables.destroy', $entry) }}" method="POST" class="inline"
                                           onsubmit="return confirm('Yo entry delete garne?');">

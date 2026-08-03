@@ -7,6 +7,7 @@ use App\Models\Timetable;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use App\Models\SchoolClass;
 
 class TimetableController extends Controller
 {
@@ -19,13 +20,18 @@ class TimetableController extends Controller
 
         return view('school-admin.timetables.index', compact('timetables'));
     }
+public function create(): View
+{
+    $teachers = Teacher::orderBy('first_name')
+        ->orderBy('last_name')
+        ->get();
 
-    public function create(): View
-    {
-        $teachers = Teacher::orderBy('name')->get();
+    $classes = SchoolClass::with(['sections', 'subjects'])
+        ->orderBy('name')
+        ->get();
 
-        return view('school-admin.timetables.create', compact('teachers'));
-    }
+    return view('school-admin.timetables.create', compact('teachers', 'classes'));
+}
 
     public function store(Request $request): RedirectResponse
     {
@@ -39,7 +45,6 @@ class TimetableController extends Controller
             'end_time' => 'nullable',
         ]);
 
-        
         if (!empty($validated['teacher_id'])) {
             $ownTeacher = Teacher::where('id', $validated['teacher_id'])
                 ->where('school_id', auth()->user()->school_id)

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Add Class
+            Add Timetable Entry
         </h2>
     </x-slot>
 
@@ -9,124 +9,103 @@
         <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
 
-                <form method="POST" action="{{ route('school-admin.classes.store') }}">
+                <form method="POST" action="{{ route('school-admin.timetables.store') }}">
                     @csrf
 
-                    <!-- Class Name -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Class Name
-                        </label>
+                    <div class="mb-4 grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Class</label>
+                            <select id="class_select" class="w-full border-gray-300 rounded-lg" required>
+                                <option value="">-- Select Class --</option>
+                                @foreach ($classes as $class)
+                                    <option
+                                        value="{{ $class->id }}"
+                                        data-name="{{ $class->name }}"
+                                        data-sections='@json($class->sections->pluck("name"))'
+                                        data-subjects='@json($class->subjects->pluck("subject_name"))'
+                                    >
+                                        {{ $class->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Section</label>
+                            <select id="section_select" class="w-full border-gray-300 rounded-lg">
+                                <option value="">-- Select Section --</option>
+                            </select>
+                        </div>
+                    </div>
 
-                        <input
-                            type="text"
-                            name="name"
-                            value="{{ old('name') }}"
-                            placeholder="e.g. Grade 5"
-                            class="w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                            required
-                        >
+                    <input type="hidden" name="class" id="class_hidden" value="{{ old('class') }}">
+                    @error('class')
+                        <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                    @enderror
 
-                        @error('name')
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Day</label>
+                        <select name="day" class="w-full border-gray-300 rounded-lg" required>
+                            @foreach (['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'] as $day)
+                                <option value="{{ $day }}" {{ old('day') == $day ? 'selected' : '' }}>{{ $day }}</option>
+                            @endforeach
+                        </select>
+                        @error('day')
                             <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Sections -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Sections
-                        </label>
-
-                        @if ($sections->isEmpty())
-
-                            <p class="text-gray-500 text-sm">
-                                No sections found.
-                                <a href="{{ route('school-admin.sections.create') }}"
-                                   class="text-blue-600 hover:underline">
-                                    Add Section
-                                </a>
-                            </p>
-
-                        @else
-
-                            <div class="relative">
-
-                                <!-- Dropdown Button -->
-                                <button
-                                    type="button"
-                                    id="sectionButton"
-                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-white flex justify-between items-center text-left focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                >
-                                    <span id="selectedText">Select Sections</span>
-
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                         class="w-5 h-5"
-                                         fill="none"
-                                         viewBox="0 0 24 24"
-                                         stroke="currentColor">
-
-                                        <path stroke-linecap="round"
-                                              stroke-linejoin="round"
-                                              stroke-width="2"
-                                              d="M19 9l-7 7-7-7"/>
-                                    </svg>
-                                </button>
-
-                                <!-- Dropdown -->
-                                <div
-                                    id="sectionDropdown"
-                                    class="hidden absolute mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto"
-                                >
-
-                                    @foreach($sections as $section)
-
-                                        <label class="flex items-center px-4 py-3 hover:bg-gray-100 cursor-pointer">
-
-                                            <input
-                                                type="checkbox"
-                                                name="section_ids[]"
-                                                value="{{ $section->id }}"
-                                                class="rounded border-gray-300 text-indigo-600 mr-3"
-                                                {{ collect(old('section_ids'))->contains($section->id) ? 'checked' : '' }}
-                                            >
-
-                                            {{ $section->name }}
-
-                                        </label>
-
-                                    @endforeach
-
-                                </div>
-
-                            </div>
-
-                            @error('section_ids')
-                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-
-                        @endif
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Period</label>
+                        <input type="text" name="period" value="{{ old('period') }}"
+                               class="w-full border-gray-300 rounded-lg" placeholder="e.g. 1" required>
+                        @error('period')
+                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
-                    <!-- Buttons -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                        <select id="subject_select" class="w-full border-gray-300 rounded-lg" required>
+                            <option value="">-- Select Class First --</option>
+                        </select>
+                        <input type="hidden" name="subject" id="subject_hidden" value="{{ old('subject') }}">
+                        @error('subject')
+                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Teacher</label>
+                        <select name="teacher_id" class="w-full border-gray-300 rounded-lg">
+                            <option value="">-- None --</option>
+                            @foreach ($teachers as $teacher)
+                                <option value="{{ $teacher->id }}" {{ old('teacher_id') == $teacher->id ? 'selected' : '' }}>
+                                    {{ $teacher->full_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                            <input type="time" name="start_time" value="{{ old('start_time') }}"
+                                   class="w-full border-gray-300 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                            <input type="time" name="end_time" value="{{ old('end_time') }}"
+                                   class="w-full border-gray-300 rounded-lg">
+                        </div>
+                    </div>
+
                     <div class="flex items-center gap-3">
-
-                        <button
-                            type="submit"
-                            class="bg-gray-900 text-white px-5 py-2 rounded-lg hover:bg-gray-700"
-                        >
-                            Save Class
+                        <button type="submit"
+                                class="bg-gray-900 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
+                            Save Entry
                         </button>
-
-                        <a
-                            href="{{ route('school-admin.classes.index') }}"
-                            class="text-gray-600 hover:underline"
-                        >
-                            Cancel
-                        </a>
-
+                        <a href="{{ route('school-admin.timetables.index') }}" class="text-gray-600 text-sm hover:underline">Cancel</a>
                     </div>
-
                 </form>
 
             </div>
@@ -134,57 +113,58 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener('DOMContentLoaded', function () {
+            const classSelect = document.getElementById('class_select');
+            const sectionSelect = document.getElementById('section_select');
+            const subjectSelect = document.getElementById('subject_select');
+            const classHidden = document.getElementById('class_hidden');
+            const subjectHidden = document.getElementById('subject_hidden');
 
-            const button = document.getElementById("sectionButton");
-            const dropdown = document.getElementById("sectionDropdown");
-            const text = document.getElementById("selectedText");
-            const checkboxes = document.querySelectorAll('input[name="section_ids[]"]');
-
-            // Toggle dropdown
-            button.addEventListener("click", function () {
-                dropdown.classList.toggle("hidden");
-            });
-
-            // Update selected text
-            function updateSelectedText() {
-
-                let selected = [];
-
-                checkboxes.forEach(function (checkbox) {
-
-                    if (checkbox.checked) {
-                        selected.push(
-                            checkbox.parentElement.textContent.trim()
-                        );
-                    }
-
+            function fillSelect(selectEl, items, placeholder) {
+                selectEl.innerHTML = '<option value="">' + placeholder + '</option>';
+                items.forEach(function (item) {
+                    const opt = document.createElement('option');
+                    opt.value = item;
+                    opt.textContent = item;
+                    selectEl.appendChild(opt);
                 });
-
-                if (selected.length > 0) {
-                    text.innerText = selected.join(", ");
-                } else {
-                    text.innerText = "Select Sections";
-                }
-
             }
 
-            checkboxes.forEach(function (checkbox) {
-                checkbox.addEventListener("change", updateSelectedText);
-            });
+            function updateClassHidden() {
+                const selectedClassOption = classSelect.options[classSelect.selectedIndex];
+                const className = selectedClassOption ? selectedClassOption.dataset.name : '';
+                const sectionName = sectionSelect.value;
+                classHidden.value = className
+                    ? (sectionName ? className + ' - ' + sectionName : className)
+                    : '';
+            }
 
-            updateSelectedText();
+            classSelect.addEventListener('change', function () {
+                const selected = this.options[this.selectedIndex];
 
-            // Close dropdown when clicking outside
-            document.addEventListener("click", function (e) {
-
-                if (!button.parentElement.contains(e.target)) {
-                    dropdown.classList.add("hidden");
+                if (!selected || !selected.value) {
+                    fillSelect(sectionSelect, [], '-- Select Section --');
+                    fillSelect(subjectSelect, [], '-- Select Class First --');
+                    updateClassHidden();
+                    subjectHidden.value = '';
+                    return;
                 }
 
+                const sections = JSON.parse(selected.dataset.sections || '[]');
+                const subjects = JSON.parse(selected.dataset.subjects || '[]');
+
+                fillSelect(sectionSelect, sections, '-- Select Section --');
+                fillSelect(subjectSelect, subjects, subjects.length ? '-- Select Subject --' : '-- No Subjects Found --');
+
+                updateClassHidden();
+                subjectHidden.value = '';
             });
 
+            sectionSelect.addEventListener('change', updateClassHidden);
+
+            subjectSelect.addEventListener('change', function () {
+                subjectHidden.value = this.value;
+            });
         });
     </script>
-
 </x-app-layout>

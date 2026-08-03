@@ -50,4 +50,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Shared endpoints
     Route::get('/notices', [NoticeController::class, 'index']);
     Route::get('/timetable', [TimetableController::class, 'index']);
+
+    
 });

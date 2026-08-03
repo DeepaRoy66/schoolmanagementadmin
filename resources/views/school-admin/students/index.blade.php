@@ -1,93 +1,220 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Students
-        </h2>
-    </x-slot>
+<?php
 
-    <div class="py-8">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+namespace App\Http\Controllers\Api;
+use App\Models\Teacher;
+use App\Models\Student;
+use App\Models\ClassTeacherAssignment;
+use App\Models\TeacherSubjectAllocation;
 
-            @if (session('status'))
-                <div class="mb-4 p-4 bg-green-100 text-green-800 rounded-lg text-sm">
-                    {{ session('status') }}
-                </div>
-            @endif
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
+class AuthController extends Controller
+{
+    /**
+     * Login - email/password linchha, token dincha
+     */
+    public function login(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
 
-                <div class="flex justify-between items-center mb-6">
-                    <p class="text-gray-600 text-sm">Total students: {{ $students->total() }}</p>
-                    <a href="{{ route('school-admin.students.create') }}"
-                       class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
-                        + Add Student
-                    </a>
-                </div>
+        $user = \App\Models\User::where('email', $request->email)->first();
 
-                <table class="w-full text-sm text-left">
-                    <thead>
-                        <tr class="border-b text-gray-500">
-                            <th class="py-2">ID</th>
-                            <th class="py-2">Name</th>
-                            <th class="py-2">Email</th>
-                            <th class="py-2">Class</th>
-                            <th class="py-2">Section</th>
-                            <th class="py-2">Roll No.</th>
-                            <th class="py-2">Status</th>
-                            <th class="py-2 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($students as $student)
-                            <tr class="border-b">
-                                <td class="py-3 text-gray-500">{{ $student->student_uid ?? '—' }}</td>
-                                <td class="py-3 font-medium">{{ $student->full_name }}</td>
-                                <td class="py-3 text-gray-600">{{ $student->email }}</td>
-                                <td class="py-3 text-gray-600">{{ $student->schoolClass->name ?? '—' }}</td>
-                                <td class="py-3 text-gray-600">{{ $student->section->name ?? '—' }}</td>
-                                <td class="py-3 text-gray-600">{{ $student->roll_number ?? '—' }}</td>
-                                <td class="py-3">
-                                    @php
-                                        $statusColors = [
-                                            'active' => 'bg-green-100 text-green-700',
-                                            'inactive' => 'bg-gray-100 text-gray-600',
-                                            'dropped_out' => 'bg-red-100 text-red-700',
-                                        ];
-                                        $statusLabels = [
-                                            'active' => 'Active',
-                                            'inactive' => 'Inactive',
-                                            'dropped_out' => 'Dropped Out',
-                                        ];
-                                    @endphp
-                                    <span class="px-2 py-1 rounded text-xs {{ $statusColors[$student->status] ?? 'bg-gray-100 text-gray-600' }}">
-                                        {{ $statusLabels[$student->status] ?? ucfirst($student->status) }}
-                                    </span>
-                                </td>
-                                <td class="py-3 text-right space-x-2">
-                                    <a href="{{ route('school-admin.students.edit', $student) }}" class="text-blue-600 hover:underline">Edit</a>
-                                    <form action="{{ route('school-admin.students.destroy', $student) }}" method="POST" class="inline"
-                                          onsubmit="return confirm('Yo Student delete garne?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:underline">Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="py-6 text-center text-gray-500">
-                                    No students added.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            throw ValidationException::withMessages([
+                'email' => ['The provided credentials are incorrect.'],
+            ]);
+        }
 
-                <div class="mt-4">
-                    {{ $students->links() }}
-                </div>
+        // License check - school_admin/teacher/student ko lagi
+        if ($user->role !== 'super_admin') {
+            $school = $user->school;
 
-            </div>
-        </div>
-    </div>
-</x-app-layout>
+            if (!$school) {
+                return response()->json([
+                    'message' => 'Your account is not linked to any school.',
+                ], 403);
+            }
+
+            $isExpired = $school->license_status === 'expired'
+                || ($school->license_expiry && \Carbon\Carbon::parse($school->license_expiry)->isPast());
+
+            if ($isExpired) {
+                return response()->json([
+                    'message' => 'Your school\'s license has expired. Please contact the administrator.',
+                ], 403);
+            }
+        }
+
+        // Last login timestamp update garne
+        $user->update(['last_login_at' => now()]);
+
+        // Naya token banaune
+        $token = $user->createToken('mobile-app')->plainTextToken;
+
+        $userData = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'must_change_password' => (bool) $user->must_change_password,
+            'school_id' => $user->school_id,
+            'school_name' => $user->school->name ?? null,
+        ];
+
+        // Teacher login hunda class teacher ho ki hoina tyo pathaune
+        if ($user->role === 'teacher') {
+            $teacher = Teacher::where('user_id', $user->id)->first();
+
+            $userData['is_class_teacher'] = $teacher
+                ? ClassTeacherAssignment::where('teacher_id', $teacher->id)->exists()
+                : false;
+        }
+
+        // Student login hunda student_uid ra roll_number pathaune
+        if ($user->role === 'student') {
+            $student = Student::where('user_id', $user->id)->first();
+
+            if ($student) {
+                $userData['student_uid'] = $student->student_uid;
+                $userData['roll_number'] = $student->roll_number;
+            }
+        }
+
+        return response()->json([
+            'message' => 'Login successful.',
+            'token' => $token,
+            'user' => $userData,
+        ]);
+    }
+
+    /**
+     * Login gareko user ko info dine
+     */
+    public function me(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $response = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'must_change_password' => (bool) $user->must_change_password,
+            'photo' => $user->photo ? asset('storage/' . $user->photo) : null,
+            'school_id' => $user->school_id,
+            'school_name' => $user->school->name ?? null,
+        ];
+
+        // Teacher ko lagi assigned classes + sections + subjects pathaune
+        if ($user->role === 'teacher') {
+
+            $teacher = Teacher::where('user_id', $user->id)->first();
+
+            if ($teacher) {
+
+                $subjectAllocations = TeacherSubjectAllocation::with('subject:id,class_id,subject_name,subject_code')
+                    ->where('teacher_id', $teacher->id)
+                    ->get();
+
+                $subjectsByClass = $subjectAllocations
+                    ->filter(fn($alloc) => $alloc->subject !== null)
+                    ->groupBy(fn($alloc) => $alloc->subject->class_id)
+                    ->map(function ($allocations) {
+                        return $allocations->map(function ($alloc) {
+                            return [
+                                'subject_id' => $alloc->subject->id,
+                                'subject_name' => $alloc->subject->subject_name,
+                                'subject_code' => $alloc->subject->subject_code,
+                            ];
+                        })->unique('subject_id')->values();
+                    });
+
+                $assignedClasses = ClassTeacherAssignment::with(['schoolClass:id,name', 'section:id,name'])
+                    ->where('teacher_id', $teacher->id)
+                    ->get();
+
+                $response['assigned_classes'] = $assignedClasses
+                    ->map(function ($item) use ($subjectsByClass) {
+                        return [
+                            'class_id' => $item->class_id,
+                            'class_name' => $item->schoolClass?->name,
+                            'section_id' => $item->section_id,
+                            'section_name' => $item->section?->name,
+                            'subjects' => $subjectsByClass->get($item->class_id, collect())->values(),
+                        ];
+                    })
+                    ->values();
+
+                // Yo teacher class teacher ho ki hoina
+                $response['is_class_teacher'] = $assignedClasses->isNotEmpty();
+            } else {
+                $response['is_class_teacher'] = false;
+            }
+        }
+
+        // Student ko lagi aafno class/section pathaune
+        if ($user->role === 'student') {
+
+            $student = Student::with(['schoolClass:id,name', 'section:id,name'])
+                ->where('user_id', $user->id)
+                ->first();
+
+            if ($student) {
+                $response['student_uid'] = $student->student_uid;
+                $response['class_id'] = $student->class_id;
+                $response['class_name'] = $student->schoolClass?->name;
+                $response['section_id'] = $student->section_id;
+                $response['section_name'] = $student->section?->name;
+                $response['roll_number'] = $student->roll_number;
+            }
+        }
+
+        return response()->json($response);
+    }
+
+    /**
+     * Password change garne (login vaisakepachi, App bhitra bata)
+     */
+    public function changePassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return response()->json([
+                'message' => 'Current password is incorrect.',
+                'errors' => ['current_password' => ['Current password is incorrect.']],
+            ], 422);
+        }
+
+        $user->password = Hash::make($validated['new_password']);
+        $user->must_change_password = false;
+        $user->save();
+
+        return response()->json(['message' => 'Password changed successfully.']);
+    }
+
+    /**
+     * Logout - current token delete garne
+     */
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Logged out successfully.',
+        ]);
+    }
+}

@@ -19,8 +19,13 @@ class TimetableController extends Controller
         $user = $request->user();
 
         if ($user->role === 'student') {
-            $student = Student::where('user_id', $user->id)->first();
-            $class = $student->class ?? null;
+            $student = Student::with('schoolClass:id,name')->where('user_id', $user->id)->first();
+
+            if (!$student) {
+                return response()->json(['message' => 'Student profile not found.'], 404);
+            }
+
+            $class = $student->schoolClass?->name;
         } else {
             $class = $request->query('class');
         }
@@ -34,6 +39,9 @@ class TimetableController extends Controller
             ->orderBy('period')
             ->get(['id', 'day', 'period', 'subject', 'start_time', 'end_time']);
 
-        return response()->json($timetable);
+        return response()->json([
+            'class' => $class,
+            'timetable' => $timetable,
+        ]);
     }
 }
