@@ -324,6 +324,26 @@
     </svg>
     Discount
 </a>
+
+<a href="{{ route('school-admin.fee-payments.create') }}"
+   class="{{ $item }} {{ request()->routeIs('school-admin.fee-payments.create') || request()->routeIs('school-admin.fee-payments.pay-form') ? $active : $inactive }}">
+    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a1.5 1.5 0 001.5-1.5V6.75a1.5 1.5 0 00-1.5-1.5h-15a1.5 1.5 0 00-1.5 1.5v10.5a1.5 1.5 0 001.5 1.5z" />
+    </svg>
+    Fee Payment
+</a>
+
+<a href="{{ route('school-admin.fee-payments.index') }}"
+   class="{{ $item }} {{ request()->routeIs('school-admin.fee-payments.index') ? $active : $inactive }}">
+    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5S13.657 14 12 14m0-6c1.11 0 2.08.402 2.599 1M12 8V6.5M12 14v1.5m0-1.5c-1.11 0-2.08-.402-2.599-1M12 21a9 9 0 100-18 9 9 0 000 18z" />
+    </svg>
+    Payment History
+</a>
+
+
 <a href="{{ route('school-admin.fee-assign.index') }}"
    class="{{ $item }} {{ request()->routeIs('school-admin.fee-assign.*') ? $active : $inactive }}">
     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

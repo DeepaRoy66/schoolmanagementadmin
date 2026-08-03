@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Student;
 use App\Models\Teacher;
+use App\Models\TeacherSubjectAllocation;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\ClassTeacherAssignment;
@@ -94,6 +95,61 @@ class AttendanceController extends Controller
                 ];
             })
         );
+    }
+
+    /**
+     * Student: aafno class-section ma padhaune teacher haru ko list (New Chat ko lagi)
+     */
+    public function myTeachers(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'student') {
+            return response()->json(['message' => 'Only students can access this.'], 403);
+        }
+
+        $student = Student::where('user_id', $user->id)->first();
+
+        if (!$student) {
+            return response()->json(['message' => 'Student profile not found.'], 404);
+        }
+
+        // Subject teachers: student ko section ma subject padhaune teacher haru
+        $subjectTeachers = TeacherSubjectAllocation::with('teacher:id,first_name,middle_name,last_name', 'subject:id,subject_name')
+            ->where('section_id', $student->section_id)
+            ->get()
+            ->filter(fn($alloc) => $alloc->teacher !== null)
+            ->map(function ($alloc) {
+                return [
+                    'teacher_id' => $alloc->teacher->id,
+                    'name' => $alloc->teacher->full_name,
+                    'subject' => $alloc->subject?->subject_name,
+                    'role' => 'subject_teacher',
+                ];
+            });
+
+        // Class teacher: student ko class-section ko class teacher
+        $classTeacherAssignment = ClassTeacherAssignment::with('teacher:id,first_name,middle_name,last_name')
+            ->where('class_id', $student->class_id)
+            ->where('section_id', $student->section_id)
+            ->first();
+
+        $classTeacher = collect();
+        if ($classTeacherAssignment && $classTeacherAssignment->teacher) {
+            $classTeacher = collect([[
+                'teacher_id' => $classTeacherAssignment->teacher->id,
+                'name' => $classTeacherAssignment->teacher->full_name,
+                'subject' => null,
+                'role' => 'class_teacher',
+            ]]);
+        }
+
+        // Duitai list combine garne, teacher_id duplicate bhaye hataune
+        $allTeachers = $subjectTeachers->concat($classTeacher)
+            ->unique('teacher_id')
+            ->values();
+
+        return response()->json($allTeachers);
     }
 
     /**

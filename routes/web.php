@@ -200,6 +200,9 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
         Route::get('fee-assign/invoice', [FeeAssignController::class, 'invoice'])
             ->name('fee-assign.invoice');
 
+            Route::get('fee-payments/{student}/pay', [FeePaymentController::class, 'payFeeForm'])
+    ->name('fee-payments.pay-form');
+
         // -------------------------------
         // Reports & Subjects
         // -------------------------------

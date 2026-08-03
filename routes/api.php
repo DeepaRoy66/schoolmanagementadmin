@@ -45,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/student/fees', [FeeController::class, 'myFees']);
     
     Route::get('/student/materials', [MaterialController::class, 'myMaterials']);
+    Route::get('/student/teachers', [AttendanceController::class, 'myTeachers']);
 
     // Shared endpoints
     Route::get('/notices', [NoticeController::class, 'index']);
