@@ -10,9 +10,7 @@ use Illuminate\Http\JsonResponse;
 
 class TimetableController extends Controller
 {
-    /**
-     * Teacher/Student: class ko timetable herne (day-wise, default aajako din)
-     */
+    
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -39,8 +37,8 @@ class TimetableController extends Controller
             return response()->json(['message' => 'Class or section not specified.'], 422);
         }
 
-        // Day specify gareko cha bhane tyo, natra aajako din
-        $day = $request->query('day') ?: now()->format('l'); // 'l' = full day name jastai "Monday"
+        
+        $day = $request->query('day') ?: now()->format('l'); 
 
         $timetable = Timetable::where('class_id', $classId)
             ->where('section_id', $sectionId)

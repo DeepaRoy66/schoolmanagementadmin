@@ -12,9 +12,7 @@ use App\Models\ClassTeacherAssignment;
 
 class TeacherDashboardController extends Controller
 {
-    /**
-     * Teacher Dashboard: welcome message, aaja ko attendance count, pending homework count
-     */
+    
     public function summary(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -49,9 +47,7 @@ class TeacherDashboardController extends Controller
         ]);
     }
 
-    /**
-     * Teacher: total classes count (class-teacher bhaeko class matra)
-     */
+    
  public function totalClasses(Request $request): JsonResponse
 {
     $user = $request->user();

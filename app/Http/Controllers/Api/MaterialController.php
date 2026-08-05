@@ -16,9 +16,6 @@ use Illuminate\Validation\ValidationException;
 
 class MaterialController extends Controller
 {
-    /**
-     * Teacher: aafule upload gareko sabai notes/files list garne
-     */
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -53,10 +50,7 @@ class MaterialController extends Controller
         return response()->json($materials);
     }
 
-    /**
-     * Teacher: naya file/note upload garne (multiple files support)
-     * Teacher le aafulai assign bhayeko class ma matra upload garna paune
-     */
+   
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -71,7 +65,7 @@ class MaterialController extends Controller
             return response()->json(['message' => 'Teacher profile not found.'], 404);
         }
 
-        // Teacher lai assign bhayeko class id haru nikalne
+        
         $assignedClassIds = ClassTeacherAssignment::where('teacher_id', $teacher->id)
             ->pluck('class_id')
             ->unique()
@@ -122,9 +116,7 @@ class MaterialController extends Controller
         ], 201);
     }
 
-    /**
-     * Teacher: euta note/file delete garne
-     */
+    
     public function destroy(Request $request, Material $material): JsonResponse
     {
         $user = $request->user();
@@ -148,9 +140,7 @@ class MaterialController extends Controller
         return response()->json(['message' => 'Note deleted.']);
     }
 
-    /**
-     * Student: aafno class ko notes/files herne
-     */
+    
     public function myMaterials(Request $request): JsonResponse
     {
         $user = $request->user();

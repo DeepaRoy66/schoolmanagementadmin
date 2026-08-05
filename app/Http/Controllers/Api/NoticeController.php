@@ -9,9 +9,7 @@ use Illuminate\Http\JsonResponse;
 
 class NoticeController extends Controller
 {
-    /**
-     * Teacher/Student: aafno school ko notices herne
-     */
+   
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();

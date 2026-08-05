@@ -13,9 +13,7 @@ use Illuminate\Http\JsonResponse;
 
 class ResultController extends Controller
 {
-    /**
-     * Teacher: Multiple students ko marks save/update
-     */
+   
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -57,7 +55,7 @@ class ResultController extends Controller
             ], 403);
         }
 
-        // SECURITY: subject yehi class ko ho ki check
+        
         $subjectBelongsToClass = Subject::where('id', $validated['subject_id'])
             ->where('class_id', $validated['class_id'])
             ->exists();
@@ -117,9 +115,7 @@ class ResultController extends Controller
         ]);
     }
 
-    /**
-     * Teacher: View Result by Exam (specific class-section)
-     */
+   
     public function viewByExam(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -180,11 +176,7 @@ class ResultController extends Controller
         );
     }
 
-    /**
-     * Student: My Results
-     * Terminal exam (first/second/final term): class ka SABAI subject dekhaune (marks bhare/nabhare pani)
-     * Weekly test: jati result entry cha tyati matra dekhaune
-     */
+   
     public function myResults(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -203,7 +195,6 @@ class ResultController extends Controller
             ], 404);
         }
 
-        // Student ko class ka sabai subjects (terminal exam ko lagi complete list)
         $allSubjects = Subject::where('class_id', $student->class_id)
             ->orderBy('subject_name')
             ->get(['id', 'subject_name']);
@@ -211,7 +202,6 @@ class ResultController extends Controller
         $results = Result::where('student_id', $student->id)
             ->get(['exam_name', 'subject_id', 'marks_obtained', 'full_marks', 'remarks']);
 
-        // Terminal exam: sabai subject dekhaune, marks nabhaye "not entered"
         $buildTermResult = function ($examName) use ($allSubjects, $results) {
             $examResults = $results->where('exam_name', $examName)->keyBy('subject_id');
 
@@ -228,7 +218,6 @@ class ResultController extends Controller
             })->values();
         };
 
-        // Weekly test: jati marks bhariyeko cha tyati matra
         $weeklyTest = $results->where('exam_name', 'Weekly Test')
             ->map(function ($result) use ($allSubjects) {
                 $subject = $allSubjects->firstWhere('id', $result->subject_id);
