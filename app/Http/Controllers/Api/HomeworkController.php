@@ -13,9 +13,6 @@ use Illuminate\Http\JsonResponse;
 
 class HomeworkController extends Controller
 {
-    /**
-     * Teacher: aafule assign gareko sabai homework list garne
-     */
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -42,9 +39,6 @@ class HomeworkController extends Controller
         return response()->json($homeworks);
     }
 
-    /**
-     * Teacher: naya homework assign garne
-     */
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -67,7 +61,6 @@ class HomeworkController extends Controller
             return response()->json(['message' => 'Teacher profile not found.'], 404);
         }
 
-        // SECURITY: teacher yo class ma assigned cha ki check
         $assigned = ClassTeacherAssignment::where('teacher_id', $teacher->id)
             ->where('class_id', $validated['class_id'])
             ->exists();
@@ -95,9 +88,7 @@ class HomeworkController extends Controller
         ], 201);
     }
 
-    /**
-     * Teacher: euta homework delete garne
-     */
+    
     public function destroy(Request $request, Homework $homework): JsonResponse
     {
         $user = $request->user();
@@ -112,9 +103,7 @@ class HomeworkController extends Controller
         return response()->json(['message' => 'Homework deleted.']);
     }
 
-    /**
-     * Student: aafno class ko homework list herne (status sanga)
-     */
+    
     public function myHomework(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -133,7 +122,7 @@ class HomeworkController extends Controller
             ->where('class_id', $student->class_id)
             ->orderBy('due_date', 'desc');
 
-        // optional filter: ?status=pending or ?status=completed
+       
         if ($request->filled('status')) {
             $status = $request->query('status');
             $query->whereHas('submissions', function ($q) use ($status, $student) {
@@ -165,9 +154,7 @@ class HomeworkController extends Controller
         ]);
     }
 
-    /**
-     * Student: homework complete mark garne
-     */
+    
     public function markComplete(Request $request, Homework $homework): JsonResponse
     {
         $user = $request->user();
