@@ -12,14 +12,11 @@ class CheckLicense
     {
         $user = auth()->user();
 
-        // Super admin lai yo check apply hudaina - usle sabai school herna pauncha
         if (!$user || $user->role === 'super_admin') {
             return $next($request);
         }
 
         $school = $user->school;
-
-        // School nai nabhako user (galat data) lai pani block garne
         if (!$school) {
             auth()->logout();
             return redirect()->route('login')
