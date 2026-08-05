@@ -29,6 +29,7 @@ use App\Http\Controllers\FeeRateController;
 use App\Http\Controllers\FeeDiscountController;
 use App\Http\Controllers\FeeAssignController;
 use App\Http\Controllers\TimetableImageController;
+use App\Http\Controllers\AcademicYearController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -197,6 +198,12 @@ Route::get('timetable-images/{classId}/{sectionId}/history', [TimetableImageCont
         // -------------------------------
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
         Route::resource('subjects', SubjectController::class)->except(['show']);
+
+        // -------------------------------
+        // Academic Year
+        // -------------------------------
+        Route::resource('academic-years', AcademicYearController::class)
+            ->except(['show']);
 
         // -------------------------------
         // Classes & Sections
