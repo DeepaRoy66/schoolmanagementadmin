@@ -40,7 +40,6 @@ class FeeRateController extends Controller
 
         $schoolId = auth()->user()->school_id;
 
-        // SECURITY: sabai selected item aafno school ko ho ki confirm garne
         $ownFeeName = FeeName::where('id', $validated['fee_name_id'])->where('school_id', $schoolId)->exists();
         $ownClass = SchoolClass::where('id', $validated['class_id'])->where('school_id', $schoolId)->exists();
         $ownPeriod = empty($validated['billing_period_id']) ||
@@ -50,7 +49,7 @@ class FeeRateController extends Controller
             return redirect()->back()->withErrors(['fee_name_id' => 'Invalid selection.'])->withInput();
         }
 
-        // Duplicate combination check (friendly error, DB unique constraint le pani protect garcha)
+
         $exists = FeeRate::where('fee_name_id', $validated['fee_name_id'])
             ->where('class_id', $validated['class_id'])
             ->where('billing_period_id', $validated['billing_period_id'] ?? null)
@@ -92,7 +91,7 @@ class FeeRateController extends Controller
 
         $schoolId = auth()->user()->school_id;
 
-        // SECURITY: store jastai ownership check
+      
         $ownFeeName = FeeName::where('id', $validated['fee_name_id'])->where('school_id', $schoolId)->exists();
         $ownClass = SchoolClass::where('id', $validated['class_id'])->where('school_id', $schoolId)->exists();
         $ownPeriod = empty($validated['billing_period_id']) ||
@@ -102,7 +101,7 @@ class FeeRateController extends Controller
             return redirect()->back()->withErrors(['fee_name_id' => 'Invalid selection.'])->withInput();
         }
 
-        // Duplicate check - aafai record chai exclude garne
+
         $exists = FeeRate::where('fee_name_id', $validated['fee_name_id'])
             ->where('class_id', $validated['class_id'])
             ->where('billing_period_id', $validated['billing_period_id'] ?? null)

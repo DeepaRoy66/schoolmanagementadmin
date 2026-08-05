@@ -12,9 +12,7 @@ use Illuminate\Validation\Rule;
 
 class StudentFeeController extends Controller
 {
-    /**
-     * Display a listing of student fees for the logged-in admin's school.
-     */
+
     public function index(Request $request)
     {
         $query = StudentFee::with(['student', 'feeCategory'])
@@ -38,9 +36,6 @@ class StudentFeeController extends Controller
         return view('school-admin.student-fees.index', compact('studentFees', 'students'));
     }
 
-    /**
-     * Show the form for creating a new student fee.
-     */
     public function create()
     {
         $students = Student::where('school_id', auth()->user()->school_id)
@@ -56,9 +51,7 @@ class StudentFeeController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Eager-load the many-to-many `classes` relationship so the view can
-        // read $section->classes without firing a query per section (N+1),
-        // and so the class -> section cascade in the blade has the data it needs.
+        
         $sections = Section::with('classes')
             ->where('school_id', auth()->user()->school_id)
             ->orderBy('name')
@@ -68,10 +61,6 @@ class StudentFeeController extends Controller
             'students', 'feeCategories', 'classes', 'sections'
         ));
     }
-
-    /**
-     * Store a newly created student fee.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -87,11 +76,6 @@ class StudentFeeController extends Controller
             'due_date' => ['required', 'date'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
-
-        // Check for an existing fee with the same student + category + due date.
-        // This catches accidental double-submits while still allowing genuinely
-        // separate assignments (e.g. First Term / Second Term exam fees) as
-        // long as they carry different due dates.
         $duplicate = StudentFee::where('school_id', auth()->user()->school_id)
             ->where('student_id', $validated['student_id'])
             ->where('fee_category_id', $validated['fee_category_id'])
@@ -130,10 +114,6 @@ class StudentFeeController extends Controller
             ->route('school-admin.student-fees.index')
             ->with('success', 'Student fee assigned successfully.');
     }
-
-    /**
-     * Show the form for editing the specified student fee.
-     */
     public function edit(StudentFee $studentFee)
     {
         abort_unless($studentFee->school_id === auth()->user()->school_id, 403);
@@ -149,10 +129,6 @@ class StudentFeeController extends Controller
 
         return view('school-admin.student-fees.edit', compact('studentFee', 'students', 'feeCategories'));
     }
-
-    /**
-     * Update the specified student fee.
-     */
     public function update(Request $request, StudentFee $studentFee)
     {
         abort_unless($studentFee->school_id === auth()->user()->school_id, 403);
@@ -228,10 +204,6 @@ class StudentFeeController extends Controller
         ));
     }
 
-    /**
-     * Remove the specified student fee — blocked if any payment
-     * has already been recorded against it.
-     */
     public function destroy(StudentFee $studentFee)
     {
         abort_unless($studentFee->school_id === auth()->user()->school_id, 403);

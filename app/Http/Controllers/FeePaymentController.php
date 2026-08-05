@@ -23,10 +23,6 @@ class FeePaymentController extends Controller
 
         return view('school-admin.fee-payments.index', compact('payments'));
     }
-
-    // "List Student(s) For Fee Payment" — filter by class/section/name/id,
-    // click Search, get a table of matching students with their fee due
-    // status and a Pay Fee action per row.
     public function create(Request $request): View
     {
         $schoolId = auth()->user()->school_id;
@@ -39,10 +35,7 @@ class FeePaymentController extends Controller
         if ($request->filled('class_id') || $request->filled('section_id')
             || $request->filled('student_name') || $request->filled('student_number')) {
 
-            // Fee totals are pulled via raw subqueries against the student_fees
-            // table directly (student_fees.student_id) instead of an Eloquent
-            // relation, so this doesn't depend on a specific relation existing
-            // on the Student model.
+
             $students = Student::where('students.school_id', $schoolId)
                 ->when($request->filled('class_id'), fn ($q) => $q->where('class_id', $request->class_id))
                 ->when($request->filled('section_id'), fn ($q) => $q->where('section_id', $request->section_id))
@@ -75,16 +68,11 @@ class FeePaymentController extends Controller
         return view('school-admin.fee-payments.create', compact('classes', 'sections', 'students'));
     }
 
-    // Pay Fee action target: shows only this student's unpaid/partial fees
-    // so the operator can pick one and record a payment against it.
     public function payFeeForm(Student $student): View
     {
         abort_unless($student->school_id === auth()->user()->school_id, 403);
 
         $student->load(['schoolClass', 'section']);
-
-        // Full ledger (not just pending) so the student's fee history shows
-        // like the reference — one row per fee category with its own balance.
         $studentFees = StudentFee::with('feeName')
             ->where('student_id', $student->id)
             ->orderBy('id')
@@ -94,9 +82,6 @@ class FeePaymentController extends Controller
 
         return view('school-admin.fee-payments.pay', compact('student', 'studentFees', 'netPayable'));
     }
-
-    // Printable receipt for one Save action — groups every FeePayment row
-    // created together under the same payment_group.
     public function receipt(string $paymentGroup): View
     {
         $schoolId = auth()->user()->school_id;
@@ -112,9 +97,6 @@ class FeePaymentController extends Controller
         $student = $payments->first()->studentFee->student;
         $paidAmount = $payments->sum('amount');
         $paymentDate = $payments->first()->payment_date;
-
-        // Remaining balance = current outstanding across all this student's fees
-        // (already reflects this payment, since paid_amount was updated in store()).
         $remainingBalance = StudentFee::where('student_id', $student->id)
             ->get()
             ->sum(fn ($fee) => $fee->amount - $fee->paid_amount);
@@ -131,8 +113,6 @@ class FeePaymentController extends Controller
             'receiptNo' => strtoupper(substr($paymentGroup, 0, 8)),
         ]);
     }
-
-    // Simple English number-to-words for the "In Words" line on the receipt.
     private function numberToWords(int $number): string
     {
         if ($number === 0) {
@@ -166,9 +146,6 @@ class FeePaymentController extends Controller
             'reference_no' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
-
-        // findOrFail relies on Student's own SchoolScope global scope to
-        // enforce that this student belongs to the logged-in user's school.
         $student = Student::findOrFail($validated['student_id']);
 
         $pendingFees = StudentFee::where('student_id', $student->id)
@@ -187,9 +164,6 @@ class FeePaymentController extends Controller
                 ]);
         }
 
-        // One transaction can touch several StudentFee rows (allocation splits
-        // across fees), so every FeePayment created here shares this UUID —
-        // the receipt is built by grouping on it, not on a single row.
         $paymentGroup = (string) \Illuminate\Support\Str::uuid();
 
         DB::transaction(function () use ($pendingFees, $validated, $paymentGroup) {

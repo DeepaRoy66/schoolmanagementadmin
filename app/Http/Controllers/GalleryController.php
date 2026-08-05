@@ -9,10 +9,7 @@ use Illuminate\Http\JsonResponse;
 
 class GalleryController extends Controller
 {
-    /**
-     * Class wise gallery photos fetch garne.
-     * ?class_id=5 pathaye tyo class ko matra, natra sabai school ko photos.
-     */
+    
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -25,7 +22,6 @@ class GalleryController extends Controller
             $query->where('class_id', $request->query('class_id'));
         }
 
-        // Student login vaeko bhaye aafno class ko matra dekhaune (agar class_id specify garena bhane)
         if ($user->role === 'student' && !$request->filled('class_id')) {
             $student = \App\Models\Student::where('user_id', $user->id)->first();
             if ($student) {
@@ -38,9 +34,6 @@ class GalleryController extends Controller
         return response()->json($photos);
     }
 
-    /**
-     * Naya photo upload garne (Teacher / School Admin matra).
-     */
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -71,9 +64,6 @@ class GalleryController extends Controller
         ], 201);
     }
 
-    /**
-     * Photo delete garne (uploader afai ya school_admin matra).
-     */
     public function destroy(Request $request, Gallery $gallery): JsonResponse
     {
         $user = $request->user();

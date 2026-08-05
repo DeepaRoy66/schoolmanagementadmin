@@ -38,7 +38,6 @@ class FeeNameController extends Controller
 
         $schoolId = auth()->user()->school_id;
 
-        // SECURITY: fee_group real ma aafno school ko ho ki confirm garne
         $ownGroup = FeeGroup::where('id', $validated['fee_group_id'])->where('school_id', $schoolId)->exists();
         if (!$ownGroup) {
             return redirect()->back()->withErrors(['fee_group_id' => 'Invalid fee group selected.']);

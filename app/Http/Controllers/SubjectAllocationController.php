@@ -11,8 +11,6 @@ class SubjectAllocationController extends Controller
 {
     public function index()
     {
-        // Har subject afai class-specific cha, so subject.schoolClass bata class naam aaucha
-        // Har subject ko class ma jati section cha (class_section pivot bata), tini sabai rows banaune
         $subjects = Subject::with('schoolClass.sections')->orderBy('subject_name')->get();
         $teachers = Teacher::where('is_active', true)->orderBy('first_name')->get();
 
@@ -45,8 +43,7 @@ class SubjectAllocationController extends Controller
 
     public function create()
     {
-        // create.blade.php needs: $subjects (with schoolClass + schoolClass.sections
-        // for the JS subject->section mapping) and $teachers for the dropdown.
+    
         $subjects = Subject::with('schoolClass.sections')->orderBy('subject_name')->get();
         $teachers = Teacher::where('is_active', true)->orderBy('first_name')->get();
 
@@ -72,9 +69,6 @@ class SubjectAllocationController extends Controller
             ]
         );
 
-        // create.blade.php is a normal form submission (uses $errors / old() and
-        // expects a redirect back to the index), not an AJAX call, so this now
-        // redirects with a flash message instead of returning JSON.
         return redirect()
             ->route('school-admin.subject-allocations.index')
             ->with('success', 'Subject assigned successfully.');
