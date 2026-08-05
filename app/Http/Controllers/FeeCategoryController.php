@@ -9,9 +9,7 @@ use Illuminate\Validation\Rule;
 
 class FeeCategoryController extends Controller
 {
-    /**
-     * Display a listing of fee categories for the logged-in admin's school.
-     */
+    
     public function index()
     {
         $categories = FeeCategory::where('school_id', auth()->user()->school_id)
@@ -21,17 +19,13 @@ class FeeCategoryController extends Controller
         return view('school-admin.fee-categories.index', compact('categories'));
     }
 
-    /**
-     * Show the form for creating a new fee category.
-     */
+    
     public function create()
     {
         return view('school-admin.fee-categories.create');
     }
 
-    /**
-     * Store a newly created fee category.
-     */
+   
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -59,12 +53,10 @@ class FeeCategoryController extends Controller
             ->with('success', 'Fee category created successfully.');
     }
 
-    /**
-     * Update the specified fee category.
-     */
+   
     public function update(Request $request, FeeCategory $feeCategory)
     {
-        // Ensure the category belongs to the logged-in admin's school
+        
         abort_unless($feeCategory->school_id === auth()->user()->school_id, 403);
 
         $validated = $request->validate([
@@ -91,10 +83,7 @@ class FeeCategoryController extends Controller
             ->with('success', 'Fee category updated successfully.');
     }
 
-    /**
-     * Remove the specified fee category — blocked if it is already
-     * assigned to any student to protect existing records.
-     */
+   
     public function destroy(FeeCategory $feeCategory)
     {
         abort_unless($feeCategory->school_id === auth()->user()->school_id, 403);

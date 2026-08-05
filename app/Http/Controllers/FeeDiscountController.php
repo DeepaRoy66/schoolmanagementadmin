@@ -26,8 +26,6 @@ class FeeDiscountController extends Controller
         $students = collect();
         $feeRows = collect();
         $selectedStudent = null;
-
-        // Class select vayo bhane, tyo class ko sections dekhaune
         if ($request->filled('class_id')) {
             $class = SchoolClass::with('sections')
                 ->where('id', $request->class_id)
@@ -36,8 +34,6 @@ class FeeDiscountController extends Controller
 
             $sections = $class?->sections ?? collect();
         }
-
-        // Section select vayo bhane, students dekhaune
         if ($request->filled('class_id') && $request->filled('section_id')) {
             $students = Student::where('class_id', $request->class_id)
     ->where('section_id', $request->section_id)
@@ -47,7 +43,6 @@ class FeeDiscountController extends Controller
     ->get();
         }
 
-        // Student + billing period select vayo bhane, fee table taiyar garne
         if ($request->filled('student_id') && $request->filled('billing_period_id')) {
             $selectedStudent = Student::where('id', $request->student_id)
                 ->where('school_id', $schoolId)
@@ -107,7 +102,7 @@ class FeeDiscountController extends Controller
 
         $schoolId = auth()->user()->school_id;
 
-        // SECURITY: student aafnai school ko ho ki confirm garne
+        
         $student = Student::where('id', $validated['student_id'])
             ->where('school_id', $schoolId)
             ->first();
@@ -139,11 +134,6 @@ class FeeDiscountController extends Controller
                 ]
             );
 
-            // If this fee has already been assigned to the student (a
-            // StudentFee row exists for this student+fee+billing period),
-            // recompute its amount right now from the original FeeRate
-            // minus this discount — so the discount takes effect
-            // immediately even on fees assigned before the discount was set.
             $studentFee = StudentFee::where('student_id', $validated['student_id'])
                 ->where('fee_name_id', $row['fee_name_id'])
                 ->where('billing_period_id', $validated['billing_period_id'])
@@ -157,15 +147,13 @@ class FeeDiscountController extends Controller
                     ->where('is_active', true)
                     ->first();
 
-                // Always discount off the original rate (not off whatever the
-                // amount currently is), so re-saving a discount never compounds.
+        
                 $originalAmount = $rate->amount ?? $studentFee->amount;
 
                 $discountedAmount = $originalAmount - $amount - ($originalAmount * $percent / 100);
                 $discountedAmount = max(0, round($discountedAmount, 2));
 
-                // Never drop the amount below what's already been paid,
-                // to avoid a negative balance.
+            
                 $discountedAmount = max($discountedAmount, (float) $studentFee->paid_amount);
 
                 $studentFee->amount = $discountedAmount;

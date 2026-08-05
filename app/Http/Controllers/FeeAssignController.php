@@ -53,7 +53,7 @@ class FeeAssignController extends Controller
     {
         $schoolId = auth()->user()->school_id;
 
-        // SECURITY: aafno school ko class/billing period matra dekhaune
+        
         $classes = SchoolClass::where('school_id', $schoolId)
             ->orderBy('name')
             ->get();
@@ -68,9 +68,6 @@ class FeeAssignController extends Controller
         $feeRates = collect();
 
         if ($request->filled('class_id')) {
-            // Note: sections table ma class_id column chaina (sections school-wide huncha,
-            // students table le matra class_id + section_id dubai independently rakhcha).
-            // Tesaile class filter nagari school ka sabai section dekhaune.
             $sections = Section::where('school_id', $schoolId)
                 ->orderBy('name')
                 ->get();
@@ -84,13 +81,13 @@ class FeeAssignController extends Controller
                 ->get();
         }
 
-        // NAYA: class + billing period dubai select vayesi kun kun fee assign hune ho preview dekhaune
+
         if ($request->filled('class_id') && $request->filled('billing_period_id')) {
             $feeRates = FeeRate::where('school_id', $schoolId)
                 ->where('class_id', $request->class_id)
                 ->where('billing_period_id', $request->billing_period_id)
                 ->where('is_active', true)
-                ->with('feeName') // FeeRate model ma feeName() relation huna parcha
+                ->with('feeName') 
                 ->orderBy('id')
                 ->get();
         }
@@ -123,7 +120,7 @@ class FeeAssignController extends Controller
 
         $schoolId = auth()->user()->school_id;
 
-        // SECURITY: class/section/period/student sabai aafno school ko ho ki confirm garne
+        
         $ownClass = SchoolClass::where('id', $validated['class_id'])->where('school_id', $schoolId)->exists();
         $ownPeriod = BillingPeriod::where('id', $validated['billing_period_id'])->where('school_id', $schoolId)->exists();
 
@@ -132,7 +129,6 @@ class FeeAssignController extends Controller
         }
 
         if (!empty($validated['section_id'])) {
-            // sections table class-scoped chaina, school_id matra check garne
             $ownSection = Section::where('id', $validated['section_id'])
                 ->where('school_id', $schoolId)
                 ->exists();
@@ -142,7 +138,6 @@ class FeeAssignController extends Controller
             }
         }
 
-        // Kun student(s) lai assign garne
         if ($request->boolean('is_individual')) {
             $ownStudent = Student::where('id', $validated['student_id'])->where('school_id', $schoolId)->exists();
             if (!$ownStudent) {
@@ -160,8 +155,6 @@ class FeeAssignController extends Controller
             return redirect()->back()->withErrors(['class_id' => 'No students found for this selection.'])->withInput();
         }
 
-        // Yo class + billing period ko lagi predefine gareko Fee Rate haru nikalne
-        // (checkbox le select gareko matra - fee_rate_ids)
         $feeRates = FeeRate::where('school_id', $schoolId)
             ->where('class_id', $validated['class_id'])
             ->where('billing_period_id', $validated['billing_period_id'])
@@ -180,15 +173,11 @@ class FeeAssignController extends Controller
 
         DB::transaction(function () use ($studentIds, $feeRates, $validated, $schoolId, &$assignedCount, &$skippedCount) {
             foreach ($studentIds as $studentId) {
-                // Any discounts this student already has for this billing
-                // period, keyed by fee_name_id, so an already-set discount
-                // is applied immediately at assign time too.
                 $discounts = FeeDiscount::where('student_id', $studentId)
                     ->where('billing_period_id', $validated['billing_period_id'])
                     ->get()
                     ->keyBy('fee_name_id');
 
-                // Build the list of fee rates this student doesn't already have for this period
                 $ratesToAssign = [];
                 foreach ($feeRates as $rate) {
                     $alreadyExists = StudentFee::where('student_id', $studentId)
@@ -198,22 +187,22 @@ class FeeAssignController extends Controller
 
                     if ($alreadyExists) {
                         $skippedCount++;
-                        continue; // yo student lai yo fee pahile nai assign vaisakeko
+                        continue; 
                     }
 
                     $ratesToAssign[] = $rate;
                 }
 
                 if (empty($ratesToAssign)) {
-                    continue; // sabai fee pahile nai assign vaisakeko, invoice banaunu pardaina
+                    continue; 
                 }
 
-                // 1) Create the real Invoice row first
+                
                 $invoice = Invoice::create([
                     'school_id' => $schoolId,
                     'student_id' => $studentId,
                     'billing_period_id' => $validated['billing_period_id'],
-                    'invoice_no' => 'TEMP', // placeholder, replaced right after we have the id
+                    'invoice_no' => 'TEMP', 
                     'total_amount' => 0,
                     'billing_date' => $validated['billing_date'],
                     'due_date' => $validated['due_date'],
@@ -222,17 +211,15 @@ class FeeAssignController extends Controller
                     'created_by' => auth()->id(),
                 ]);
 
-                // Sequential, DB-guaranteed-unique invoice number based on the auto-increment id
-                // (no separate counter column needed, so no race-condition risk under concurrent requests)
+              
                 $invoice->invoice_no = 'INV-' . now()->format('Y') . '-' . str_pad($invoice->id, 6, '0', STR_PAD_LEFT);
 
-                // 2) Create each fee line item, linked to this invoice
+             
                 $total = 0;
                 foreach ($ratesToAssign as $rate) {
                     $amount = $rate->amount;
 
-                    // Apply any pre-existing discount for this fee right away,
-                    // so the invoice reflects the net amount from the start.
+                  
                     $discount = $discounts->get($rate->fee_name_id);
                     if ($discount) {
                         $amount -= ($discount->discount_amount ?? 0);
@@ -258,7 +245,6 @@ class FeeAssignController extends Controller
                     $assignedCount++;
                 }
 
-                // 3) Now that we know the real total, save it on the invoice
                 $invoice->total_amount = $total;
                 $invoice->save();
             }
@@ -273,11 +259,6 @@ class FeeAssignController extends Controller
             ->with('status', $message);
     }
 
-    /**
-     * Void a batch of StudentFee rows. The listing page's checkbox value is a
-     * comma-separated list of the underlying StudentFee ids belonging to one
-     * grouped "invoice" row, so we flatten before updating.
-     */
     public function bulkVoid(Request $request): JsonResponse
     {
         $request->validate([
@@ -285,8 +266,6 @@ class FeeAssignController extends Controller
         ]);
 
         $schoolId = auth()->user()->school_id;
-
-        // ids arrive as e.g. ["12,13,14", "20,21"] — flatten to a single StudentFee id list
         $flatIds = collect($request->input('ids'))
             ->flatMap(fn ($group) => explode(',', $group))
             ->filter()
@@ -310,11 +289,6 @@ class FeeAssignController extends Controller
         return response()->json(['status' => 'ok']);
     }
 
-    /**
-     * Show/print invoice for one or more grouped rows. `ids` query param is a
-     * comma-separated list of grouped-row values (each itself comma-separated
-     * StudentFee ids), same flattening as bulkVoid.
-     */
     public function invoice(Request $request): View
     {
         $schoolId = auth()->user()->school_id;
@@ -328,9 +302,6 @@ class FeeAssignController extends Controller
             ->whereIn('id', $flatIds)
             ->with(['student', 'feeName', 'billingPeriod', 'school', 'invoice'])
             ->get()
-            // group by real invoice_id when present; legacy rows (invoice_id null,
-            // created before the invoices table existed) fall back to the old key
-            // so they still render instead of silently disappearing
             ->groupBy(fn ($fee) => $fee->invoice_id
                 ?? ('legacy|' . $fee->student_id . '|' . $fee->billing_period_id . '|' . $fee->billing_date));
 
