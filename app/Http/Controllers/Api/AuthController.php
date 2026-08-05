@@ -15,9 +15,7 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    /**
-     * Login - email/password linchha, token dincha
-     */
+
     public function login(Request $request): JsonResponse
     {
         $request->validate([
@@ -33,7 +31,7 @@ class AuthController extends Controller
             ]);
         }
 
-        // License check - school_admin/teacher/student ko lagi
+        
         if ($user->role !== 'super_admin') {
             $school = $user->school;
 
@@ -53,10 +51,10 @@ class AuthController extends Controller
             }
         }
 
-        // Last login timestamp update garne
+
         $user->update(['last_login_at' => now()]);
 
-        // Naya token banaune
+        
         $token = $user->createToken('mobile-app')->plainTextToken;
 
         $userData = [
@@ -69,7 +67,7 @@ class AuthController extends Controller
             'school_name' => $user->school->name ?? null,
         ];
 
-        // Teacher login hunda class teacher ho ki hoina tyo pathaune
+        
         if ($user->role === 'teacher') {
             $teacher = Teacher::where('user_id', $user->id)->first();
 
@@ -85,9 +83,7 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Login gareko user ko info dine
-     */
+    
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -103,7 +99,6 @@ class AuthController extends Controller
             'school_name' => $user->school->name ?? null,
         ];
 
-        // Teacher ko lagi assigned classes + sections + subjects pathaune
         if ($user->role === 'teacher') {
 
             $teacher = Teacher::where('user_id', $user->id)->first();
@@ -143,14 +138,14 @@ class AuthController extends Controller
                     })
                     ->values();
 
-                // Yo teacher class teacher ho ki hoina
+                
                 $response['is_class_teacher'] = $assignedClasses->isNotEmpty();
             } else {
                 $response['is_class_teacher'] = false;
             }
         }
 
-        // Student ko lagi aafno class/section pathaune
+    
         if ($user->role === 'student') {
 
             $student = Student::with(['schoolClass:id,name', 'section:id,name'])
@@ -169,9 +164,7 @@ class AuthController extends Controller
         return response()->json($response);
     }
 
-    /**
-     * Password change garne (login vaisakepachi, App bhitra bata)
-     */
+    
     public function changePassword(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -195,9 +188,7 @@ class AuthController extends Controller
         return response()->json(['message' => 'Password changed successfully.']);
     }
 
-    /**
-     * Logout - current token delete garne
-     */
+    
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();

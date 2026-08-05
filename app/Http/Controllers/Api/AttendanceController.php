@@ -13,9 +13,7 @@ use App\Models\ClassTeacherAssignment;
 
 class AttendanceController extends Controller
 {
-    /**
-     * Teacher: aafno assigned classes ra sections ko list dine
-     */
+   
     public function assignedClasses(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -46,9 +44,7 @@ class AttendanceController extends Controller
         );
     }
 
-    /**
-     * Teacher: given class-section ko student list dine (attendance mark garna)
-     */
+   
     public function students(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -100,9 +96,7 @@ class AttendanceController extends Controller
         );
     }
 
-    /**
-     * Student: aafno class-section ma padhaune teacher haru ko list (New Chat ko lagi)
-     */
+    
     public function myTeachers(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -117,7 +111,7 @@ class AttendanceController extends Controller
             return response()->json(['message' => 'Student profile not found.'], 404);
         }
 
-        // Subject teachers: student ko section ma subject padhaune teacher haru
+        
         $subjectTeachers = TeacherSubjectAllocation::with('teacher:id,user_id,first_name,middle_name,last_name', 'subject:id,subject_name')
             ->where('section_id', $student->section_id)
             ->get()
@@ -132,7 +126,7 @@ class AttendanceController extends Controller
                 ];
             });
 
-        // Class teacher: student ko class-section ko class teacher
+        
         $classTeacherAssignment = ClassTeacherAssignment::with('teacher:id,user_id,first_name,middle_name,last_name')
             ->where('class_id', $student->class_id)
             ->where('section_id', $student->section_id)
@@ -149,7 +143,7 @@ class AttendanceController extends Controller
             ]]);
         }
 
-        // Duitai list combine garne, teacher_id duplicate bhaye hataune
+     
         $allTeachers = $subjectTeachers->concat($classTeacher)
             ->unique('teacher_id')
             ->values();
@@ -157,9 +151,6 @@ class AttendanceController extends Controller
         return response()->json($allTeachers);
     }
 
-    /**
-     * Teacher: attendance mark garne (euta din, multiple students)
-     */
     public function markAttendance(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -237,9 +228,7 @@ class AttendanceController extends Controller
         ]);
     }
 
-    /**
-     * Student: aafno attendance history herne
-     */
+    
     public function myAttendance(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -261,9 +250,7 @@ class AttendanceController extends Controller
         return response()->json($attendance);
     }
 
-    /**
-     * NAYA: Student attendance summary (total/present/absent/leave) + date-wise records
-     */
+  
     public function myAttendanceSummary(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -298,9 +285,7 @@ class AttendanceController extends Controller
         ]);
     }
 
-    /**
-     * Teacher: euta specific din ko attendance herne (aafno assigned class-section ko matra)
-     */
+   
     public function viewByDate(Request $request): JsonResponse
     {
         $user = $request->user();
