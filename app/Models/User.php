@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\School;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -51,9 +50,7 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Yo user (school admin/teacher/student) kun school ko ho
-     */
+    
     public function school()
     {
         return $this->belongsTo(School::class);

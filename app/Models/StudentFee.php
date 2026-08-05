@@ -62,7 +62,6 @@ class StudentFee extends Model
         return $this->hasMany(FeePayment::class);
     }
 
-    // Who assigned this fee (used to show "User Name" in the expand row)
     public function creator()
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by');

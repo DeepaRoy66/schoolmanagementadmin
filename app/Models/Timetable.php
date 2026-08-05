@@ -22,7 +22,7 @@ class Timetable extends Model
         'teacher_id',
         'class_id',
         'section_id',
-        'class', // keeping temporarily for backward-compat until admin form is updated
+        'class', 
         'day',
         'period',
         'subject',
