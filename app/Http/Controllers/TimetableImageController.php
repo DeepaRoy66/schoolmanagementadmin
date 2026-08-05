@@ -10,9 +10,7 @@ use Illuminate\View\View;
 
 class TimetableImageController extends Controller
 {
-    /**
-     * Latest image per class-section, plus how many versions exist.
-     */
+    
     public function index(): View
     {
         $latestPerClassSection = TimetableImage::with(['schoolClass:id,name', 'section:id,name'])
@@ -56,9 +54,6 @@ class TimetableImageController extends Controller
             ->with('status', 'Timetable image uploaded.');
     }
 
-    /**
-     * View full upload history for one class-section.
-     */
     public function history(int $classId, int $sectionId): View
     {
         $images = TimetableImage::with(['schoolClass:id,name', 'section:id,name'])
