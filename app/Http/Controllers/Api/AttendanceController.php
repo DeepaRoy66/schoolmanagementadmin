@@ -87,11 +87,14 @@ class AttendanceController extends Controller
         return response()->json(
             $students->map(function ($student) {
                 return [
-                    'id' => $student->id,
+                    'student_id' => $student->id,
+                    'user_id' => $student->user_id,
                     'name' => $student->full_name,
                     'roll_number' => $student->roll_number,
-                    'class' => $student->schoolClass?->name,
-                    'section' => $student->section?->name,
+                    'class_id' => $student->class_id,
+                    'class_name' => $student->schoolClass?->name,
+                    'section_id' => $student->section_id,
+                    'section_name' => $student->section?->name,
                 ];
             })
         );
@@ -115,13 +118,14 @@ class AttendanceController extends Controller
         }
 
         // Subject teachers: student ko section ma subject padhaune teacher haru
-        $subjectTeachers = TeacherSubjectAllocation::with('teacher:id,first_name,middle_name,last_name', 'subject:id,subject_name')
+        $subjectTeachers = TeacherSubjectAllocation::with('teacher:id,user_id,first_name,middle_name,last_name', 'subject:id,subject_name')
             ->where('section_id', $student->section_id)
             ->get()
             ->filter(fn($alloc) => $alloc->teacher !== null)
             ->map(function ($alloc) {
                 return [
                     'teacher_id' => $alloc->teacher->id,
+                    'user_id' => $alloc->teacher->user_id,
                     'name' => $alloc->teacher->full_name,
                     'subject' => $alloc->subject?->subject_name,
                     'role' => 'subject_teacher',
@@ -129,7 +133,7 @@ class AttendanceController extends Controller
             });
 
         // Class teacher: student ko class-section ko class teacher
-        $classTeacherAssignment = ClassTeacherAssignment::with('teacher:id,first_name,middle_name,last_name')
+        $classTeacherAssignment = ClassTeacherAssignment::with('teacher:id,user_id,first_name,middle_name,last_name')
             ->where('class_id', $student->class_id)
             ->where('section_id', $student->section_id)
             ->first();
@@ -138,6 +142,7 @@ class AttendanceController extends Controller
         if ($classTeacherAssignment && $classTeacherAssignment->teacher) {
             $classTeacher = collect([[
                 'teacher_id' => $classTeacherAssignment->teacher->id,
+                'user_id' => $classTeacherAssignment->teacher->user_id,
                 'name' => $classTeacherAssignment->teacher->full_name,
                 'subject' => null,
                 'role' => 'class_teacher',
@@ -179,7 +184,6 @@ class AttendanceController extends Controller
             'records.*.remarks' => 'nullable|string|max:255',
         ]);
 
-        // SECURITY: aafno class-section ko student_id haru matra allowed list ma nikalne
         $requestedIds = collect($validated['records'])->pluck('student_id')->unique();
 
         $assignment = ClassTeacherAssignment::where('teacher_id', $teacher->id)
@@ -203,9 +207,8 @@ class AttendanceController extends Controller
         $savedCount = 0;
 
         foreach ($validated['records'] as $record) {
-            // SECURITY: yo student real ma logged-in teacher ko class-section ko ho ki check
             if (!in_array($record['student_id'], $validStudentIds)) {
-                continue; // arko class/section ko student ho, silently skip
+                continue;
             }
 
             Attendance::updateOrCreate(
@@ -280,7 +283,6 @@ class AttendanceController extends Controller
             ->groupBy('status')
             ->pluck('count', 'status');
 
-        // date wise records - client le yo chai maageko
         $records = Attendance::where('student_id', $student->id)
             ->orderBy('date', 'desc')
             ->get(['date', 'status', 'remarks']);
@@ -319,7 +321,6 @@ class AttendanceController extends Controller
             'date' => 'required|date',
         ]);
 
-        // SECURITY: yo class-section teacher lai assign bhako ho ki check
         $assigned = ClassTeacherAssignment::where('teacher_id', $teacher->id)
             ->where('class_id', $validated['class_id'])
             ->where('section_id', $validated['section_id'])

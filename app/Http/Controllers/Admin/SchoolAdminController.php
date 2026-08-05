@@ -12,9 +12,7 @@ use Illuminate\View\View;
 
 class SchoolAdminController extends Controller
 {
-    /**
-     * Sabai school admin haru list garne
-     */
+    
     public function index(): View
     {
         $schoolAdmins = User::where('role', 'school_admin')
@@ -25,9 +23,6 @@ class SchoolAdminController extends Controller
         return view('admin.school-admins.index', compact('schoolAdmins'));
     }
 
-    /**
-     * Naya school admin add garne form dekhaune
-     */
     public function create(): View
     {
         $schools = School::orderBy('name')->get();
@@ -35,9 +30,7 @@ class SchoolAdminController extends Controller
         return view('admin.school-admins.create', compact('schools'));
     }
 
-    /**
-     * Form bata aayeko data database ma save garne
-     */
+    
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -61,17 +54,13 @@ class SchoolAdminController extends Controller
             ->with('status', 'School Admin successfully created.');
     }
 
-    /**
-     * Euta school admin ko detail herne
-     */
+   
     public function show(User $school_admin): View
     {
         return view('admin.school-admins.show', ['schoolAdmin' => $school_admin]);
     }
 
-    /**
-     * School admin edit garne form dekhaune
-     */
+   
     public function edit(User $school_admin): View
     {
         $schools = School::orderBy('name')->get();

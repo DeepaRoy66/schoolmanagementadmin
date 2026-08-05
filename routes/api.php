@@ -7,8 +7,9 @@ use App\Http\Controllers\Api\ResultController;
 use App\Http\Controllers\Api\NoticeController;
 use App\Http\Controllers\Api\FeeController;
 use App\Http\Controllers\Api\TeacherDashboardController;
-use App\Http\Controllers\Api\TimetableController;
+use App\Http\Controllers\Api\TimetableImageController;
 use App\Http\Controllers\Api\MaterialController;
+use App\Http\Controllers\Api\GalleryController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -36,6 +37,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/teacher/total-classes', [TeacherDashboardController::class, 'totalClasses']); 
     Route::get('/teacher/assigned-classes', [AttendanceController::class, 'assignedClasses']); 
     Route::get('/teacher/sections', [AttendanceController::class, 'sections']);
+    
+
     // Student endpoints
     Route::get('/student/attendance', [AttendanceController::class, 'myAttendance']);
     Route::get('/student/attendance/summary', [AttendanceController::class, 'myAttendanceSummary']);
@@ -43,13 +46,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/student/homework/{homework}/complete', [HomeworkController::class, 'markComplete']);
     Route::get('/student/results', [ResultController::class, 'myResults']);
     Route::get('/student/fees', [FeeController::class, 'myFees']);
-    
     Route::get('/student/materials', [MaterialController::class, 'myMaterials']);
     Route::get('/student/teachers', [AttendanceController::class, 'myTeachers']);
 
     // Shared endpoints
     Route::get('/notices', [NoticeController::class, 'index']);
-    Route::get('/timetable', [TimetableController::class, 'index']);
+    Route::get('/timetable', [TimetableImageController::class, 'show']);
+    Route::get('/gallery', [GalleryController::class, 'index']);
+    Route::post('/gallery', [GalleryController::class, 'store']);
+    Route::delete('/gallery/{gallery}', [GalleryController::class, 'destroy']);
 
-    
 });

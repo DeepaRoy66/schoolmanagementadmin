@@ -28,6 +28,7 @@ use App\Http\Controllers\FeeNameController;
 use App\Http\Controllers\FeeRateController;
 use App\Http\Controllers\FeeDiscountController;
 use App\Http\Controllers\FeeAssignController;
+use App\Http\Controllers\TimetableImageController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -132,6 +133,13 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
         Route::resource('timetables', TimetableController::class)
             ->except(['show', 'edit', 'update']);
 
+
+
+Route::resource('timetable-images', TimetableImageController::class)
+    ->except(['show', 'edit', 'update']);
+
+Route::get('timetable-images/{classId}/{sectionId}/history', [TimetableImageController::class, 'history'])
+    ->name('timetable-images.history');
         Route::resource('billing-periods', BillingPeriodController::class);
 
         // -------------------------------

@@ -6,11 +6,9 @@ use App\Models\Scopes\SchoolScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Timetable extends Model
+class TimetableImage extends Model
 {
     use HasFactory;
-
-    protected $table = 'timetables';
 
     protected static function booted(): void
     {
@@ -19,21 +17,12 @@ class Timetable extends Model
 
     protected $fillable = [
         'school_id',
-        'teacher_id',
         'class_id',
         'section_id',
-        'class', // keeping temporarily for backward-compat until admin form is updated
-        'day',
-        'period',
-        'subject',
-        'start_time',
-        'end_time',
+        'file_path',
+        'file_name',
+        'uploaded_by',
     ];
-
-    public function teacher()
-    {
-        return $this->belongsTo(Teacher::class);
-    }
 
     public function schoolClass()
     {

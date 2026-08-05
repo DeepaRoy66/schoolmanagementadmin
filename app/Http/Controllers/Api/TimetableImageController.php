@@ -4,16 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Student;
-use App\Models\Timetable;
+use App\Models\TimetableImage;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
-class TimetableController extends Controller
+class TimetableImageController extends Controller
 {
-    /**
-     * Teacher/Student: class ko timetable herne (day-wise, default aajako din)
-     */
-    public function index(Request $request): JsonResponse
+    public function show(Request $request): JsonResponse
     {
         $user = $request->user();
 
@@ -26,33 +23,27 @@ class TimetableController extends Controller
 
             $classId = $student->class_id;
             $sectionId = $student->section_id;
-            $className = $student->schoolClass?->name;
-            $sectionName = $student->section?->name;
         } else {
             $classId = $request->query('class_id');
             $sectionId = $request->query('section_id');
-            $className = null;
-            $sectionName = null;
         }
 
         if (!$classId || !$sectionId) {
             return response()->json(['message' => 'Class or section not specified.'], 422);
         }
 
-        // Day specify gareko cha bhane tyo, natra aajako din
-        $day = $request->query('day') ?: now()->format('l'); // 'l' = full day name jastai "Monday"
-
-        $timetable = Timetable::where('class_id', $classId)
+        $latest = TimetableImage::where('class_id', $classId)
             ->where('section_id', $sectionId)
-            ->where('day', $day)
-            ->orderBy('period')
-            ->get(['id', 'day', 'period', 'subject', 'start_time', 'end_time']);
+            ->latest()
+            ->first();
+
+        if (!$latest) {
+            return response()->json(['message' => 'No timetable uploaded yet for this class.'], 404);
+        }
 
         return response()->json([
-            'class' => $className,
-            'section' => $sectionName,
-            'day' => $day,
-            'timetable' => $timetable,
+            'image_url' => asset('storage/' . $latest->file_path),
+            'uploaded_at' => $latest->created_at,
         ]);
     }
 }

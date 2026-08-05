@@ -21,7 +21,7 @@
                                     <option
                                         value="{{ $class->id }}"
                                         data-name="{{ $class->name }}"
-                                        data-sections='@json($class->sections->pluck("name"))'
+                                        data-sections='@json($class->sections->map(fn($s) => ["id" => $s->id, "name" => $s->name]))'
                                         data-subjects='@json($class->subjects->pluck("subject_name"))'
                                     >
                                         {{ $class->name }}
@@ -31,14 +31,19 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Section</label>
-                            <select id="section_select" class="w-full border-gray-300 rounded-lg">
+                            <select id="section_select" class="w-full border-gray-300 rounded-lg" required>
                                 <option value="">-- Select Section --</option>
                             </select>
                         </div>
                     </div>
 
-                    <input type="hidden" name="class" id="class_hidden" value="{{ old('class') }}">
-                    @error('class')
+                    <input type="hidden" name="class_id" id="class_id_hidden" value="{{ old('class_id') }}">
+                    @error('class_id')
+                        <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+
+                    <input type="hidden" name="section_id" id="section_id_hidden" value="{{ old('section_id') }}">
+                    @error('section_id')
                         <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
                     @enderror
 
@@ -117,35 +122,39 @@
             const classSelect = document.getElementById('class_select');
             const sectionSelect = document.getElementById('section_select');
             const subjectSelect = document.getElementById('subject_select');
-            const classHidden = document.getElementById('class_hidden');
+            const classIdHidden = document.getElementById('class_id_hidden');
+            const sectionIdHidden = document.getElementById('section_id_hidden');
             const subjectHidden = document.getElementById('subject_hidden');
 
-            function fillSelect(selectEl, items, placeholder) {
-                selectEl.innerHTML = '<option value="">' + placeholder + '</option>';
+            function fillSectionSelect(sections) {
+                sectionSelect.innerHTML = '<option value="">-- Select Section --</option>';
+                sections.forEach(function (s) {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = s.name;
+                    sectionSelect.appendChild(opt);
+                });
+            }
+
+            function fillSubjectSelect(items, placeholder) {
+                subjectSelect.innerHTML = '<option value="">' + placeholder + '</option>';
                 items.forEach(function (item) {
                     const opt = document.createElement('option');
                     opt.value = item;
                     opt.textContent = item;
-                    selectEl.appendChild(opt);
+                    subjectSelect.appendChild(opt);
                 });
-            }
-
-            function updateClassHidden() {
-                const selectedClassOption = classSelect.options[classSelect.selectedIndex];
-                const className = selectedClassOption ? selectedClassOption.dataset.name : '';
-                const sectionName = sectionSelect.value;
-                classHidden.value = className
-                    ? (sectionName ? className + ' - ' + sectionName : className)
-                    : '';
             }
 
             classSelect.addEventListener('change', function () {
                 const selected = this.options[this.selectedIndex];
 
+                classIdHidden.value = selected && selected.value ? selected.value : '';
+                sectionIdHidden.value = '';
+
                 if (!selected || !selected.value) {
-                    fillSelect(sectionSelect, [], '-- Select Section --');
-                    fillSelect(subjectSelect, [], '-- Select Class First --');
-                    updateClassHidden();
+                    fillSectionSelect([]);
+                    fillSubjectSelect([], '-- Select Class First --');
                     subjectHidden.value = '';
                     return;
                 }
@@ -153,14 +162,15 @@
                 const sections = JSON.parse(selected.dataset.sections || '[]');
                 const subjects = JSON.parse(selected.dataset.subjects || '[]');
 
-                fillSelect(sectionSelect, sections, '-- Select Section --');
-                fillSelect(subjectSelect, subjects, subjects.length ? '-- Select Subject --' : '-- No Subjects Found --');
+                fillSectionSelect(sections);
+                fillSubjectSelect(subjects, subjects.length ? '-- Select Subject --' : '-- No Subjects Found --');
 
-                updateClassHidden();
                 subjectHidden.value = '';
             });
 
-            sectionSelect.addEventListener('change', updateClassHidden);
+            sectionSelect.addEventListener('change', function () {
+                sectionIdHidden.value = this.value;
+            });
 
             subjectSelect.addEventListener('change', function () {
                 subjectHidden.value = this.value;

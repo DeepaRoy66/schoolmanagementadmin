@@ -32,9 +32,7 @@ class LicenseController extends Controller
         return view('admin.licenses.index', compact('schools', 'counts'));
     }
 
-    /**
-     * Schools whose license expires within the next 14 days (and aren't already expired).
-     */
+    
     public function expiring(Request $request)
     {
         $days = $request->integer('days', 14);
@@ -50,9 +48,7 @@ class LicenseController extends Controller
         return view('admin.licenses.expiring', compact('schools', 'days'));
     }
 
-    /**
-     * Renew / extend a school's license.
-     */
+    
     public function renew(Request $request, School $school)
     {
         $validated = $request->validate([

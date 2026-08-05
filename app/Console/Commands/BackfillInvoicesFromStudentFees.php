@@ -33,8 +33,7 @@ class BackfillInvoicesFromStudentFees extends Command
             foreach ($groups as $group) {
                 $first = $group->first();
 
-                // Some legacy rows may have NULL billing_date/due_date (data predates
-                // validation being enforced). Fall back gracefully instead of crashing.
+               
                 $billingDate = $first->billing_date ?? optional($first->created_at)->toDateString() ?? now()->toDateString();
                 $dueDate = $first->due_date ?? $billingDate;
 

@@ -49,7 +49,7 @@ class SchoolController extends Controller
             'trial_ends_at' => 'nullable|date',
         ]);
 
-        // If the admin left the code blank, auto-generate one (e.g. "SCH-0001").
+       
         if (empty($validated['school_code'])) {
             $validated['school_code'] = School::generateSchoolCode();
         }
@@ -96,9 +96,7 @@ class SchoolController extends Controller
             ->with('status', 'School deleted.');
     }
 
-    /**
-     * License renew garne - naya expiry date set garne, status active banaune
-     */
+    
     public function renew(Request $request, School $school): RedirectResponse
     {
         $validated = $request->validate([

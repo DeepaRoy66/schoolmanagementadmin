@@ -6,11 +6,9 @@ use App\Models\Scopes\SchoolScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Timetable extends Model
+class Gallery extends Model
 {
     use HasFactory;
-
-    protected $table = 'timetables';
 
     protected static function booted(): void
     {
@@ -19,20 +17,17 @@ class Timetable extends Model
 
     protected $fillable = [
         'school_id',
-        'teacher_id',
         'class_id',
-        'section_id',
-        'class', // keeping temporarily for backward-compat until admin form is updated
-        'day',
-        'period',
-        'subject',
-        'start_time',
-        'end_time',
+        'uploaded_by',
+        'caption',
+        'image_path',
     ];
 
-    public function teacher()
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute(): ?string
     {
-        return $this->belongsTo(Teacher::class);
+        return $this->image_path ? asset('storage/' . $this->image_path) : null;
     }
 
     public function schoolClass()
@@ -40,8 +35,8 @@ class Timetable extends Model
         return $this->belongsTo(SchoolClass::class, 'class_id');
     }
 
-    public function section()
+    public function uploader()
     {
-        return $this->belongsTo(Section::class, 'section_id');
+        return $this->belongsTo(User::class, 'uploaded_by');
     }
 }

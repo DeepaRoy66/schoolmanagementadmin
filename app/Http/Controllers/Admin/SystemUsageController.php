@@ -12,7 +12,7 @@ class SystemUsageController extends Controller
 {
     public function index()
     {
-        // --- Top-line counts ---
+       
         $stats = [
             'total_schools'   => School::count(),
             'active_licenses' => School::where('license_status', 'active')->count(),
@@ -24,14 +24,14 @@ class SystemUsageController extends Controller
             'announcements'   => Announcement::count(),
         ];
 
-        // --- License status distribution (for donut chart) ---
+        
         $licenseDistribution = [
             'Active'  => $stats['active_licenses'],
             'Trial'   => $stats['trial_licenses'],
             'Expired' => $stats['expired_licenses'],
         ];
 
-        // --- Schools added per month, last 6 months (for bar chart) ---
+        
         $schoolGrowth = collect(range(5, 0))->map(function ($monthsAgo) {
             $date = now()->subMonths($monthsAgo);
             return [
@@ -42,7 +42,7 @@ class SystemUsageController extends Controller
             ];
         });
 
-        // --- Most recently active schools (based on any user's last_login_at) ---
+       
         $recentlyActive = School::query()
             ->withMax('users as last_activity', 'last_login_at')
             ->havingNotNull('last_activity')
@@ -50,7 +50,7 @@ class SystemUsageController extends Controller
             ->take(5)
             ->get();
 
-        // --- Inactive schools: no user has logged in within 30 days (or ever) ---
+        
         $inactiveSchools = School::query()
             ->withMax('users as last_activity', 'last_login_at')
             ->having(function ($query) {
