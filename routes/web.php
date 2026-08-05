@@ -94,12 +94,7 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
 
         Route::resource('teachers', TeacherController::class);
 
-        // -------------------------------
-        // Subject Allocation (Class-Section x Subject -> Teacher matrix)
-        // Handled by SubjectAllocationController. Names below no longer
-        // re-prepend "school-admin." since the group already adds that
-        // prefix (the old duplicate prefix produced an invalid route name).
-        // -------------------------------
+       
         Route::get('/subject-allocations', [SubjectAllocationController::class, 'index'])
             ->name('subject-allocations.index');
 
@@ -109,10 +104,7 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
         Route::post('/subject-allocations', [SubjectAllocationController::class, 'store'])
             ->name('subject-allocations.store');
 
-        // -------------------------------
-        // Assign Class Teacher
-        // (attendance access per class-section)
-        // -------------------------------
+       
         Route::get('class-teacher', [TeacherController::class, 'assignClassTeacherForm'])
             ->name('class-teacher.form');
 
@@ -142,19 +134,10 @@ Route::get('timetable-images/{classId}/{sectionId}/history', [TimetableImageCont
     ->name('timetable-images.history');
         Route::resource('billing-periods', BillingPeriodController::class);
 
-        // -------------------------------
-        // Fee Management
-        // -------------------------------
+    
         Route::get('fees/reports', [StudentFeeController::class, 'reports'])
             ->name('fees.reports');
 
-        // NOTE: fee-categories.create and fee-groups.create are provided by
-        // the resource registrations below (school-admin.fee-categories.create
-        // / school-admin.fee-groups.create). Do not re-declare them manually
-        // here - doing so either double-prefixes the route name
-        // ("school-admin.school-admin.fee-categories.create", unreachable)
-        // or silently shadows the resource's own create route since this
-        // block runs first.
 
         Route::resource('fee-categories', FeeCategoryController::class)
             ->except(['show']);
@@ -172,9 +155,7 @@ Route::get('timetable-images/{classId}/{sectionId}/history', [TimetableImageCont
 
         Route::resource('fee-rates', FeeRateController::class)->except(['show']);
 
-        // -------------------------------
-        // Fee Discounts
-        // -------------------------------
+
         Route::get('fee-discounts/create', [FeeDiscountController::class, 'create'])
             ->name('fee-discounts.create');
 
@@ -190,9 +171,7 @@ Route::get('timetable-images/{classId}/{sectionId}/history', [TimetableImageCont
         Route::get('fee-discounts/fee-rows', [FeeDiscountController::class, 'feeRows'])
             ->name('fee-discounts.fee-rows');
 
-        // -------------------------------
-        // Fee Assign
-        // -------------------------------
+       
         Route::get('fee-assign', [FeeAssignController::class, 'index'])
             ->name('fee-assign.index');
 
@@ -227,9 +206,7 @@ Route::get('timetable-images/{classId}/{sectionId}/history', [TimetableImageCont
     });
 
 
-// ===============================
-// Profile Routes
-// ===============================
+
 Route::middleware('auth')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])
