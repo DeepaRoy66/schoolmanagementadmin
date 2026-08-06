@@ -6,73 +6,75 @@
     </x-slot>
 
     <div class="py-8">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
+        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white border border-gray-200 rounded-md">
 
                 <!-- Top Header -->
-                <div class="flex justify-between items-center mb-4">
+                <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
                     <p class="text-sm text-gray-500">
                         Assign teachers to subjects for each class and section.
                     </p>
 
                     <a href="{{ route('school-admin.subject-allocations.create') }}"
-                        class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
-                        + Add Assignment
+                        class="bg-[#3b82f6] text-white px-4 py-2 rounded text-sm font-medium hover:bg-[#2563eb] transition-colors">
+                        + Allocate Subject
                     </a>
                 </div>
 
                 <!-- Table -->
-                <table class="w-full border-collapse text-sm">
-                    <thead>
-                        <tr class="bg-gray-100 text-left">
-                            <th class="border p-2">Class</th>
-                            <th class="border p-2">Section</th>
-                            <th class="border p-2">Subject</th>
-                            <th class="border p-2">Teacher</th>
-                            <th class="border p-2">Action</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="allocationBody">
-                        @foreach ($rows as $row)
-                            <tr data-section-id="{{ $row['section_id'] }}"
-                                data-subject-id="{{ $row['subject_id'] }}">
-
-                                <td class="border p-2">
-                                    {{ $row['class_name'] }}
-                                </td>
-
-                                <td class="border p-2">
-                                    {{ $row['section_name'] }}
-                                </td>
-
-                                <td class="border p-2">
-                                    {{ $row['subject_name'] }}
-                                </td>
-
-                                <td class="border p-2 teacher-cell">
-                                    @if ($row['teacher_name'])
-                                        {{ $row['teacher_name'] }}
-                                    @else
-                                        <span class="text-red-600 italic">
-                                            Not assigned
-                                        </span>
-                                    @endif
-                                </td>
-
-                                <td class="border p-2">
-                                    <button
-                                        type="button"
-                                        class="edit-btn text-blue-600 hover:underline"
-                                        data-current-teacher="{{ $row['teacher_id'] }}">
-                                        Edit
-                                    </button>
-                                </td>
-
+                <div class="px-6 py-4">
+                    <table class="w-full border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-gray-50 text-left">
+                                <th class="border border-gray-200 p-2 text-gray-600 font-medium">Class</th>
+                                <th class="border border-gray-200 p-2 text-gray-600 font-medium">Section</th>
+                                <th class="border border-gray-200 p-2 text-gray-600 font-medium">Subject</th>
+                                <th class="border border-gray-200 p-2 text-gray-600 font-medium">Teacher</th>
+                                <th class="border border-gray-200 p-2 text-gray-600 font-medium">Action</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+
+                        <tbody id="allocationBody">
+                            @foreach ($rows as $row)
+                                <tr data-section-id="{{ $row['section_id'] }}"
+                                    data-subject-id="{{ $row['subject_id'] }}">
+
+                                    <td class="border border-gray-200 p-2">
+                                        {{ $row['class_name'] }}
+                                    </td>
+
+                                    <td class="border border-gray-200 p-2">
+                                        {{ $row['section_name'] }}
+                                    </td>
+
+                                    <td class="border border-gray-200 p-2">
+                                        {{ $row['subject_name'] }}
+                                    </td>
+
+                                    <td class="border border-gray-200 p-2 teacher-cell">
+                                        @if ($row['teacher_name'])
+                                            {{ $row['teacher_name'] }}
+                                        @else
+                                            <span class="text-red-600 italic">
+                                                Not assigned
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <td class="border border-gray-200 p-2">
+                                        <button
+                                            type="button"
+                                            class="edit-btn bg-yellow-400 text-yellow-900 px-3 py-1 rounded text-xs font-medium hover:bg-yellow-500 transition-colors"
+                                            data-current-teacher="{{ $row['teacher_id'] }}">
+                                            Edit
+                                        </button>
+                                    </td>
+
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
 
             </div>
         </div>
@@ -104,13 +106,15 @@
             ).join('');
 
             teacherCell.innerHTML = `
-                <select class="teacher-select border border-gray-300 rounded px-2 py-1 w-full">
+                <select class="teacher-select border border-gray-300 rounded px-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]">
                     <option value="">-- Select Teacher --</option>
                     ${options}
                 </select>
             `;
 
             btn.textContent = 'Save';
+            btn.classList.remove('bg-yellow-400', 'text-yellow-900', 'hover:bg-yellow-500');
+            btn.classList.add('bg-[#3b82f6]', 'text-white', 'hover:bg-[#2563eb]');
 
             btn.onclick = async function() {
 
