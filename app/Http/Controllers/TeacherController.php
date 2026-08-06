@@ -173,10 +173,29 @@ class TeacherController extends Controller
             'teacher_id' => ['required', 'exists:teachers,id'],
         ]);
 
-        // Euta class-section (class_id + section_id combo) ko euta matra class teacher
-        // huna sakcha - naya teacher le purano lai replace garcha. section_id matra
-        // use gareko xaina kina bhane sections classes bich share huncha (Class 10 -
-        // Section A ra Class 3 - Section A duitai faraak assignment hun sakcha).
+        // Teacher pahile aru class/section ko class teacher bhaisakeko xa vane,
+        // yaha assign garna dine xaina. Purano assignment lai auto-move/delete
+        // gardaina - user le pahila tyo purano assignment (Remove) hataunu
+        // paryo, tyo pachi matra naya class/section ma assign garna milxa.
+        $existing = ClassTeacherAssignment::where('teacher_id', $validated['teacher_id'])
+            ->where(function ($q) use ($validated) {
+                $q->where('class_id', '!=', $validated['class_id'])
+                  ->orWhere('section_id', '!=', $validated['section_id']);
+            })
+            ->with(['schoolClass', 'section'])
+            ->first();
+
+        if ($existing) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'teacher_id' => 'This teacher is already assigned to "' . $existing->schoolClass->name . ' - ' . $existing->section->name . '". A teacher can only be class teacher of one class-section at a time. Please remove that assignment first before assigning here.',
+                ]);
+        }
+
+        // Yahi class-section ko lagi teacher replace garne case chai thikai xa
+        // (euta section ko euta matra class teacher huncha, tyo teacher
+        // change garna milxa).
         ClassTeacherAssignment::updateOrCreate(
             [
                 'class_id'   => $validated['class_id'],

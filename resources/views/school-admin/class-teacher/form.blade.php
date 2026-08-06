@@ -6,24 +6,27 @@
     </x-slot>
 
     <div class="py-8">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             {{-- Flash messages --}}
             @if (session('success'))
-                <div class="p-4 bg-green-100 text-green-800 rounded-lg text-sm">
+                <div class="border border-green-200 bg-green-50 text-green-800 rounded-md px-4 py-3 text-sm">
                     {{ session('success') }}
                 </div>
             @endif
 
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                <p class="text-sm text-gray-500 mb-4">
-                    After assigning a class teacher, the teacher will have access to the attendance and other features for that class and section. If a class already has a class teacher, assigning a new one will replace the previous teacher.
-                </p>
+            <div class="bg-white border border-gray-200 rounded-md">
+
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <p class="text-sm text-gray-500">
+                        After assigning a class teacher, the teacher will have access to the attendance and other features for that class and section. If a class already has a class teacher, assigning a new one will replace the previous teacher.
+                    </p>
+                </div>
 
                 @if ($errors->any())
-                    <div class="mb-4 p-4 bg-red-100 text-red-800 rounded-lg text-sm">
-                        <p class="font-medium mb-1">Form submit hudaina, yi error haru fix garnus:</p>
-                        <ul class="list-disc list-inside">
+                    <div class="mx-6 mt-5 border border-red-200 bg-red-50 rounded-md px-4 py-3">
+                        <p class="text-sm font-medium text-red-800 mb-1">Form submit hudaina, yi error haru fix garnus:</p>
+                        <ul class="list-disc list-inside text-sm text-red-700">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
@@ -34,90 +37,108 @@
                 <form method="POST" action="{{ route('school-admin.class-teacher.store') }}" id="assignForm">
                     @csrf
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Class</label>
-                        <select name="class_id" id="class_id" class="w-full border-gray-300 rounded-lg" required>
-                            <option value="">-- Select Class --</option>
-                            @foreach ($classes as $class)
-                                <option value="{{ $class->id }}" {{ old('class_id') == $class->id ? 'selected' : '' }}>
-                                    {{ $class->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('class_id')
-                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                    <div class="px-6 pt-6">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Assignment Details</h3>
+
+                        <div class="grid grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Class <span class="text-red-500">*</span></label>
+                                <select name="class_id" id="class_id"
+                                        class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]" required>
+                                    <option value="">-- Select Class --</option>
+                                    @foreach ($classes as $class)
+                                        <option value="{{ $class->id }}" {{ old('class_id') == $class->id ? 'selected' : '' }}>
+                                            {{ $class->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('class_id')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Section <span class="text-red-500">*</span></label>
+                                <select name="section_id" id="section_id"
+                                        class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]" required>
+                                    <option value="">-- Select Section --</option>
+                                </select>
+                                @error('section_id')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                                <p id="conflictWarning" class="text-amber-600 text-xs mt-1 hidden"></p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Teacher <span class="text-red-500">*</span></label>
+                                <select name="teacher_id"
+                                        class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]" required>
+                                    <option value="">-- Select Teacher --</option>
+                                    @foreach ($teachers as $teacher)
+                                        <option value="{{ $teacher->id }}" {{ old('teacher_id') == $teacher->id ? 'selected' : '' }}>
+                                            {{ $teacher->full_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('teacher_id')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Section</label>
-                        <select name="section_id" id="section_id" class="w-full border-gray-300 rounded-lg" required>
-                            <option value="">-- Select Section --</option>
-                        </select>
-                        @error('section_id')
-                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                        <p id="conflictWarning" class="text-amber-600 text-xs mt-1 hidden"></p>
+                    <div class="flex items-center gap-3 px-6 py-5 mt-2 border-t border-gray-200 bg-gray-50 rounded-b-md">
+                        <button type="submit"
+                                class="bg-[#3b82f6] text-white px-5 py-2 rounded text-sm font-medium hover:bg-[#2563eb] transition-colors">
+                            Assign Class Teacher
+                        </button>
                     </div>
-
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Teacher</label>
-                        <select name="teacher_id" class="w-full border-gray-300 rounded-lg" required>
-                            <option value="">-- Select Teacher --</option>
-                            @foreach ($teachers as $teacher)
-                                <option value="{{ $teacher->id }}" {{ old('teacher_id') == $teacher->id ? 'selected' : '' }}>
-                                    {{ $teacher->full_name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('teacher_id')
-                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <button type="submit"
-                            class="bg-gray-900 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
-                        Save Assignment
-                    </button>
                 </form>
             </div>
 
             {{-- Current assignments --}}
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                <h3 class="text-sm font-semibold text-gray-800 mb-4">Current Class Teachers</h3>
+            <div class="bg-white border border-gray-200 rounded-md">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Current Class Teachers</h3>
+                </div>
 
-                @if ($assignments->isEmpty())
-                    <p class="text-sm text-gray-500">No class teachers assigned yet.</p>
-                @else
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="text-left text-gray-500 border-b">
-                                <th class="py-2">Class</th>
-                                <th class="py-2">Section</th>
-                                <th class="py-2">Teacher</th>
-                                <th class="py-2"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($assignments as $assignment)
-                                <tr class="border-b">
-                                    <td class="py-2">{{ $assignment->schoolClass->name }}</td>
-                                    <td class="py-2">{{ $assignment->section->name }}</td>
-                                    <td class="py-2">{{ $assignment->teacher->full_name }}</td>
-                                    <td class="py-2 text-right">
-                                        <form method="POST"
-                                              action="{{ route('school-admin.class-teacher.remove', $assignment->id) }}"
-                                              onsubmit="return confirm('{{ $assignment->section->name }} bata class teacher hataune? Attendance access pani jancha.');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:underline text-xs">Remove</button>
-                                        </form>
-                                    </td>
+                <div class="px-6 py-4">
+                    @if ($assignments->isEmpty())
+                        <p class="text-sm text-gray-500">No class teachers assigned yet.</p>
+                    @else
+                        <table class="w-full border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 text-left">
+                                    <th class="border border-gray-200 p-2 text-gray-600 font-medium">Class</th>
+                                    <th class="border border-gray-200 p-2 text-gray-600 font-medium">Section</th>
+                                    <th class="border border-gray-200 p-2 text-gray-600 font-medium">Teacher</th>
+                                    <th class="border border-gray-200 p-2 text-gray-600 font-medium">Action</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @endif
+                            </thead>
+                            <tbody>
+                                @foreach ($assignments as $assignment)
+                                    <tr>
+                                        <td class="border border-gray-200 p-2">{{ $assignment->schoolClass->name }}</td>
+                                        <td class="border border-gray-200 p-2">{{ $assignment->section->name }}</td>
+                                        <td class="border border-gray-200 p-2">{{ $assignment->teacher->full_name }}</td>
+                                        <td class="border border-gray-200 p-2">
+                                            <form method="POST"
+                                                  action="{{ route('school-admin.class-teacher.remove', $assignment->id) }}"
+                                                  onsubmit="return confirm('{{ $assignment->section->name }} bata class teacher hataune? Attendance access pani jancha.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                        class="bg-red-50 text-red-700 px-3 py-1 rounded text-xs font-medium hover:bg-red-100 transition-colors">
+                                                    Remove
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @endif
+                </div>
             </div>
 
         </div>
