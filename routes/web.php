@@ -97,7 +97,7 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
 
         Route::resource('teachers', TeacherController::class);
 
-       
+
         Route::get('/subject-allocations', [SubjectAllocationController::class, 'index'])
             ->name('subject-allocations.index');
 
@@ -107,7 +107,7 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
         Route::post('/subject-allocations', [SubjectAllocationController::class, 'store'])
             ->name('subject-allocations.store');
 
-       
+
         Route::get('class-teacher', [TeacherController::class, 'assignClassTeacherForm'])
             ->name('class-teacher.form');
 
@@ -130,14 +130,15 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
 
 
 
-Route::resource('timetable-images', TimetableImageController::class)
-    ->except(['show', 'edit', 'update']);
+        Route::resource('timetable-images', TimetableImageController::class)
+            ->except(['show', 'edit', 'update']);
 
-Route::get('timetable-images/{classId}/{sectionId}/history', [TimetableImageController::class, 'history'])
-    ->name('timetable-images.history');
+        Route::get('timetable-images/{classId}/{sectionId}/history', [TimetableImageController::class, 'history'])
+            ->name('timetable-images.history');
+
         Route::resource('billing-periods', BillingPeriodController::class);
 
-    
+
         Route::get('fees/reports', [StudentFeeController::class, 'reports'])
             ->name('fees.reports');
 
@@ -174,7 +175,7 @@ Route::get('timetable-images/{classId}/{sectionId}/history', [TimetableImageCont
         Route::get('fee-discounts/fee-rows', [FeeDiscountController::class, 'feeRows'])
             ->name('fee-discounts.fee-rows');
 
-       
+
         Route::get('fee-assign', [FeeAssignController::class, 'index'])
             ->name('fee-assign.index');
 
@@ -190,10 +191,11 @@ Route::get('timetable-images/{classId}/{sectionId}/history', [TimetableImageCont
         Route::get('fee-assign/invoice', [FeeAssignController::class, 'invoice'])
             ->name('fee-assign.invoice');
 
-            Route::get('fee-payments/{student}/pay', [FeePaymentController::class, 'payFeeForm'])
-    ->name('fee-payments.pay-form');
-    Route::get('fee-payments/receipt/{paymentGroup}', [FeePaymentController::class, 'receipt'])
-    ->name('fee-payments.receipt');
+        Route::get('fee-payments/{student}/pay', [FeePaymentController::class, 'payFeeForm'])
+            ->name('fee-payments.pay-form');
+
+        Route::get('fee-payments/receipt/{paymentGroup}', [FeePaymentController::class, 'receipt'])
+            ->name('fee-payments.receipt');
 
         // -------------------------------
         // Reports & Subjects
@@ -207,10 +209,10 @@ Route::get('timetable-images/{classId}/{sectionId}/history', [TimetableImageCont
         Route::resource('academic-years', AcademicYearController::class)
             ->except(['show']);
 
-            Route::resource('academic-year-runs', AcademicYearRunController::class)
+        Route::resource('academic-year-runs', AcademicYearRunController::class)
             ->except(['show']);
 
-            Route::get('class-change', [ClassChangeController::class, 'index'])
+        Route::get('class-change', [ClassChangeController::class, 'index'])
             ->name('class-change.index');
 
         Route::post('class-change', [ClassChangeController::class, 'update'])
@@ -219,7 +221,7 @@ Route::get('timetable-images/{classId}/{sectionId}/history', [TimetableImageCont
         // -------------------------------
         // Classes & Sections
         // -------------------------------
-        Route::resource('classes', ClassController::class)->except(['show', 'edit', 'update']);
+        Route::resource('classes', ClassController::class)->except(['show']);
         Route::resource('sections', SectionController::class)->except(['show', 'edit', 'update']);
     });
 

@@ -45,6 +45,32 @@ class ClassController extends Controller
             ->with('status', 'Class added successfully.');
     }
 
+    public function edit(SchoolClass $class): View
+    {
+        $class->load('sections');
+        $sections = Section::orderBy('name')->get();
+
+        return view('school-admin.classes.edit', compact('class', 'sections'));
+    }
+
+    public function update(Request $request, SchoolClass $class): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'section_ids' => 'nullable|array',
+            'section_ids.*' => 'exists:sections,id',
+        ]);
+
+        $class->update([
+            'name' => $validated['name'],
+        ]);
+
+        $class->sections()->sync($validated['section_ids'] ?? []);
+
+        return redirect()->route('school-admin.classes.index')
+            ->with('status', 'Class updated successfully.');
+    }
+
     public function destroy(SchoolClass $class): RedirectResponse
     {
         $class->delete();

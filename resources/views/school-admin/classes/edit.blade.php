@@ -14,13 +14,13 @@
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
-                <span class="text-gray-700 font-medium">Add Class</span>
+                <span class="text-gray-700 font-medium">Edit Class</span>
             </div>
 
             {{-- Page header --}}
             <div class="mb-6">
-                <h1 class="text-2xl font-semibold text-gray-900">Add Class</h1>
-                <p class="text-sm text-gray-500 mt-1">Create a class and choose which sections belong to it.</p>
+                <h1 class="text-2xl font-semibold text-gray-900">Edit Class</h1>
+                <p class="text-sm text-gray-500 mt-1">Update the class name or its assigned sections.</p>
             </div>
 
             @if ($errors->any())
@@ -43,12 +43,13 @@
 
             {{-- Form card --}}
             <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
-                <form method="POST" action="{{ route('school-admin.classes.store') }}">
+                <form method="POST" action="{{ route('school-admin.classes.update', $class) }}" id="edit-class-form">
                     @csrf
+                    @method('PUT')
 
                     <div class="px-6 py-5 border-b border-gray-200">
                         <label for="name" class="block text-sm font-medium text-gray-700 mb-1.5">Class Name</label>
-                        <input type="text" name="name" id="name" value="{{ old('name') }}"
+                        <input type="text" name="name" id="name" value="{{ old('name', $class->name) }}"
                                class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-sky-500 focus:ring-sky-500"
                                placeholder="e.g. Class 10" required>
                         @error('name')
@@ -62,12 +63,15 @@
                         @if ($sections->isEmpty())
                             <p class="text-sm text-gray-400 italic">No sections exist yet. You can add sections later and assign them to this class.</p>
                         @else
+                            @php
+                                $assignedIds = old('section_ids', $class->sections->pluck('id')->toArray());
+                            @endphp
                             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                                 @foreach ($sections as $section)
                                     <label class="flex items-center gap-2 px-3 py-2 rounded-md border border-gray-200 text-sm text-gray-700
                                                    has-[:checked]:border-sky-400 has-[:checked]:bg-sky-50 cursor-pointer transition-colors">
                                         <input type="checkbox" name="section_ids[]" value="{{ $section->id }}"
-                                               {{ collect(old('section_ids'))->contains($section->id) ? 'checked' : '' }}
+                                               {{ collect($assignedIds)->contains($section->id) ? 'checked' : '' }}
                                                class="rounded border-gray-300 text-sky-500 focus:ring-sky-500">
                                         {{ $section->name }}
                                     </label>
@@ -83,17 +87,30 @@
                         @enderror
                     </div>
 
-                    <div class="px-6 py-4 flex items-center justify-end gap-3 bg-gray-50 rounded-b-lg">
+                </form>
+
+                {{-- Footer sits outside the update form so the Delete form isn't nested inside it --}}
+                <div class="px-6 py-4 flex items-center justify-between gap-3 bg-gray-50 rounded-b-lg">
+                    <form action="{{ route('school-admin.classes.destroy', $class) }}" method="POST"
+                          onsubmit="return confirm('Yo class delete garne?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-800 transition-colors">
+                            Delete Class
+                        </button>
+                    </form>
+
+                    <div class="flex items-center gap-3">
                         <a href="{{ route('school-admin.classes.index') }}"
                            class="text-sm font-medium text-gray-700 px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-100 transition-colors">
                             Cancel
                         </a>
-                        <button type="submit"
+                        <button type="submit" form="edit-class-form"
                                 class="text-sm font-medium text-white bg-sky-500 px-4 py-2 rounded-md hover:bg-sky-600 transition-colors shadow-sm shadow-sky-500/20">
-                            Save Class
+                            Save Changes
                         </button>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
