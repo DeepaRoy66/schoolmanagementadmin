@@ -9,7 +9,10 @@
     </div>
 
     @if (session('success'))
-        <div class="mb-4 rounded-md bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-2.5">
+        <div class="mb-4 flex items-center gap-2 rounded-md bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-2.5">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
             {{ session('success') }}
         </div>
     @endif
@@ -30,7 +33,7 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-600 mb-1">Class From <span class="text-red-500">*</span></label>
                     <select name="class_from" required onchange="this.form.submit()"
-                            class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm">
+                            class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
                         <option value="">-- Select --</option>
                         @foreach ($classes as $class)
                             <option value="{{ $class->id }}" {{ request('class_from') == $class->id ? 'selected' : '' }}>
@@ -59,7 +62,7 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-600 mb-1">Section</label>
                         <select name="section_id" onchange="this.form.submit()"
-                                class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm">
+                                class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
                             <option value="">-- All --</option>
                             @foreach ($sections as $section)
                                 <option value="{{ $section->id }}" {{ request('section_id') == $section->id ? 'selected' : '' }}>
@@ -72,7 +75,7 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-600 mb-1">Order By</label>
                         <select name="order_by" onchange="this.form.submit()"
-                                class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm">
+                                class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
                             <option value="first_name" {{ request('order_by', 'first_name') == 'first_name' ? 'selected' : '' }}>Name</option>
                             <option value="roll_number" {{ request('order_by') == 'roll_number' ? 'selected' : '' }}>Roll No</option>
                         </select>
@@ -81,7 +84,7 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-600 mb-1">Move To Class <span class="text-red-500">*</span></label>
                         <select id="class_to_picker"
-                                class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm">
+                                class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
                             <option value="">-- Select --</option>
                             @foreach ($classes as $class)
                                 <option value="{{ $class->id }}">{{ $class->name }}</option>
@@ -96,7 +99,7 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-600 mb-1">Move To Academic Year</label>
                         <select id="academic_year_to_picker"
-                                class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm">
+                                class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
                             <option value="">-- Keep Same --</option>
                             @foreach ($academicYears as $year)
                                 <option value="{{ $year->id }}">{{ $year->year }}</option>
@@ -118,7 +121,7 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-600 mb-1">New Class <span class="text-red-500">*</span></label>
                         <select name="class_id" required
-                                class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm">
+                                class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
                             @foreach ($classes as $class)
                                 <option value="{{ $class->id }}" {{ $selectedStudent->class_id == $class->id ? 'selected' : '' }}>
                                     {{ $class->name }}
@@ -130,7 +133,7 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-600 mb-1">Academic Year</label>
                         <select name="academic_year_id"
-                                class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm">
+                                class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
                             <option value="">-- Select --</option>
                             @foreach ($academicYears as $year)
                                 <option value="{{ $year->id }}" {{ $selectedStudent->academic_year_id == $year->id ? 'selected' : '' }}>
@@ -143,7 +146,7 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-600 mb-1">New Section</label>
                         <select name="section_id"
-                                class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm">
+                                class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
                             @foreach ($sections as $section)
                                 <option value="{{ $section->id }}" {{ $selectedStudent->section_id == $section->id ? 'selected' : '' }}>
                                     {{ $section->name }}
@@ -155,13 +158,13 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-600 mb-1">New Roll No</label>
                         <input type="text" name="roll_number" value="{{ $selectedStudent->roll_number }}"
-                               class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm">
+                               class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-slate-600 mb-1">Status</label>
                         <select name="status"
-                                class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm">
+                                class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
                             <option value="active" {{ $selectedStudent->status == 'active' ? 'selected' : '' }}>Active</option>
                             <option value="inactive" {{ $selectedStudent->status == 'inactive' ? 'selected' : '' }}>Inactive</option>
                             <option value="dropped_out" {{ $selectedStudent->status == 'dropped_out' ? 'selected' : '' }}>Dropped Out</option>
@@ -169,10 +172,23 @@
                     </div>
                 </div>
 
-                <button type="submit"
-                        class="inline-flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors">
-                    Update
-                </button>
+                <div class="flex items-center gap-3">
+                    <button type="submit"
+                            class="inline-flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Update
+                    </button>
+
+                    <a href="{{ route('school-admin.class-change.index') }}"
+                       class="inline-flex items-center gap-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 text-sm font-medium px-5 py-2.5 rounded-md transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Cancel
+                    </a>
+                </div>
             </form>
 
         {{-- BULK MODE: full student list --}}
@@ -182,11 +198,24 @@
                 <input type="hidden" name="class_to" id="class_to_hidden" value="">
                 <input type="hidden" name="academic_year_to" id="academic_year_to_hidden" value="">
 
-                <div class="flex justify-end mb-4">
-                    <button type="submit"
-                            class="inline-flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors">
-                        Update
-                    </button>
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-sm text-slate-500">{{ $students->count() }} student(s) found</span>
+                    <div class="flex items-center gap-3">
+                        <a href="{{ route('school-admin.class-change.index') }}"
+                           class="inline-flex items-center gap-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 text-sm font-medium px-5 py-2.5 rounded-md transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Cancel
+                        </a>
+                        <button type="submit"
+                                class="inline-flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-5 py-2.5 rounded-md transition-colors shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Update
+                        </button>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto border border-slate-200 rounded-md">
@@ -207,7 +236,7 @@
                         </thead>
                         <tbody>
                             @foreach ($students as $student)
-                                <tr class="border-b border-slate-100">
+                                <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                                     <td class="py-3 px-4">
                                         <input type="checkbox" name="student_ids[]" value="{{ $student->id }}"
                                                class="student-check rounded border-slate-300 text-blue-600 focus:ring-blue-500" checked>
@@ -217,11 +246,11 @@
                                     <td class="py-3 px-4 text-slate-700">{{ $student->academicYear->year ?? '-' }}</td>
                                     <td class="py-3 px-4">
                                         <input type="text" name="roll_number[{{ $student->id }}]" value="{{ $student->roll_number }}"
-                                               class="w-24 border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+                                               class="w-24 border border-slate-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
                                     </td>
                                     <td class="py-3 px-4">
                                         <select name="section_id[{{ $student->id }}]"
-                                                class="w-full border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+                                                class="w-full border border-slate-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
                                             @foreach ($sections as $section)
                                                 <option value="{{ $section->id }}" {{ $student->section_id == $section->id ? 'selected' : '' }}>
                                                     {{ $section->name }}
@@ -231,7 +260,7 @@
                                     </td>
                                     <td class="py-3 px-4">
                                         <select name="status[{{ $student->id }}]"
-                                                class="w-full border border-slate-300 rounded-md px-2 py-1.5 text-sm">
+                                                class="w-full border border-slate-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
                                             <option value="active" {{ $student->status == 'active' ? 'selected' : '' }}>Active</option>
                                             <option value="inactive" {{ $student->status == 'inactive' ? 'selected' : '' }}>Inactive</option>
                                             <option value="dropped_out" {{ $student->status == 'dropped_out' ? 'selected' : '' }}>Dropped Out</option>
