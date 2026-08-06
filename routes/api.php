@@ -1,3 +1,4 @@
+
 <?php
 
 use App\Http\Controllers\Api\AuthController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Api\TeacherDashboardController;
 use App\Http\Controllers\Api\TimetableImageController;
 use App\Http\Controllers\Api\MaterialController;
 use App\Http\Controllers\Api\GalleryController;
+use App\Http\Controllers\Api\CalendarEventController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -55,5 +57,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/gallery', [GalleryController::class, 'index']);
     Route::post('/gallery', [GalleryController::class, 'store']);
     Route::delete('/gallery/{gallery}', [GalleryController::class, 'destroy']);
+
+    // Calendar events (holidays / exams / school events)
+    Route::get('/calendar-events', [CalendarEventController::class, 'index']);
+    Route::post('/calendar-events', [CalendarEventController::class, 'store']);
+    Route::put('/calendar-events/{calendarEvent}', [CalendarEventController::class, 'update']);
+    Route::delete('/calendar-events/{calendarEvent}', [CalendarEventController::class, 'destroy']);
 
 });

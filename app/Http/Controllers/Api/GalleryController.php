@@ -9,7 +9,6 @@ use Illuminate\Http\JsonResponse;
 
 class GalleryController extends Controller
 {
-    
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -22,7 +21,6 @@ class GalleryController extends Controller
             $query->where('class_id', $request->query('class_id'));
         }
 
-        
         if ($user->role === 'student' && !$request->filled('class_id')) {
             $student = \App\Models\Student::where('user_id', $user->id)->first();
             if ($student) {
@@ -35,12 +33,11 @@ class GalleryController extends Controller
         return response()->json($photos);
     }
 
-   
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
 
-        if (!in_array($user->role, ['teacher', 'school_admin'])) {
+        if ($user->role !== 'student') {
             return response()->json(['message' => 'You are not authorized to upload photos.'], 403);
         }
 
@@ -49,6 +46,12 @@ class GalleryController extends Controller
             'caption' => 'nullable|string|max:255',
             'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
+
+        // student ko aphno class_id auto-assign garne, unless explicitly nil pathaएको cha
+        if (empty($validated['class_id'])) {
+            $student = \App\Models\Student::where('user_id', $user->id)->first();
+            $validated['class_id'] = $student->class_id ?? null;
+        }
 
         $path = $request->file('image')->store('gallery', 'public');
 
@@ -66,7 +69,6 @@ class GalleryController extends Controller
         ], 201);
     }
 
-    
     public function destroy(Request $request, Gallery $gallery): JsonResponse
     {
         $user = $request->user();
