@@ -196,6 +196,15 @@
     </svg>
     Academic Year Run
 </a>
+
+<a href="{{ route('school-admin.class-change.index') }}"
+   class="{{ $item }} {{ request()->routeIs('school-admin.class-change.*') ? $active : $inactive }}">
+    @if(request()->routeIs('school-admin.class-change.*')) {!! $bar !!} @endif
+    <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4" />
+    </svg>
+    Class Change
+</a>
         
                     <a href="{{ route('school-admin.subjects.index') }}"
                        class="{{ $item }} {{ request()->routeIs('school-admin.subjects.*') ? $active : $inactive }}">
@@ -395,44 +404,11 @@
                         Payment History
                     </a>
 
-                    <a href="{{ route('school-admin.fee-assign.index') }}"
-                       class="{{ $item }} {{ request()->routeIs('school-admin.fee-assign.*') ? $active : $inactive }}">
-                        @if(request()->routeIs('school-admin.fee-assign.*')) {!! $bar !!} @endif
-                        <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Fee Assign
-                    </a>
+                    
+                    
+                   
 
-                    <a href="{{ route('school-admin.fee-categories.index') }}"
-                       class="{{ $item }} {{ request()->routeIs('school-admin.fee-categories.*') ? $active : $inactive }}">
-                        @if(request()->routeIs('school-admin.fee-categories.*')) {!! $bar !!} @endif
-                        <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M4 6h16M4 10h16M4 14h10M4 18h10" />
-                        </svg>
-                        Fee Categories
-                    </a>
-
-                    <a href="{{ route('school-admin.student-fees.index') }}"
-                       class="{{ $item }} {{ request()->routeIs('school-admin.student-fees.*') ? $active : $inactive }}">
-                        @if(request()->routeIs('school-admin.student-fees.*')) {!! $bar !!} @endif
-                        <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-6.32 4M18 21v-3m0 0v-3m0 3h3m-3 0h-3" />
-                        </svg>
-                        Student Fees
-                    </a>
-
-                    <a href="{{ route('school-admin.fee-payments.index') }}"
-                       class="{{ $item }} {{ request()->routeIs('school-admin.fee-payments.*') ? $active : $inactive }}">
-                        @if(request()->routeIs('school-admin.fee-payments.*')) {!! $bar !!} @endif
-                        <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a1.5 1.5 0 001.5-1.5V6.75a1.5 1.5 0 00-1.5-1.5h-15a1.5 1.5 0 00-1.5 1.5v10.5a1.5 1.5 0 001.5 1.5z" />
-                        </svg>
-                        Payments
-                    </a>
+                   
 
                     <a href="{{ route('school-admin.fees.reports') }}"
                        class="{{ $item }} {{ request()->routeIs('school-admin.fees.reports') ? $active : $inactive }}">

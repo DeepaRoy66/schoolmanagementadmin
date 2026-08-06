@@ -31,6 +31,7 @@ use App\Http\Controllers\FeeAssignController;
 use App\Http\Controllers\TimetableImageController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AcademicYearRunController;
+use App\Http\Controllers\ClassChangeController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -208,6 +209,12 @@ Route::get('timetable-images/{classId}/{sectionId}/history', [TimetableImageCont
 
             Route::resource('academic-year-runs', AcademicYearRunController::class)
             ->except(['show']);
+
+            Route::get('class-change', [ClassChangeController::class, 'index'])
+            ->name('class-change.index');
+
+        Route::post('class-change', [ClassChangeController::class, 'update'])
+            ->name('class-change.update');
 
         // -------------------------------
         // Classes & Sections

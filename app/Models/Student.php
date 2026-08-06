@@ -17,6 +17,7 @@ class Student extends Model
 
     protected $fillable = [
         'school_id',
+        'academic_year_id',
         'user_id',
         'first_name',
         'middle_name',
@@ -61,6 +62,11 @@ class Student extends Model
     public function section()
     {
         return $this->belongsTo(Section::class, 'section_id');
+    }
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
     }
 
     public static function generateStudentUid(): string

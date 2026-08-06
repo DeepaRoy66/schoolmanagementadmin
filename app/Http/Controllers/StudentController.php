@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AcademicYear;
 use App\Models\Student;
 use App\Models\SchoolClass;
 use App\Models\Section;
@@ -15,7 +16,7 @@ class StudentController extends Controller
 {
     public function index(): View
     {
-        $students = Student::with(['schoolClass', 'section'])->latest()->paginate(10);
+        $students = Student::with(['schoolClass', 'section', 'academicYear'])->latest()->paginate(10);
 
         return view('school-admin.students.index', compact('students'));
     }
@@ -24,13 +25,15 @@ class StudentController extends Controller
     {
         $classes = SchoolClass::orderBy('name')->get();
         $sections = Section::orderBy('name')->get();
+        $academicYears = AcademicYear::orderByDesc('year')->get();
 
-        return view('school-admin.students.create', compact('classes', 'sections'));
+        return view('school-admin.students.create', compact('classes', 'sections', 'academicYears'));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
+            'academic_year_id' => 'nullable|exists:academic_years,id',
             'first_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -60,6 +63,7 @@ class StudentController extends Controller
 
         Student::create([
             'school_id' => $schoolId,
+            'academic_year_id' => $validated['academic_year_id'] ?? null,
             'user_id' => $user->id,
             'first_name' => $validated['first_name'],
             'middle_name' => $validated['middle_name'] ?? null,
@@ -90,13 +94,15 @@ class StudentController extends Controller
     {
         $classes = SchoolClass::orderBy('name')->get();
         $sections = Section::orderBy('name')->get();
+        $academicYears = AcademicYear::orderByDesc('year')->get();
 
-        return view('school-admin.students.edit', compact('student', 'classes', 'sections'));
+        return view('school-admin.students.edit', compact('student', 'classes', 'sections', 'academicYears'));
     }
 
     public function update(Request $request, Student $student): RedirectResponse
     {
         $validated = $request->validate([
+            'academic_year_id' => 'nullable|exists:academic_years,id',
             'first_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
             'last_name' => 'required|string|max:255',

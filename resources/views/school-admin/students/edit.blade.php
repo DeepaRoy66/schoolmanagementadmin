@@ -102,7 +102,7 @@
                         @enderror
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="grid grid-cols-3 gap-4 mb-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Class</label>
                             <select name="class_id" class="w-full border-gray-300 rounded-lg">
@@ -117,6 +117,22 @@
                                 <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Academic Year</label>
+                            <select name="academic_year_id" class="w-full border-gray-300 rounded-lg">
+                                <option value="">-- Select Academic Year --</option>
+                                @foreach ($academicYears as $year)
+                                    <option value="{{ $year->id }}" {{ old('academic_year_id', $student->academic_year_id) == $year->id ? 'selected' : '' }}>
+                                        {{ $year->year }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('academic_year_id')
+                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Section</label>
                             <select name="section_id" class="w-full border-gray-300 rounded-lg">
