@@ -1,8 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Add Section</h2>
-            <p class="text-sm text-gray-500 mt-0.5">Create a new class section</p>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Edit Section</h2>
+            <p class="text-sm text-gray-500 mt-0.5">Update section details</p>
         </div>
     </x-slot>
 
@@ -13,21 +13,22 @@
                 <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
                     <span class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                     </span>
                     <div>
-                        <p class="font-medium text-gray-800 text-sm">New Section</p>
-                        <p class="text-xs text-gray-500">Fill in the details below</p>
+                        <p class="font-medium text-gray-800 text-sm">Edit Section</p>
+                        <p class="text-xs text-gray-500">Update the section name below</p>
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('school-admin.sections.store') }}">
+                <form method="POST" action="{{ route('school-admin.sections.update', $section) }}">
                     @csrf
+                    @method('PUT')
 
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">Section Name</label>
-                        <input type="text" name="name" value="{{ old('name') }}"
+                        <input type="text" name="name" value="{{ old('name', $section->name) }}"
                                class="w-full border-gray-300 rounded-lg text-sm focus:border-indigo-500 focus:ring-indigo-500 @error('name') border-red-400 @enderror"
                                placeholder="e.g. A" required>
                         @error('name')
@@ -46,7 +47,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            Save Section
+                            Update Section
                         </button>
                         <a href="{{ route('school-admin.sections.index') }}" class="text-gray-600 text-sm font-medium hover:underline">Cancel</a>
                     </div>

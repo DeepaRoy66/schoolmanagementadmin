@@ -222,7 +222,7 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
         // Classes & Sections
         // -------------------------------
         Route::resource('classes', ClassController::class)->except(['show']);
-        Route::resource('sections', SectionController::class)->except(['show', 'edit', 'update']);
+        Route::resource('sections', SectionController::class)->except(['show']);
     });
 
 

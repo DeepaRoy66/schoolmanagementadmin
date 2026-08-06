@@ -36,6 +36,25 @@ class SectionController extends Controller
             ->with('status', 'Section added successfully.');
     }
 
+    public function edit(Section $section): View
+    {
+        return view('school-admin.sections.edit', compact('section'));
+    }
+
+    public function update(Request $request, Section $section): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $section->update([
+            'name' => $validated['name'],
+        ]);
+
+        return redirect()->route('school-admin.sections.index')
+            ->with('status', 'Section updated successfully.');
+    }
+
     public function destroy(Section $section): RedirectResponse
     {
         $section->delete();
