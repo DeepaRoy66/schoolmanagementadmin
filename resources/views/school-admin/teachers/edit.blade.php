@@ -6,10 +6,10 @@
     </x-slot>
 
     <div class="py-8">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             {{-- Class teacher status is managed on its own page now, not here --}}
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
+            <div class="bg-white border border-gray-200 rounded-md px-6 py-4">
                 <p class="text-sm font-medium text-gray-700 mb-1">Class Teacher Status</p>
                 @if ($teacher->classTeacherAssignment)
                     <p class="text-sm text-gray-600">
@@ -22,144 +22,203 @@
                 @else
                     <p class="text-sm text-gray-500">Not currently a class teacher (subject teacher only).</p>
                 @endif
-                <a href="{{ route('school-admin.class-teacher.form') }}" class="text-xs text-[#2dd4bf] hover:underline">
+                <a href="{{ route('school-admin.class-teacher.form') }}" class="text-xs text-[#3b82f6] hover:underline">
                     Manage class teacher assignments →
                 </a>
             </div>
 
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
+            <div class="bg-white border border-gray-200 rounded-md">
+
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <p class="text-sm text-gray-500">
+                        Update the teacher's details below. Leave the password field blank to keep their current password.
+                    </p>
+                </div>
+
+                @if ($errors->any())
+                    <div class="mx-6 mt-5 border border-red-200 bg-red-50 rounded-md px-4 py-3">
+                        <p class="text-sm font-medium text-red-800 mb-1">Form submission failed. Please correct the following errors:</p>
+                        <ul class="list-disc list-inside text-sm text-red-700">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <form method="POST" action="{{ route('school-admin.teachers.update', $teacher) }}">
                     @csrf
                     @method('PUT')
 
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                            <input type="text" name="first_name" value="{{ old('first_name', $teacher->first_name) }}"
-                                   class="w-full border-gray-300 rounded-lg" required>
-                            @error('first_name')
-                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Middle Name</label>
-                            <input type="text" name="middle_name" value="{{ old('middle_name', $teacher->middle_name) }}"
-                                   class="w-full border-gray-300 rounded-lg">
-                            @error('middle_name')
-                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
+                    <!-- Personal Details -->
+                    <div class="px-6 pt-6">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Personal Details</h3>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                        <input type="text" name="last_name" value="{{ old('last_name', $teacher->last_name) }}"
-                               class="w-full border-gray-300 rounded-lg" required>
-                        @error('last_name')
-                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                        <input type="email" name="email" value="{{ old('email', $teacher->email) }}"
-                               class="w-full border-gray-300 rounded-lg" required>
-                        @error('email')
-                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                        <input type="text" name="phone" value="{{ old('phone', $teacher->phone) }}"
-                               class="w-full border-gray-300 rounded-lg">
-                        @error('phone')
-                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                            <input type="date" name="dob" value="{{ old('dob', optional($teacher->dob)->format('Y-m-d')) }}"
-                                   class="w-full border-gray-300 rounded-lg">
-                            @error('dob')
-                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                            @enderror
+                        <div class="grid grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">First Name <span class="text-red-500">*</span></label>
+                                <input type="text" name="first_name" value="{{ old('first_name', $teacher->first_name) }}"
+                                       class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]" required>
+                                @error('first_name')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Middle Name</label>
+                                <input type="text" name="middle_name" value="{{ old('middle_name', $teacher->middle_name) }}"
+                                       class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]">
+                                @error('middle_name')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Last Name <span class="text-red-500">*</span></label>
+                                <input type="text" name="last_name" value="{{ old('last_name', $teacher->last_name) }}"
+                                       class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]" required>
+                                @error('last_name')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                            <select name="gender" class="w-full border-gray-300 rounded-lg">
-                                <option value="">-- Select --</option>
-                                @foreach (['male' => 'Male', 'female' => 'Female', 'other' => 'Other'] as $value => $label)
-                                    <option value="{{ $value }}" {{ old('gender', $teacher->gender) == $value ? 'selected' : '' }}>
-                                        {{ $label }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('gender')
-                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
 
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
-                            <select name="marital_status" class="w-full border-gray-300 rounded-lg">
-                                <option value="">-- Select --</option>
-                                @foreach (['single' => 'Single', 'married' => 'Married', 'other' => 'Other'] as $value => $label)
-                                    <option value="{{ $value }}" {{ old('marital_status', $teacher->marital_status) == $value ? 'selected' : '' }}>
-                                        {{ $label }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('marital_status')
-                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">PAN No.</label>
-                            <input type="text" name="pan_no" value="{{ old('pan_no', $teacher->pan_no) }}"
-                                   class="w-full border-gray-300 rounded-lg">
-                            @error('pan_no')
-                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                            @enderror
+                        <div class="grid grid-cols-4 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                                <input type="date" name="dob" value="{{ old('dob', optional($teacher->dob)->format('Y-m-d')) }}"
+                                       class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]">
+                                @error('dob')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                                <select name="gender" class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]">
+                                    <option value="">-- Select --</option>
+                                    @foreach (['male' => 'Male', 'female' => 'Female', 'other' => 'Other'] as $value => $label)
+                                        <option value="{{ $value }}" {{ old('gender', $teacher->gender) == $value ? 'selected' : '' }}>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('gender')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
+                                <select name="marital_status" class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]">
+                                    <option value="">-- Select --</option>
+                                    @foreach (['single' => 'Single', 'married' => 'Married', 'other' => 'Other'] as $value => $label)
+                                        <option value="{{ $value }}" {{ old('marital_status', $teacher->marital_status) == $value ? 'selected' : '' }}>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('marital_status')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">PAN No.</label>
+                                <input type="text" name="pan_no" value="{{ old('pan_no', $teacher->pan_no) }}"
+                                       class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]">
+                                @error('pan_no')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                        <textarea name="address" rows="2" class="w-full border-gray-300 rounded-lg">{{ old('address', $teacher->address) }}</textarea>
-                        @error('address')
-                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                    <div class="border-t border-gray-100 mx-6"></div>
+
+                    <!-- Contact Details -->
+                    <div class="px-6 pt-6">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Contact Details</h3>
+
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                <input type="text" name="phone" value="{{ old('phone', $teacher->phone) }}"
+                                       class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]">
+                                @error('phone')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-red-500">*</span></label>
+                                <input type="email" name="email" value="{{ old('email', $teacher->email) }}"
+                                       class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]" required>
+                                @error('email')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                            <textarea name="address" rows="2"
+                                      class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]">{{ old('address', $teacher->address) }}</textarea>
+                            @error('address')
+                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Designation</label>
-                        <input type="text" name="designation" value="{{ old('designation', $teacher->designation) }}"
-                               class="w-full border-gray-300 rounded-lg">
-                        @error('designation')
-                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                    <div class="border-t border-gray-100 mx-6"></div>
+
+                    <!-- Employment Details -->
+                    <div class="px-6 pt-6">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Employment Details</h3>
+
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Designation</label>
+                                <input type="text" name="designation" value="{{ old('designation', $teacher->designation) }}"
+                                       class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]" placeholder="e.g. Senior Teacher">
+                                @error('designation')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Status <span class="text-red-500">*</span></label>
+                                @php $currentStatus = old('status', $teacher->is_active ? 'active' : 'inactive'); @endphp
+                                <select name="status" class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]" required>
+                                    <option value="active" {{ $currentStatus == 'active' ? 'selected' : '' }}>Active</option>
+                                    <option value="inactive" {{ $currentStatus == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                </select>
+                                <p class="text-gray-400 text-xs mt-1">
+                                    Inactive teachers can't log in and won't appear when assigning class teachers, but all their records are kept.
+                                </p>
+                                @error('status')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                        <input type="password" name="password" class="w-full border-gray-300 rounded-lg">
-                        <p class="text-xs text-gray-400 mt-1">Leave blank to keep current password</p>
-                        @error('password')
-                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                    <div class="border-t border-gray-100 mx-6"></div>
+
+                    <!-- Account -->
+                    <div class="px-6 pt-6">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Account Access</h3>
+
+                        <div class="mb-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                            <input type="password" name="password"
+                                   class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#3b82f6] focus:border-[#3b82f6]">
+                            <p class="text-gray-400 text-xs mt-1">Leave blank to keep the teacher's current password.</p>
+                            @error('password')
+                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 px-6 py-5 mt-2 border-t border-gray-200 bg-gray-50 rounded-b-md">
                         <button type="submit"
-                                class="bg-gray-900 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
+                                class="bg-[#3b82f6] text-white px-5 py-2 rounded text-sm font-medium hover:bg-[#2563eb] transition-colors">
                             Update Teacher
                         </button>
-                        <a href="{{ route('school-admin.teachers.index') }}" class="text-gray-600 text-sm hover:underline">Cancel</a>
+                        <a href="{{ route('school-admin.teachers.index') }}" class="text-gray-600 text-sm font-medium hover:underline">Cancel</a>
                     </div>
                 </form>
             </div>

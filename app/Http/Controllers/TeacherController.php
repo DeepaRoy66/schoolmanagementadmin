@@ -101,6 +101,7 @@ class TeacherController extends Controller
             'email'           => ['required', 'email', 'max:255', 'unique:users,email,' . $teacher->user_id],
             'address'         => ['nullable', 'string'],
             'designation'     => ['nullable', 'string', 'max:255'],
+            'status'          => ['required', 'in:active,inactive'],
             'password'        => ['nullable', 'string', 'min:6'],
         ]);
 
@@ -117,6 +118,7 @@ class TeacherController extends Controller
                 'pan_no'         => $validated['pan_no'] ?? null,
                 'address'        => $validated['address'] ?? null,
                 'designation'    => $validated['designation'] ?? null,
+                'is_active'      => $validated['status'] === 'active',
             ]);
 
             $userData = [
@@ -134,6 +136,12 @@ class TeacherController extends Controller
             ->with('success', 'Teacher profile updated successfully.');
     }
 
+    /**
+     * Kept only as a fallback / for API use. No view calls this route
+     * anymore — status is managed via the dropdown on the edit page
+     * so that attendance, class assignments, and other history tied
+     * to the teacher are preserved instead of being orphaned.
+     */
     public function destroy(Teacher $teacher)
     {
         $teacher->update(['is_active' => false]);
