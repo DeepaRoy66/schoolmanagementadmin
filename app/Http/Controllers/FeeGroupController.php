@@ -9,9 +9,17 @@ use Illuminate\View\View;
 
 class FeeGroupController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $feeGroups = FeeGroup::latest()->get();
+        $feeGroups = FeeGroup::when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                      ->orWhere('code', 'like', '%' . $search . '%');
+                });
+            })
+            ->latest()
+            ->get();
 
         return view('school-admin.fee-groups.index', compact('feeGroups'));
     }
