@@ -10,9 +10,19 @@ use Illuminate\View\View;
 
 class SubjectController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $subjects = Subject::with('schoolClass')->latest()->paginate(10);
+        $subjects = Subject::query()
+            ->with('schoolClass')
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('subject_name', 'like', '%' . $request->search . '%')
+                      ->orWhere('subject_code', 'like', '%' . $request->search . '%');
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         return view('school-admin.subjects.index', compact('subjects'));
     }
