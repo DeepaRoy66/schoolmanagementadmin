@@ -9,9 +9,17 @@ use Illuminate\View\View;
 
 class BillingPeriodController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $periods = BillingPeriod::orderBy('hierarchy')->get();
+        $periods = BillingPeriod::when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                      ->orWhere('code', 'like', '%' . $search . '%');
+                });
+            })
+            ->orderBy('hierarchy')
+            ->get();
 
         return view('school-admin.billing-periods.index', compact('periods'));
     }
