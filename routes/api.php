@@ -1,4 +1,3 @@
-
 <?php
 
 use App\Http\Controllers\Api\AuthController;
@@ -12,6 +11,7 @@ use App\Http\Controllers\Api\TimetableImageController;
 use App\Http\Controllers\Api\MaterialController;
 use App\Http\Controllers\Api\GalleryController;
 use App\Http\Controllers\Api\CalendarEventController;
+use App\Http\Controllers\Api\HealthReportController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -39,7 +39,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/teacher/total-classes', [TeacherDashboardController::class, 'totalClasses']); 
     Route::get('/teacher/assigned-classes', [AttendanceController::class, 'assignedClasses']); 
     Route::get('/teacher/sections', [AttendanceController::class, 'sections']);
-    
+
+    // Teacher: health reports (view + status update)
+    Route::get('/teacher/health-reports', [HealthReportController::class, 'index']);
+    Route::patch('/teacher/health-reports/{healthReport}/status', [HealthReportController::class, 'updateStatus']);
+
 
     // Student endpoints
     Route::get('/student/attendance', [AttendanceController::class, 'myAttendance']);
@@ -50,6 +54,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/student/fees', [FeeController::class, 'myFees']);
     Route::get('/student/materials', [MaterialController::class, 'myMaterials']);
     Route::get('/student/teachers', [AttendanceController::class, 'myTeachers']);
+
+    // Student: health reports (submit + view own)
+    Route::post('/student/health-reports', [HealthReportController::class, 'store']);
+    Route::get('/student/health-reports', [HealthReportController::class, 'index']);
+    Route::get('/student/health-reports/{healthReport}', [HealthReportController::class, 'show']);
+
+    // School Admin: health reports (view all + status update + delete)
+    Route::get('/admin/health-reports', [HealthReportController::class, 'index']);
+    Route::get('/admin/health-reports/{healthReport}', [HealthReportController::class, 'show']);
+    Route::patch('/admin/health-reports/{healthReport}/status', [HealthReportController::class, 'updateStatus']);
+    Route::delete('/admin/health-reports/{healthReport}', [HealthReportController::class, 'destroy']);
+
 
     // Shared endpoints
     Route::get('/notices', [NoticeController::class, 'index']);

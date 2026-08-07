@@ -44,7 +44,8 @@ class GalleryController extends Controller
         $validated = $request->validate([
             'class_id' => 'nullable|exists:classes,id',
             'caption' => 'nullable|string|max:255',
-            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'image' => 'required_without:video|nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'video' => 'required_without:image|nullable|mimetypes:video/mp4,video/quicktime,video/x-msvideo,video/webm|max:204800',
         ]);
 
         // student ko aphno class_id auto-assign garne, unless explicitly nil pathaएको cha
@@ -53,7 +54,13 @@ class GalleryController extends Controller
             $validated['class_id'] = $student->class_id ?? null;
         }
 
-        $path = $request->file('image')->store('gallery', 'public');
+        if ($request->hasFile('video')) {
+            $path = $request->file('video')->store('gallery/videos', 'public');
+            $mediaType = 'video';
+        } else {
+            $path = $request->file('image')->store('gallery/images', 'public');
+            $mediaType = 'image';
+        }
 
         $gallery = Gallery::create([
             'school_id' => $user->school_id,
@@ -61,10 +68,11 @@ class GalleryController extends Controller
             'uploaded_by' => $user->id,
             'caption' => $validated['caption'] ?? null,
             'image_path' => $path,
+            'media_type' => $mediaType,
         ]);
 
         return response()->json([
-            'message' => 'Photo uploaded successfully.',
+            'message' => 'Media uploaded successfully.',
             'gallery' => $gallery,
         ], 201);
     }
