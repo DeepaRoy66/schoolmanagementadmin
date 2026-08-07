@@ -10,9 +10,16 @@ use Illuminate\View\View;
 
 class ClassController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $classes = SchoolClass::with('sections')->orderBy('name')->get();
+        $classes = SchoolClass::query()
+            ->with('sections')
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $query->where('name', 'like', '%' . $request->search . '%');
+            })
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
 
         return view('school-admin.classes.index', compact('classes'));
     }

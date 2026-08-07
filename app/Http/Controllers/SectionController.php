@@ -9,9 +9,15 @@ use Illuminate\View\View;
 
 class SectionController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $sections = Section::orderBy('name')->get();
+        $sections = Section::query()
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $query->where('name', 'like', '%' . $request->search . '%');
+            })
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
 
         return view('school-admin.sections.index', compact('sections'));
     }

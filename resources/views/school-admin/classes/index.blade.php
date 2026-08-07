@@ -1,126 +1,123 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Classes</h2>
+        <div class="flex items-center gap-2 text-sm">
+            <h2 class="font-semibold text-xl text-slate-700">Classes</h2>
+            <span class="text-slate-300">»</span>
+            <span class="text-slate-400">List all classes</span>
+        </div>
     </x-slot>
 
-    <div class="py-8 bg-gray-50 min-h-screen">
+    <div class="py-8">
         <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
 
             @if (session('status'))
-                <div class="mb-4 rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800">
+                <div class="mb-4 flex items-center gap-2 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-md text-sm">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
                     {{ session('status') }}
                 </div>
             @endif
-
-            {{-- Breadcrumb --}}
-            <div class="flex items-center gap-1.5 text-sm text-gray-500 mb-3">
-                <span>Dashboard</span>
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-                <span class="text-gray-700 font-medium">Classes</span>
-            </div>
-
-            {{-- Page header --}}
-            <div class="mb-6">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <h1 class="text-2xl font-semibold text-gray-900 min-w-0 truncate">Classes</h1>
-                    <a href="{{ route('school-admin.classes.create') }}"
-                       class="inline-flex items-center gap-1.5 bg-sky-500 text-white px-3.5 py-2 rounded-md
-                              text-sm font-medium whitespace-nowrap hover:bg-sky-600 transition-colors shadow-sm shadow-sky-500/20 shrink-0 self-start sm:self-auto">
-                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Class
-                    </a>
-                </div>
-                <p class="text-sm text-gray-500 mt-1">Manage classes and their sections.</p>
-            </div>
 
             {{-- Summary stats --}}
             @php
                 $totalSections = $classes->sum(fn($c) => $c->sections->count());
                 $withoutSections = $classes->filter(fn($c) => $c->sections->count() === 0)->count();
             @endphp
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Classes</p>
-                    <p class="text-2xl font-semibold text-gray-900 mt-1">{{ $classes->count() }}</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Total classes</p>
+                    <p class="text-2xl font-semibold text-slate-900 mt-1">{{ $classes->total() }}</p>
                 </div>
-                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Sections</p>
-                    <p class="text-2xl font-semibold text-gray-900 mt-1">{{ $totalSections }}</p>
+                <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Total sections</p>
+                    <p class="text-2xl font-semibold text-slate-900 mt-1">{{ $totalSections }}</p>
                 </div>
-                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Without Sections</p>
-                    <p class="text-2xl font-semibold text-gray-900 mt-1">{{ $withoutSections }}</p>
+                <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Without sections</p>
+                    <p class="text-2xl font-semibold text-slate-900 mt-1">{{ $withoutSections }}</p>
                 </div>
             </div>
 
-            {{-- Data table card --}}
-            <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            <div class="flex justify-end mb-4">
+                <a href="{{ route('school-admin.classes.create') }}"
+                   class="inline-flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add class
+                </a>
+            </div>
 
-                {{-- Toolbar --}}
-                <div class="px-4 py-3 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div class="relative w-full sm:max-w-xs">
-                        <svg class="w-4 h-4 text-emerald-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        <input type="text" id="class_search" placeholder="Search classes"
-                               class="w-full pl-10 pr-3 py-2 text-sm rounded-full border border-gray-200 bg-gray-50
-                                      focus:bg-white focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100
-                                      transition-colors placeholder:text-gray-400">
-                    </div>
-                    <span class="text-xs text-gray-500 whitespace-nowrap">{{ $classes->count() }} total</span>
+            <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+
+                <div class="flex flex-wrap items-center gap-3 px-6 py-5 border-b border-slate-100">
+                    <label class="text-sm text-slate-600 font-medium">Search:</label>
+                    <form action="{{ route('school-admin.classes.index') }}" method="GET" class="flex items-center gap-2 flex-1 min-w-[260px]">
+                        <input type="text" name="search" value="{{ request('search') }}"
+                               placeholder="Search by class name..."
+                               class="flex-1 max-w-xs px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400">
+                        <button type="submit"
+                                class="inline-flex items-center gap-1.5 bg-emerald-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-emerald-700 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+                            </svg>
+                            Search
+                        </button>
+                        @if (request('search'))
+                            <a href="{{ route('school-admin.classes.index') }}"
+                               class="text-sm text-slate-400 hover:text-slate-600">Clear</a>
+                        @endif
+                    </form>
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left" id="classes_table">
+                    <table class="w-full text-sm text-left border-collapse">
                         <thead>
-                            <tr class="bg-gray-50 border-b border-gray-200">
-                                <th class="py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">Class Name</th>
-                                <th class="py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">Sections</th>
-                                <th class="py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wide text-right">Actions</th>
+                            <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                                <th class="py-3 px-6 font-semibold border-r border-slate-200">Class name</th>
+                                <th class="py-3 px-6 font-semibold border-r border-slate-200">Sections</th>
+                                <th class="py-3 px-6 font-semibold w-56">Option</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100">
+                        <tbody>
                             @forelse ($classes as $class)
-                                <tr class="class-row hover:bg-gray-50 transition-colors">
-                                    <td class="py-3 px-4">
+                                <tr class="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
+                                    <td class="py-3 px-6 border-r border-slate-100">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center font-semibold text-xs shrink-0">
+                                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold text-xs shrink-0">
                                                 {{ strtoupper(substr($class->name, 0, 1)) }}
                                             </div>
-                                            <span class="font-medium text-gray-900 class-name">{{ $class->name }}</span>
+                                            <span class="font-medium text-blue-700">{{ $class->name }}</span>
                                         </div>
                                     </td>
-                                    <td class="py-3 px-4">
+                                    <td class="py-3 px-6 border-r border-slate-100">
                                         <div class="flex flex-wrap gap-1.5">
                                             @forelse ($class->sections as $section)
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
                                                     {{ $section->name }}
                                                 </span>
                                             @empty
-                                                <span class="text-gray-400 text-xs italic">No sections</span>
+                                                <span class="text-slate-400 text-xs italic">No sections</span>
                                             @endforelse
                                         </div>
                                     </td>
-                                    <td class="py-3 px-4 text-right">
+                                    <td class="py-3 px-6">
                                         <div class="inline-flex items-center gap-2">
                                             <a href="{{ route('school-admin.classes.edit', $class) }}"
-                                               class="inline-flex items-center gap-1 bg-yellow-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-yellow-600 transition-colors shadow-sm">
+                                               class="inline-flex items-center gap-1.5 bg-amber-500 text-white px-3 py-1.5 rounded-md text-xs font-medium hover:bg-amber-600 transition-colors shadow-sm">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
                                                 Edit
                                             </a>
 
-                                            <form action="{{ route('school-admin.classes.destroy', $class) }}" method="POST" class="inline"
-                                                  onsubmit="return confirm('Yo class delete garne?');">
+                                            <form action="{{ route('school-admin.classes.destroy', $class) }}" method="POST"
+                                                  onsubmit="return confirm('Delete this class? This cannot be undone.');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
-                                                        class="inline-flex items-center gap-1 bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-red-700 transition-colors shadow-sm">
+                                                        class="inline-flex items-center gap-1.5 bg-red-600 text-white px-3 py-1.5 rounded-md text-xs font-medium hover:bg-red-700 transition-colors shadow-sm">
                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                     </svg>
@@ -132,40 +129,32 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="py-12 text-center text-gray-400 text-sm">
-                                        No class added yet.
+                                    <td colspan="3" class="py-16 text-center">
+                                        <div class="flex flex-col items-center gap-2">
+                                            <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                                            </svg>
+                                            @if (request('search'))
+                                                <p class="text-slate-500 text-sm">No classes match "{{ request('search') }}".</p>
+                                                <a href="{{ route('school-admin.classes.index') }}" class="text-blue-600 text-sm font-medium hover:underline">Clear search</a>
+                                            @else
+                                                <p class="text-slate-500 text-sm">No classes added yet.</p>
+                                                <a href="{{ route('school-admin.classes.create') }}" class="text-blue-600 text-sm font-medium hover:underline">Add your first class</a>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
-                    <p id="no_results" class="hidden py-10 text-center text-gray-400 text-sm">No classes match your search.</p>
                 </div>
+
+                @if ($classes->hasPages())
+                    <div class="flex justify-center px-6 py-4 border-t border-slate-100 bg-slate-50/50">
+                        {{ $classes->appends(['search' => request('search')])->links() }}
+                    </div>
+                @endif
             </div>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const searchInput = document.getElementById('class_search');
-            const rows = document.querySelectorAll('.class-row');
-            const noResults = document.getElementById('no_results');
-            if (!searchInput) return;
-
-            searchInput.addEventListener('input', function () {
-                const query = this.value.trim().toLowerCase();
-                let visibleCount = 0;
-
-                rows.forEach(function (row) {
-                    const nameEl = row.querySelector('.class-name');
-                    const name = nameEl ? nameEl.textContent.toLowerCase() : '';
-                    const isMatch = name.includes(query);
-                    row.style.display = isMatch ? '' : 'none';
-                    if (isMatch) visibleCount++;
-                });
-
-                noResults.classList.toggle('hidden', visibleCount !== 0 || rows.length === 0);
-            });
-        });
-    </script>
 </x-app-layout>
