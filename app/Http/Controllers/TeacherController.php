@@ -12,11 +12,21 @@ use Illuminate\Support\Facades\DB;
 
 class TeacherController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $teachers = Teacher::with('classTeacherAssignment.schoolClass', 'classTeacherAssignment.section')
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('first_name', 'like', '%' . $request->search . '%')
+                      ->orWhere('middle_name', 'like', '%' . $request->search . '%')
+                      ->orWhere('last_name', 'like', '%' . $request->search . '%')
+                      ->orWhere('phone', 'like', '%' . $request->search . '%')
+                      ->orWhere('email', 'like', '%' . $request->search . '%');
+                });
+            })
             ->orderBy('first_name')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
         return view('school-admin.teachers.index', compact('teachers'));
     }

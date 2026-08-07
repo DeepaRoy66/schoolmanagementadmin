@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class SubjectAllocationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $subjects = Subject::with('schoolClass.sections')->orderBy('subject_name')->get();
         $teachers = Teacher::where('is_active', true)->orderBy('first_name')->get();
@@ -36,6 +36,17 @@ class SubjectAllocationController extends Controller
                     'teacher_name' => $existing?->teacher?->full_name,
                 ];
             }
+        }
+
+        if ($request->filled('search')) {
+            $search = mb_strtolower($request->search);
+
+            $rows = array_values(array_filter($rows, function ($row) use ($search) {
+                return str_contains(mb_strtolower($row['class_name']), $search)
+                    || str_contains(mb_strtolower($row['section_name']), $search)
+                    || str_contains(mb_strtolower($row['subject_name']), $search)
+                    || str_contains(mb_strtolower($row['teacher_name'] ?? ''), $search);
+            }));
         }
 
         return view('school-admin.subject-allocations.index', compact('rows', 'teachers'));
