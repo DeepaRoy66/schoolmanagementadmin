@@ -14,9 +14,28 @@ use Illuminate\View\View;
 
 class StudentController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $students = Student::with(['schoolClass', 'section', 'academicYear'])->latest()->paginate(10);
+        $students = Student::with(['schoolClass', 'section', 'academicYear'])
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('first_name', 'like', '%' . $search . '%')
+                      ->orWhere('middle_name', 'like', '%' . $search . '%')
+                      ->orWhere('last_name', 'like', '%' . $search . '%')
+                      ->orWhere('email', 'like', '%' . $search . '%')
+                      ->orWhere('phone', 'like', '%' . $search . '%')
+                      ->orWhere('roll_number', 'like', '%' . $search . '%')
+                      ->orWhere('student_uid', 'like', '%' . $search . '%')
+                      ->orWhereRaw(
+                          "CONCAT_WS(' ', first_name, NULLIF(middle_name, ''), last_name) LIKE ?",
+                          ['%' . $search . '%']
+                      );
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         return view('school-admin.students.index', compact('students'));
     }
