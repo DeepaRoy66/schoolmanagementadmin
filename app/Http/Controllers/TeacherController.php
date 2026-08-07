@@ -166,11 +166,21 @@ class TeacherController extends Controller
     // (attendance access per class-section, via class_teacher_assignments table)
     // -------------------------------
 
-    public function assignClassTeacherForm()
+    public function assignClassTeacherForm(Request $request)
     {
         $classes = SchoolClass::with('sections')->orderBy('name')->get();
         $teachers = Teacher::where('is_active', true)->orderBy('first_name')->get();
         $assignments = ClassTeacherAssignment::with(['schoolClass', 'section', 'teacher'])->get();
+
+        if ($request->filled('search')) {
+            $search = mb_strtolower($request->search);
+
+            $assignments = $assignments->filter(function ($assignment) use ($search) {
+                return str_contains(mb_strtolower($assignment->schoolClass->name), $search)
+                    || str_contains(mb_strtolower($assignment->section->name), $search)
+                    || str_contains(mb_strtolower($assignment->teacher->full_name), $search);
+            })->values();
+        }
 
         return view('school-admin.class-teacher.form', compact('classes', 'teachers', 'assignments'));
     }
