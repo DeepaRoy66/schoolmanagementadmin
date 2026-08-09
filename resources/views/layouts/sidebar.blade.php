@@ -157,18 +157,16 @@
                 <p class="px-4 mb-2 text-[10.5px] font-semibold text-slate-500 tracking-[0.12em] uppercase">Administration</p>
                 <div class="space-y-0.5">
 
+                    <a href="{{ route('school-admin.academic-years.index') }}"
+                       class="{{ $item }} {{ request()->routeIs('school-admin.academic-years.*') ? $active : $inactive }}">
+                        @if(request()->routeIs('school-admin.academic-years.*')) {!! $bar !!} @endif
+                        <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Academic Year
+                    </a>
 
-                <a href="{{ route('school-admin.academic-years.index') }}"
-           class="{{ $item }} {{ request()->routeIs('school-admin.academic-years.*') ? $active : $inactive }}">
-            @if(request()->routeIs('school-admin.academic-years.*')) {!! $bar !!} @endif
-            <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            Academic Year
-        </a>
-
-  
                     <a href="{{ route('school-admin.classes.index') }}"
                        class="{{ $item }} {{ request()->routeIs('school-admin.classes.*') ? $active : $inactive }}">
                         @if(request()->routeIs('school-admin.classes.*')) {!! $bar !!} @endif
@@ -178,6 +176,7 @@
                         </svg>
                         Classes
                     </a>
+
                     <a href="{{ route('school-admin.sections.index') }}"
                        class="{{ $item }} {{ request()->routeIs('school-admin.sections.*') ? $active : $inactive }}">
                         @if(request()->routeIs('school-admin.sections.*')) {!! $bar !!} @endif
@@ -188,24 +187,24 @@
                         Sections
                     </a>
 
-                          <a href="{{ route('school-admin.academic-year-runs.index') }}"
-   class="{{ $item }} {{ request()->routeIs('school-admin.academic-year-runs.*') ? $active : $inactive }}">
-    @if(request()->routeIs('school-admin.academic-year-runs.*')) {!! $bar !!} @endif
-    <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-    </svg>
-    Academic Year Run
-</a>
+                    <a href="{{ route('school-admin.academic-year-runs.index') }}"
+                       class="{{ $item }} {{ request()->routeIs('school-admin.academic-year-runs.*') ? $active : $inactive }}">
+                        @if(request()->routeIs('school-admin.academic-year-runs.*')) {!! $bar !!} @endif
+                        <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                        Academic Year Run
+                    </a>
 
-<a href="{{ route('school-admin.class-change.index') }}"
-   class="{{ $item }} {{ request()->routeIs('school-admin.class-change.*') ? $active : $inactive }}">
-    @if(request()->routeIs('school-admin.class-change.*')) {!! $bar !!} @endif
-    <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4" />
-    </svg>
-    Class Change
-</a>
-        
+                    <a href="{{ route('school-admin.class-change.index') }}"
+                       class="{{ $item }} {{ request()->routeIs('school-admin.class-change.*') ? $active : $inactive }}">
+                        @if(request()->routeIs('school-admin.class-change.*')) {!! $bar !!} @endif
+                        <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4" />
+                        </svg>
+                        Class Change
+                    </a>
+
                     <a href="{{ route('school-admin.subjects.index') }}"
                        class="{{ $item }} {{ request()->routeIs('school-admin.subjects.*') ? $active : $inactive }}">
                         @if(request()->routeIs('school-admin.subjects.*')) {!! $bar !!} @endif
@@ -302,28 +301,36 @@
                         </svg>
                         Reports
                     </a>
+
+                    {{-- MOVED: Feedback + Health Reports now live inside the Academics
+                         card's space-y-0.5 wrapper instead of sitting directly under
+                         <nav>. Previously they were bare siblings of the section <div>s,
+                         so <nav>'s space-y-6 (meant for gaps BETWEEN sections) was being
+                         applied between Reports/Feedback and Feedback/Health Reports/
+                         Communication too, producing the large blank gap seen in the
+                         screenshot. Now they share the tight 0.5 spacing with the rest
+                         of the Academics items. --}}
+                    <a href="{{ route('school-admin.feedback.index') }}"
+                       class="{{ $item }} {{ request()->routeIs('school-admin.feedback.*') ? $active : $inactive }}">
+                        @if(request()->routeIs('school-admin.feedback.*')) {!! $bar !!} @endif
+                        <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        Feedback
+                    </a>
+
+                    <a href="{{ route('school-admin.health-reports.index') }}"
+                       class="{{ $item }} {{ request()->routeIs('school-admin.health-reports.*') ? $active : $inactive }}">
+                        @if(request()->routeIs('school-admin.health-reports.*')) {!! $bar !!} @endif
+                        <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M4.132 5.904A5.973 5.973 0 004 7.5v1.086a5.98 5.98 0 001.75 4.234l3.5 3.5a5.98 5.98 0 004.234 1.75H15a5.973 5.973 0 001.596-.216M4.132 5.904A5.973 5.973 0 015.904 4.132m0 0A5.973 5.973 0 017.5 4h1.086a5.98 5.98 0 014.234 1.75l3.5 3.5a5.98 5.98 0 011.75 4.234V15a5.973 5.973 0 01-.216 1.596M5.904 4.132L19.5 17.728" />
+                        </svg>
+                        Health Reports
+                    </a>
                 </div>
             </div>
-
-            <a href="{{ route('school-admin.feedback.index') }}"
-   class="{{ $item }} {{ request()->routeIs('school-admin.feedback.*') ? $active : $inactive }}">
-    @if(request()->routeIs('school-admin.feedback.*')) {!! $bar !!} @endif
-    <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-        <path stroke-linecap="round" stroke-linejoin="round"
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-    </svg>
-    Feedback
-</a>
-
-            <a href="{{ route('school-admin.health-reports.index') }}"
-   class="{{ $item }} {{ request()->routeIs('school-admin.health-reports.*') ? $active : $inactive }}">
-    @if(request()->routeIs('school-admin.health-reports.*')) {!! $bar !!} @endif
-    <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-        <path stroke-linecap="round" stroke-linejoin="round"
-              d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M4.132 5.904A5.973 5.973 0 004 7.5v1.086a5.98 5.98 0 001.75 4.234l3.5 3.5a5.98 5.98 0 004.234 1.75H15a5.973 5.973 0 001.596-.216M4.132 5.904A5.973 5.973 0 015.904 4.132m0 0A5.973 5.973 0 017.5 4h1.086a5.98 5.98 0 014.234 1.75l3.5 3.5a5.98 5.98 0 011.75 4.234V15a5.973 5.973 0 01-.216 1.596M5.904 4.132L19.5 17.728" />
-    </svg>
-    Health Reports
-</a>
 
             {{-- Communication --}}
             <div>
@@ -423,12 +430,6 @@
                         </svg>
                         Payment History
                     </a>
-
-                    
-                    
-                   
-
-                   
 
                     <a href="{{ route('school-admin.fees.reports') }}"
                        class="{{ $item }} {{ request()->routeIs('school-admin.fees.reports') ? $active : $inactive }}">
