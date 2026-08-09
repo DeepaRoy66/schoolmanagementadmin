@@ -17,12 +17,12 @@
                 </div>
             @endif
 
-            <div class="bg-white shadow-sm rounded-2xl overflow-hidden">
+            <div class="bg-white shadow-sm rounded-md border border-gray-100 overflow-hidden">
 
                 {{-- Header --}}
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-5 border-b border-gray-100">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+                        <div class="w-10 h-10 rounded-md bg-indigo-50 flex items-center justify-center shrink-0">
                             <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
@@ -34,7 +34,7 @@
                     </div>
 
                     <a href="{{ route('admin.licenses.expiring') }}"
-                       class="inline-flex items-center justify-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-amber-100 active:scale-[0.98] transition">
+                       class="inline-flex items-center justify-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 px-4 py-2.5 rounded-md text-sm font-medium hover:bg-amber-100 active:scale-[0.98] transition">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                         </svg>
@@ -42,10 +42,11 @@
                     </a>
                 </div>
 
-                {{-- Filter Tabs --}}
-                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/40">
+                {{-- Filter Tabs + Search --}}
+                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/40 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                     @php
                         $currentStatus = request('status');
+                        $currentSearch = request('search');
                         $tabs = [
                             ['key' => null,       'label' => 'All',     'count' => $counts['all'],     'dot' => null],
                             ['key' => 'active',   'label' => 'Active',  'count' => $counts['active'],  'dot' => 'bg-emerald-500'],
@@ -57,8 +58,8 @@
                     <div class="flex items-center gap-2 overflow-x-auto">
                         @foreach ($tabs as $tab)
                             @php $active = $currentStatus === $tab['key']; @endphp
-                            <a href="{{ route('admin.licenses.index', $tab['key'] ? ['status' => $tab['key']] : []) }}"
-                               class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap
+                            <a href="{{ route('admin.licenses.index', array_filter(['status' => $tab['key'], 'search' => $currentSearch])) }}"
+                               class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap
                                       border transition-all duration-150
                                       {{ $active
                                             ? 'bg-gray-900 border-gray-900 text-white shadow-sm'
@@ -67,13 +68,38 @@
                                     <span class="w-2 h-2 rounded-full {{ $tab['dot'] }} {{ $active ? 'ring-2 ring-white/30' : '' }}"></span>
                                 @endif
                                 {{ $tab['label'] }}
-                                <span class="inline-flex items-center justify-center min-w-[1.375rem] h-5 px-1.5 rounded-full text-xs font-semibold
+                                <span class="inline-flex items-center justify-center min-w-[1.375rem] h-5 px-1.5 rounded-md text-xs font-semibold
                                              {{ $active ? 'bg-white/15 text-white' : 'bg-gray-100 text-gray-500' }}">
                                     {{ $tab['count'] }}
                                 </span>
                             </a>
                         @endforeach
                     </div>
+
+                    <form action="{{ route('admin.licenses.index') }}" method="GET" class="flex items-center gap-2 w-full lg:w-auto">
+                        @if ($currentStatus)
+                            <input type="hidden" name="status" value="{{ $currentStatus }}">
+                        @endif
+                        <div class="relative flex-1 lg:w-64">
+                            <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input type="text" name="search" value="{{ $currentSearch }}"
+                                   placeholder="Search school name or code..."
+                                   class="w-full border border-gray-300 rounded-md pl-9 pr-3 py-2 text-sm bg-white
+                                          focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                        </div>
+                        <button type="submit"
+                                class="inline-flex items-center justify-center gap-1.5 bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition shrink-0">
+                            Search
+                        </button>
+                        @if ($currentSearch)
+                            <a href="{{ route('admin.licenses.index', array_filter(['status' => $currentStatus])) }}"
+                               class="text-xs text-gray-400 hover:text-gray-600 transition shrink-0">
+                                Clear
+                            </a>
+                        @endif
+                    </form>
                 </div>
 
                 {{-- Table --}}
@@ -144,9 +170,9 @@
                                         <div class="flex items-center justify-end gap-2">
                                             <button type="button"
                                                     onclick="openRenewModal('{{ $school->id }}')"
-                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
-                                                           bg-indigo-50 text-indigo-700 border border-indigo-200
-                                                           hover:bg-indigo-100 hover:border-indigo-300 transition">
+                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold
+                                                           bg-amber-400 text-white
+                                                           hover:bg-amber-500 transition shadow-sm">
                                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                                                 </svg>
@@ -159,9 +185,9 @@
                                                 @method('PATCH')
                                                 @if ($school->license_status === 'active')
                                                     <button type="submit"
-                                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
-                                                                   bg-gray-50 text-gray-600 border border-gray-200
-                                                                   hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition">
+                                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold
+                                                                   bg-rose-500 text-white
+                                                                   hover:bg-rose-600 transition shadow-sm">
                                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                             <path stroke-linecap="round" stroke-linejoin="round" d="M18.36 6.64a9 9 0 11-12.73 0M12 3v9" />
                                                         </svg>
@@ -169,9 +195,9 @@
                                                     </button>
                                                 @else
                                                     <button type="submit"
-                                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
-                                                                   bg-gray-50 text-gray-600 border border-gray-200
-                                                                   hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition">
+                                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold
+                                                                   bg-emerald-500 text-white
+                                                                   hover:bg-emerald-600 transition shadow-sm">
                                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75l2.25 2.25 4.5-4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                         </svg>
@@ -214,7 +240,7 @@
     @foreach ($schools as $school)
         <div id="renew-modal-{{ $school->id }}"
              class="hidden fixed inset-0 z-50 items-center justify-center bg-gray-900/50 p-4">
-            <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
+            <div class="bg-white rounded-md shadow-xl p-6 w-full max-w-sm">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="font-semibold text-gray-900 text-lg">Renew License</h3>
                     <button type="button"
@@ -236,12 +262,12 @@
                         </label>
                         <input type="date" name="license_expiry"
                                value="{{ $school->license_expiry }}"
-                               class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                               class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                                required>
                     </div>
                     <div class="flex items-center gap-3">
                         <button type="submit"
-                                class="bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition">
+                                class="bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition">
                             Confirm Renew
                         </button>
                         <button type="button"
