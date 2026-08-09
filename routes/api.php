@@ -45,14 +45,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/teacher/health-reports', [HealthReportController::class, 'index']);
     Route::patch('/teacher/health-reports/{healthReport}/status', [HealthReportController::class, 'updateStatus']);
 
+    // Feedback (merged: student + teacher both submit/view own via same endpoint,
+    // controller checks $user->role internally)
+    Route::post('/feedback', [FeedbackController::class, 'store']);
+    Route::get('/feedback', [FeedbackController::class, 'index']);
 
-    // Student: feedback
-Route::post('/student/feedback', [FeedbackController::class, 'store']);
-Route::get('/student/feedback', [FeedbackController::class, 'index']);
-
-// Teacher: feedback
-Route::post('/teacher/feedback', [FeedbackController::class, 'store']);
-Route::get('/teacher/feedback', [FeedbackController::class, 'index']);
+    // Super Admin only: view all feedback (across roles, all schools) + update status
+    Route::get('/admin/feedback', [FeedbackController::class, 'adminIndex']);
+    Route::get('/admin/feedback/{feedback}', [FeedbackController::class, 'adminShow']);
+    Route::patch('/admin/feedback/{feedback}/status', [FeedbackController::class, 'updateStatus']);
 
     // Student endpoints
     Route::get('/student/attendance', [AttendanceController::class, 'myAttendance']);

@@ -86,6 +86,18 @@ Route::middleware(['auth', 'role:super_admin'])
         // -------------------------------
         Route::get('system-usage', [SystemUsageController::class, 'index'])
             ->name('system-usage.index');
+
+        // -------------------------------
+        // Feedback (moved here from school-admin group — super_admin only)
+        // -------------------------------
+        Route::get('feedback', [FeedbackController::class, 'index'])
+            ->name('feedback.index');
+
+        Route::patch('feedback/{feedback}/status', [FeedbackController::class, 'updateStatus'])
+            ->name('feedback.update-status');
+
+        Route::delete('feedback/{feedback}', [FeedbackController::class, 'destroy'])
+            ->name('feedback.destroy');
     });
 
 
@@ -216,15 +228,6 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
 
         Route::delete('health-reports/{healthReport}', [HealthReportController::class, 'destroy'])
             ->name('health-reports.destroy');
-
-            Route::get('feedback', [FeedbackController::class, 'index'])
-    ->name('feedback.index');
-
-Route::patch('feedback/{feedback}/status', [FeedbackController::class, 'updateStatus'])
-    ->name('feedback.update-status');
-
-Route::delete('feedback/{feedback}', [FeedbackController::class, 'destroy'])
-    ->name('feedback.destroy');
 
         // -------------------------------
         // Academic Year
