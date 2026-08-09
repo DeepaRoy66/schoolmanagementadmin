@@ -33,6 +33,7 @@ use App\Http\Controllers\TimetableImageController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AcademicYearRunController;
 use App\Http\Controllers\ClassChangeController;
+use App\Http\Controllers\Admin\FeedbackController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -215,6 +216,15 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
 
         Route::delete('health-reports/{healthReport}', [HealthReportController::class, 'destroy'])
             ->name('health-reports.destroy');
+
+            Route::get('feedback', [FeedbackController::class, 'index'])
+    ->name('feedback.index');
+
+Route::patch('feedback/{feedback}/status', [FeedbackController::class, 'updateStatus'])
+    ->name('feedback.update-status');
+
+Route::delete('feedback/{feedback}', [FeedbackController::class, 'destroy'])
+    ->name('feedback.destroy');
 
         // -------------------------------
         // Academic Year

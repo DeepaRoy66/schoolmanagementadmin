@@ -305,6 +305,16 @@
                 </div>
             </div>
 
+            <a href="{{ route('school-admin.feedback.index') }}"
+   class="{{ $item }} {{ request()->routeIs('school-admin.feedback.*') ? $active : $inactive }}">
+    @if(request()->routeIs('school-admin.feedback.*')) {!! $bar !!} @endif
+    <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+    </svg>
+    Feedback
+</a>
+
             <a href="{{ route('school-admin.health-reports.index') }}"
    class="{{ $item }} {{ request()->routeIs('school-admin.health-reports.*') ? $active : $inactive }}">
     @if(request()->routeIs('school-admin.health-reports.*')) {!! $bar !!} @endif

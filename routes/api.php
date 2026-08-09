@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\MaterialController;
 use App\Http\Controllers\Api\GalleryController;
 use App\Http\Controllers\Api\CalendarEventController;
 use App\Http\Controllers\Api\HealthReportController;
+use App\Http\Controllers\Api\FeedbackController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -44,6 +45,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/teacher/health-reports', [HealthReportController::class, 'index']);
     Route::patch('/teacher/health-reports/{healthReport}/status', [HealthReportController::class, 'updateStatus']);
 
+
+    // Student: feedback
+Route::post('/student/feedback', [FeedbackController::class, 'store']);
+Route::get('/student/feedback', [FeedbackController::class, 'index']);
+
+// Teacher: feedback
+Route::post('/teacher/feedback', [FeedbackController::class, 'store']);
+Route::get('/teacher/feedback', [FeedbackController::class, 'index']);
 
     // Student endpoints
     Route::get('/student/attendance', [AttendanceController::class, 'myAttendance']);
