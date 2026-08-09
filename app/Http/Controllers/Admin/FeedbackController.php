@@ -28,11 +28,29 @@ class FeedbackController extends Controller
             $query->where('status', $request->query('status'));
         }
 
+        if ($request->filled('search')) {
+            $search = $request->query('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('subject', 'like', "%{$search}%")
+                    ->orWhere('message', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($u) use ($search) {
+                        $u->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
         $feedbacks = $query->paginate(15)->withQueryString();
 
         $schools = School::select('id', 'name')->orderBy('name')->get();
 
-        return view('admin.feedback.index', compact('feedbacks', 'schools'));
+        $counts = [
+            'all'      => Feedback::count(),
+            'pending'  => Feedback::where('status', 'pending')->count(),
+            'reviewed' => Feedback::where('status', 'reviewed')->count(),
+            'resolved' => Feedback::where('status', 'resolved')->count(),
+        ];
+
+        return view('admin.feedback.index', compact('feedbacks', 'schools', 'counts'));
     }
 
     public function updateStatus(Request $request, Feedback $feedback): RedirectResponse

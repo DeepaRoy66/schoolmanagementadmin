@@ -20,6 +20,11 @@ class Feedback extends Model
         'status',
     ];
 
+    public function school()
+    {
+        return $this->belongsTo(School::class);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'submitted_by');
