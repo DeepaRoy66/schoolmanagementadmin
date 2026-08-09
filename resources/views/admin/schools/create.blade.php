@@ -8,6 +8,11 @@
     <div class="py-8">
         <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 space-y-4">
 
+            {{-- Breadcrumb heading, same style as Schools index page --}}
+            <h1 class="text-2xl font-bold text-gray-800">
+                Schools <span class="text-gray-400 font-normal">&raquo; Add New School</span>
+            </h1>
+
             <a href="{{ route('admin.schools.index') }}"
                class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -16,15 +21,15 @@
                 Back to Schools
             </a>
 
-            <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+            <div class="bg-white shadow rounded-lg overflow-hidden">
 
-                <div class="px-8 pt-8 pb-2">
-                    <h1 class="text-lg font-bold tracking-wider text-gray-800 uppercase">
+                <div class="px-6 pt-6 pb-2 border-b border-gray-200">
+                    <h1 class="text-base font-semibold text-gray-800">
                         School Registration Form
                     </h1>
                 </div>
 
-                <form method="POST" action="{{ route('admin.schools.store') }}" class="px-8 pb-8 pt-4">
+                <form method="POST" action="{{ route('admin.schools.store') }}" class="px-6 pb-6 pt-5">
                     @csrf
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5">
@@ -33,11 +38,11 @@
                         <div class="lg:col-span-2">
                             <label class="block text-sm text-gray-700 mb-1.5">School Name</label>
                             <input type="text" name="name" value="{{ old('name') }}"
-                                   class="w-full border rounded-md px-3 py-2.5 text-sm text-gray-700 placeholder-gray-400 outline-none transition
-                                          {{ $errors->has('name') ? 'border-rose-400 focus:border-rose-500' : 'border-teal-400 focus:border-teal-500' }}"
+                                   class="w-full border rounded px-3 py-2 text-sm text-gray-700 placeholder-gray-400 outline-none transition
+                                          {{ $errors->has('name') ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-blue-500' }}"
                                    placeholder="Name" required>
                             @error('name')
-                                <p class="text-rose-600 text-xs mt-1.5">{{ $message }}</p>
+                                <p class="text-red-600 text-xs mt-1.5">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -45,12 +50,12 @@
                         <div class="lg:col-span-2">
                             <label class="block text-sm text-gray-700 mb-1.5">School Code</label>
                             <input type="text" name="school_code" value="{{ old('school_code') }}"
-                                   class="w-full border rounded-md px-3 py-2.5 text-sm text-gray-700 placeholder-gray-400 outline-none transition
-                                          {{ $errors->has('school_code') ? 'border-rose-400 focus:border-rose-500' : 'border-teal-400 focus:border-teal-500' }}"
+                                   class="w-full border rounded px-3 py-2 text-sm text-gray-700 placeholder-gray-400 outline-none transition
+                                          {{ $errors->has('school_code') ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-blue-500' }}"
                                    placeholder="School Code">
                             <p class="text-xs text-gray-400 mt-1">If left blank, the system will auto-generate a school code.</p>
                             @error('school_code')
-                                <p class="text-rose-600 text-xs mt-1.5">{{ $message }}</p>
+                                <p class="text-red-600 text-xs mt-1.5">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -58,11 +63,11 @@
                         <div class="lg:col-span-2">
                             <label class="block text-sm text-gray-700 mb-1.5">Address</label>
                             <input type="text" name="address" value="{{ old('address') }}"
-                                   class="w-full border rounded-md px-3 py-2.5 text-sm text-gray-700 placeholder-gray-400 outline-none transition
-                                          {{ $errors->has('address') ? 'border-rose-400 focus:border-rose-500' : 'border-teal-400 focus:border-teal-500' }}"
+                                   class="w-full border rounded px-3 py-2 text-sm text-gray-700 placeholder-gray-400 outline-none transition
+                                          {{ $errors->has('address') ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-blue-500' }}"
                                    placeholder="Address">
                             @error('address')
-                                <p class="text-rose-600 text-xs mt-1.5">{{ $message }}</p>
+                                <p class="text-red-600 text-xs mt-1.5">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -71,8 +76,8 @@
                             <label class="block text-sm text-gray-700 mb-1.5">License Status</label>
                             <div class="relative">
                                 <select name="license_status"
-                                        class="w-full appearance-none border rounded-md px-3 py-2.5 text-sm text-gray-700 outline-none transition bg-white
-                                               {{ $errors->has('license_status') ? 'border-rose-400 focus:border-rose-500' : 'border-teal-400 focus:border-teal-500' }}"
+                                        class="w-full appearance-none border rounded px-3 py-2 text-sm text-gray-700 outline-none transition bg-white
+                                               {{ $errors->has('license_status') ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-blue-500' }}"
                                         required>
                                     <option value="trial" {{ old('license_status') == 'trial' ? 'selected' : '' }}>Trial</option>
                                     <option value="active" {{ old('license_status') == 'active' ? 'selected' : '' }}>Active</option>
@@ -83,7 +88,7 @@
                                 </svg>
                             </div>
                             @error('license_status')
-                                <p class="text-rose-600 text-xs mt-1.5">{{ $message }}</p>
+                                <p class="text-red-600 text-xs mt-1.5">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -91,10 +96,10 @@
                         <div>
                             <label class="block text-sm text-gray-700 mb-1.5">License Start</label>
                             <input type="date" name="license_start" value="{{ old('license_start') }}"
-                                   class="w-full border rounded-md px-3 py-2.5 text-sm text-gray-700 outline-none transition
-                                          {{ $errors->has('license_start') ? 'border-rose-400 focus:border-rose-500' : 'border-teal-400 focus:border-teal-500' }}">
+                                   class="w-full border rounded px-3 py-2 text-sm text-gray-700 outline-none transition
+                                          {{ $errors->has('license_start') ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-blue-500' }}">
                             @error('license_start')
-                                <p class="text-rose-600 text-xs mt-1.5">{{ $message }}</p>
+                                <p class="text-red-600 text-xs mt-1.5">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -102,10 +107,10 @@
                         <div>
                             <label class="block text-sm text-gray-700 mb-1.5">License Expiry</label>
                             <input type="date" name="license_expiry" value="{{ old('license_expiry') }}"
-                                   class="w-full border rounded-md px-3 py-2.5 text-sm text-gray-700 outline-none transition
-                                          {{ $errors->has('license_expiry') ? 'border-rose-400 focus:border-rose-500' : 'border-teal-400 focus:border-teal-500' }}">
+                                   class="w-full border rounded px-3 py-2 text-sm text-gray-700 outline-none transition
+                                          {{ $errors->has('license_expiry') ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-blue-500' }}">
                             @error('license_expiry')
-                                <p class="text-rose-600 text-xs mt-1.5">{{ $message }}</p>
+                                <p class="text-red-600 text-xs mt-1.5">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -113,19 +118,19 @@
                         <div>
                             <label class="block text-sm text-gray-700 mb-1.5">Trial Ends At</label>
                             <input type="date" name="trial_ends_at" value="{{ old('trial_ends_at') }}"
-                                   class="w-full border rounded-md px-3 py-2.5 text-sm text-gray-700 outline-none transition
-                                          {{ $errors->has('trial_ends_at') ? 'border-rose-400 focus:border-rose-500' : 'border-teal-400 focus:border-teal-500' }}">
+                                   class="w-full border rounded px-3 py-2 text-sm text-gray-700 outline-none transition
+                                          {{ $errors->has('trial_ends_at') ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-blue-500' }}">
                             <p class="text-xs text-gray-400 mt-1">If this is a trial period, set the end date here.</p>
                             @error('trial_ends_at')
-                                <p class="text-rose-600 text-xs mt-1.5">{{ $message }}</p>
+                                <p class="text-red-600 text-xs mt-1.5">{{ $message }}</p>
                             @enderror
                         </div>
 
                     </div>
 
-                    <div class="flex items-center gap-3 mt-8 pt-6 border-t border-gray-100">
+                    <div class="flex items-center gap-3 mt-8 pt-6 border-t border-gray-200">
                         <button type="submit"
-                                class="bg-teal-600 text-white px-6 py-2.5 rounded-md text-sm font-medium hover:bg-teal-700 active:scale-[0.98] transition">
+                                class="bg-blue-600 text-white px-6 py-2 rounded text-sm font-medium hover:bg-blue-700 transition">
                             Save School
                         </button>
                         <a href="{{ route('admin.schools.index') }}"
