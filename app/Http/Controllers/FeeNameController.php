@@ -10,9 +10,19 @@ use Illuminate\View\View;
 
 class FeeNameController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $feeNames = FeeName::with('feeGroup')->latest()->get();
+        $query = FeeName::with('feeGroup')->latest();
+
+        if ($request->filled('search')) {
+            $search = $request->query('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%");
+            });
+        }
+
+        $feeNames = $query->paginate(15)->withQueryString();
 
         return view('school-admin.fee-names.index', compact('feeNames'));
     }
