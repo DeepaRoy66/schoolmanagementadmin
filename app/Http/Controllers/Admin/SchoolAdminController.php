@@ -12,13 +12,22 @@ use Illuminate\View\View;
 
 class SchoolAdminController extends Controller
 {
-    
-    public function index(): View
+
+    public function index(Request $request): View
     {
+        $search = $request->string('search')->trim()->toString();
+
         $schoolAdmins = User::where('role', 'school_admin')
             ->with('school')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
         return view('admin.school-admins.index', compact('schoolAdmins'));
     }
@@ -30,7 +39,7 @@ class SchoolAdminController extends Controller
         return view('admin.school-admins.create', compact('schools'));
     }
 
-    
+
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -54,13 +63,13 @@ class SchoolAdminController extends Controller
             ->with('status', 'School Admin successfully created.');
     }
 
-   
+
     public function show(User $school_admin): View
     {
         return view('admin.school-admins.show', ['schoolAdmin' => $school_admin]);
     }
 
-   
+
     public function edit(User $school_admin): View
     {
         $schools = School::orderBy('name')->get();

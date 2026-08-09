@@ -6,66 +6,149 @@
     </x-slot>
 
     <div class="py-8">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
+        <div class="mx-auto sm:px-6 lg:px-8 space-y-5">
 
-                <form method="POST" action="{{ route('admin.school-admins.update', $schoolAdmin) }}">
-                    @csrf
-                    @method('PUT')
-
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Which School?</label>
-                        <select name="school_id" class="w-full border-gray-300 rounded-lg" required>
-                            @foreach ($schools as $school)
-                                <option value="{{ $school->id }}" {{ old('school_id', $schoolAdmin->school_id) == $school->id ? 'selected' : '' }}>
-                                    {{ $school->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('school_id')
-                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Admin Name</label>
-                        <input type="text" name="name" value="{{ old('name', $schoolAdmin->name) }}"
-                               class="w-full border-gray-300 rounded-lg" required>
-                        @error('name')
-                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                        <input type="email" name="email" value="{{ old('email', $schoolAdmin->email) }}"
-                               class="w-full border-gray-300 rounded-lg" required>
-                        @error('email')
-                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            New Password <span class="text-gray-400 font-normal"></span>
-                        </label>
-                        <input type="password" name="password"
-                               class="w-full border-gray-300 rounded-lg" placeholder="••••••••">
-                        @error('password')
-                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="flex items-center gap-3">
-                        <button type="submit"
-                                class="bg-gray-900 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-700">
-                            Update School Admin
-                        </button>
-                        <a href="{{ route('admin.school-admins.index') }}" class="text-gray-600 text-sm hover:underline">Cancel</a>
-                    </div>
-                </form>
-
+            {{-- Breadcrumb + back link --}}
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-gray-800">
+                    School Admins <span class="text-gray-400 font-normal">&raquo; Edit {{ $schoolAdmin->name }}</span>
+                </h1>
+                <a href="{{ route('admin.school-admins.index') }}"
+                   class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                    </svg>
+                    Back to School Admins
+                </a>
             </div>
+
+            @if ($errors->any())
+                <div class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+                    Please fix the errors below and try again.
+                </div>
+            @endif
+
+            {{-- Summary card --}}
+            <div class="bg-white border border-gray-200 rounded-xl px-6 py-4 shadow-sm">
+                <div class="flex items-center gap-4">
+                    <div class="w-11 h-11 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-semibold shrink-0">
+                        {{ Str::substr($schoolAdmin->name, 0, 1) }}
+                    </div>
+                    <div>
+                        <p class="text-gray-900 font-semibold text-sm">{{ $schoolAdmin->name }}</p>
+                        <p class="text-gray-400 text-xs">{{ $schoolAdmin->email }}</p>
+                    </div>
+                    @if ($schoolAdmin->school)
+                        <div class="ml-auto">
+                            <span class="inline-flex items-center px-3 py-1 border border-gray-200 text-gray-600 rounded-full text-xs font-medium">
+                                {{ $schoolAdmin->school->name }}
+                            </span>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <form method="POST" action="{{ route('admin.school-admins.update', $schoolAdmin) }}" class="space-y-6">
+                @csrf
+                @method('PUT')
+
+                {{-- Admin Details --}}
+                <div class="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                        <h2 class="text-sm font-semibold text-gray-800">Admin Details</h2>
+                        <p class="text-xs text-gray-400 mt-0.5">Basic info and which school this admin manages.</p>
+                    </div>
+
+                    <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+
+                        {{-- Which School --}}
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Which School? <span class="text-red-500">*</span>
+                            </label>
+                            <select name="school_id"
+                                    class="w-full border rounded-lg px-3.5 py-2.5 text-sm text-gray-700 outline-none transition bg-white
+                                           {{ $errors->has('school_id') ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-500' : 'border-gray-300 focus:ring-2 focus:ring-blue-100 focus:border-blue-500' }}"
+                                    required>
+                                @foreach ($schools as $school)
+                                    <option value="{{ $school->id }}" {{ old('school_id', $schoolAdmin->school_id) == $school->id ? 'selected' : '' }}>
+                                        {{ $school->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('school_id')
+                                <p class="text-red-600 text-xs mt-1.5">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Admin Name --}}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Admin Name <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="name" value="{{ old('name', $schoolAdmin->name) }}"
+                                   class="w-full border rounded-lg px-3.5 py-2.5 text-sm text-gray-700 placeholder-gray-400 outline-none transition
+                                          {{ $errors->has('name') ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-500' : 'border-gray-300 focus:ring-2 focus:ring-blue-100 focus:border-blue-500' }}"
+                                   required>
+                            @error('name')
+                                <p class="text-red-600 text-xs mt-1.5">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Email --}}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Email <span class="text-red-500">*</span>
+                            </label>
+                            <input type="email" name="email" value="{{ old('email', $schoolAdmin->email) }}"
+                                   class="w-full border rounded-lg px-3.5 py-2.5 text-sm text-gray-700 placeholder-gray-400 outline-none transition
+                                          {{ $errors->has('email') ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-500' : 'border-gray-300 focus:ring-2 focus:ring-blue-100 focus:border-blue-500' }}"
+                                   required>
+                            @error('email')
+                                <p class="text-red-600 text-xs mt-1.5">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Security --}}
+                <div class="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                        <h2 class="text-sm font-semibold text-gray-800">Security</h2>
+                        <p class="text-xs text-gray-400 mt-0.5">Optional — only fill this in to change the password.</p>
+                    </div>
+
+                    <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">New Password</label>
+                            <input type="password" name="password"
+                                   class="w-full border rounded-lg px-3.5 py-2.5 text-sm text-gray-700 placeholder-gray-400 outline-none transition
+                                          {{ $errors->has('password') ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-500' : 'border-gray-300 focus:ring-2 focus:ring-blue-100 focus:border-blue-500' }}"
+                                   placeholder="••••••••">
+                            <p class="text-xs text-gray-400 mt-1.5">Leave blank to keep the current password.</p>
+                            @error('password')
+                                <p class="text-red-600 text-xs mt-1.5">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Actions --}}
+                <div class="flex items-center gap-3">
+                    <button type="submit"
+                            class="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 active:scale-[0.98] transition shadow-sm">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75l2.25 2.25 4.5-4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Update School Admin
+                    </button>
+                    <a href="{{ route('admin.school-admins.index') }}"
+                       class="text-gray-500 text-sm font-medium hover:text-gray-700 transition px-4 py-2.5">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+
         </div>
     </div>
 </x-app-layout>
