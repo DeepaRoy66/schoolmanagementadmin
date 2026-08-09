@@ -305,6 +305,16 @@
                 </div>
             </div>
 
+            <a href="{{ route('school-admin.health-reports.index') }}"
+   class="{{ $item }} {{ request()->routeIs('school-admin.health-reports.*') ? $active : $inactive }}">
+    @if(request()->routeIs('school-admin.health-reports.*')) {!! $bar !!} @endif
+    <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M4.132 5.904A5.973 5.973 0 004 7.5v1.086a5.98 5.98 0 001.75 4.234l3.5 3.5a5.98 5.98 0 004.234 1.75H15a5.973 5.973 0 001.596-.216M4.132 5.904A5.973 5.973 0 015.904 4.132m0 0A5.973 5.973 0 017.5 4h1.086a5.98 5.98 0 014.234 1.75l3.5 3.5a5.98 5.98 0 011.75 4.234V15a5.973 5.973 0 01-.216 1.596M5.904 4.132L19.5 17.728" />
+    </svg>
+    Health Reports
+</a>
+
             {{-- Communication --}}
             <div>
                 <p class="px-4 mb-2 text-[10.5px] font-semibold text-slate-500 tracking-[0.12em] uppercase">Communication</p>

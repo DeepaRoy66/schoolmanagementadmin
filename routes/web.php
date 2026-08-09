@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\SchoolAdminController;
 use App\Http\Controllers\Admin\LicenseController;
 use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\SystemUsageController;
+use App\Http\Controllers\Admin\HealthReportController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\StudentController;
@@ -202,6 +203,18 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
         // -------------------------------
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
         Route::resource('subjects', SubjectController::class)->except(['show']);
+
+        // -------------------------------
+        // Health Reports
+        // -------------------------------
+        Route::get('health-reports', [HealthReportController::class, 'index'])
+            ->name('health-reports.index');
+
+        Route::patch('health-reports/{healthReport}/status', [HealthReportController::class, 'updateStatus'])
+            ->name('health-reports.update-status');
+
+        Route::delete('health-reports/{healthReport}', [HealthReportController::class, 'destroy'])
+            ->name('health-reports.destroy');
 
         // -------------------------------
         // Academic Year
