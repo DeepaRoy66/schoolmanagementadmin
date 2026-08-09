@@ -12,9 +12,25 @@ use Illuminate\View\View;
 
 class FeeRateController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $feeRates = FeeRate::with(['feeName', 'schoolClass', 'billingPeriod'])->latest()->get();
+        $schoolId = auth()->user()->school_id;
+
+        $feeRates = FeeRate::with(['feeName', 'schoolClass', 'billingPeriod'])
+            ->where('school_id', $schoolId)
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->input('search');
+                $query->where(function ($q) use ($search) {
+                    $q->whereHas('feeName', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%{$search}%");
+                    })->orWhereHas('schoolClass', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%{$search}%");
+                    });
+                });
+            })
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
         return view('school-admin.fee-rates.index', compact('feeRates'));
     }
@@ -48,7 +64,6 @@ class FeeRateController extends Controller
         if (!$ownFeeName || !$ownClass || !$ownPeriod) {
             return redirect()->back()->withErrors(['fee_name_id' => 'Invalid selection.'])->withInput();
         }
-
 
         $exists = FeeRate::where('fee_name_id', $validated['fee_name_id'])
             ->where('class_id', $validated['class_id'])
@@ -91,7 +106,6 @@ class FeeRateController extends Controller
 
         $schoolId = auth()->user()->school_id;
 
-      
         $ownFeeName = FeeName::where('id', $validated['fee_name_id'])->where('school_id', $schoolId)->exists();
         $ownClass = SchoolClass::where('id', $validated['class_id'])->where('school_id', $schoolId)->exists();
         $ownPeriod = empty($validated['billing_period_id']) ||
@@ -100,7 +114,6 @@ class FeeRateController extends Controller
         if (!$ownFeeName || !$ownClass || !$ownPeriod) {
             return redirect()->back()->withErrors(['fee_name_id' => 'Invalid selection.'])->withInput();
         }
-
 
         $exists = FeeRate::where('fee_name_id', $validated['fee_name_id'])
             ->where('class_id', $validated['class_id'])
