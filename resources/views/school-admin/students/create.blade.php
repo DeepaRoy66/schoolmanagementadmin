@@ -119,6 +119,40 @@
 
                     <div class="mx-6 border-t border-slate-100"></div>
 
+                    {{-- Parent / Guardian Details --}}
+                    <div class="px-6 pt-6 pb-2">
+                        <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">Parent / Guardian details</h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-1">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Parent Name</label>
+                                <input type="text" name="parent_name" value="{{ old('parent_name') }}"
+                                       class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                                @error('parent_name')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Parent Phone</label>
+                                <input type="text" name="parent_phone" value="{{ old('parent_phone') }}"
+                                       class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                                @error('parent_phone')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Telephone No. <span class="text-slate-400 text-xs">(optional)</span></label>
+                                <input type="text" name="telephone_no" value="{{ old('telephone_no') }}"
+                                       class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                                @error('telephone_no')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mx-6 border-t border-slate-100"></div>
+
                     {{-- Academic Details --}}
                     <div class="px-6 pt-6 pb-2">
                         <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">Academic details</h3>
