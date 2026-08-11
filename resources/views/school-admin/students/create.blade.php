@@ -17,7 +17,7 @@
 
             @if ($errors->any())
                 <div class="border border-red-200 bg-red-50 rounded-md px-4 py-3">
-                    <p class="text-sm font-medium text-red-700 mb-1">Form submit hudaina, yi error haru fix garnus:</p>
+                    <p class="text-sm font-medium text-red-700 mb-1">Form submission failed. Please fix the following errors:</p>
                     <ul class="list-disc list-inside text-sm text-red-600">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -145,6 +145,42 @@
                                 <input type="text" name="telephone_no" value="{{ old('telephone_no') }}"
                                        class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
                                 @error('telephone_no')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mx-6 border-t border-slate-100"></div>
+
+                    {{-- Emergency Contact --}}
+                    <div class="px-6 pt-6 pb-2">
+                        <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">Emergency contact</h3>
+                        <p class="text-slate-400 text-xs mb-4 -mt-2">Parent bhetna nasakda call garne ko lagi (jastai relative, local guardian).</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-1">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Contact Name</label>
+                                <input type="text" name="emergency_contact_name" value="{{ old('emergency_contact_name') }}"
+                                       class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                                @error('emergency_contact_name')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Relationship</label>
+                                <input type="text" name="emergency_contact_relation" value="{{ old('emergency_contact_relation') }}"
+                                       placeholder="e.g. Uncle, Neighbor"
+                                       class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                                @error('emergency_contact_relation')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Phone</label>
+                                <input type="text" name="emergency_contact_phone" value="{{ old('emergency_contact_phone') }}"
+                                       class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                                @error('emergency_contact_phone')
                                     <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>

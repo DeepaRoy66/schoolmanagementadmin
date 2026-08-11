@@ -74,6 +74,7 @@
                                 <th class="py-3 px-4 font-semibold border border-slate-200">Class</th>
                                 <th class="py-3 px-4 font-semibold border border-slate-200">Section</th>
                                 <th class="py-3 px-4 font-semibold border border-slate-200">Roll No.</th>
+                                <th class="py-3 px-4 font-semibold border border-slate-200">Emergency Contact</th>
                                 <th class="py-3 px-4 font-semibold border border-slate-200">Status</th>
                                 <th class="py-3 px-4 font-semibold border border-slate-200 text-right">Actions</th>
                             </tr>
@@ -87,6 +88,19 @@
                                     <td class="py-3 px-4 border border-slate-200 text-slate-600">{{ $student->schoolClass->name ?? '—' }}</td>
                                     <td class="py-3 px-4 border border-slate-200 text-slate-600">{{ $student->section->name ?? '—' }}</td>
                                     <td class="py-3 px-4 border border-slate-200 text-slate-600">{{ $student->roll_number ?? '—' }}</td>
+                                    <td class="py-3 px-4 border border-slate-200 text-slate-600">
+                                        @if ($student->emergency_contact_phone)
+                                            <div class="font-medium text-slate-800">{{ $student->emergency_contact_name ?? '—' }}</div>
+                                            <div class="text-xs text-slate-500">
+                                                {{ $student->emergency_contact_phone }}
+                                                @if ($student->emergency_contact_relation)
+                                                    <span class="text-slate-400">({{ $student->emergency_contact_relation }})</span>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-slate-400 text-xs">Not added</span>
+                                        @endif
+                                    </td>
                                     <td class="py-3 px-4 border border-slate-200">
                                         @php
                                             $statusColors = [
@@ -118,7 +132,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="py-16 text-center border border-slate-200">
+                                    <td colspan="9" class="py-16 text-center border border-slate-200">
                                         <div class="flex flex-col items-center gap-2">
                                             <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-2.13a4 4 0 10-4-4 4 4 0 004 4zm6-6a4 4 0 11-8 0 4 4 0 018 0z" />
