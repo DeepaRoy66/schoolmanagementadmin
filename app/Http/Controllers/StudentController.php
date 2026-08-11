@@ -33,11 +33,27 @@ class StudentController extends Controller
                       );
                 });
             })
+            ->when($request->filled('academic_year_id'), function ($query) use ($request) {
+                $query->where('academic_year_id', $request->academic_year_id);
+            })
+            ->when($request->filled('class_id'), function ($query) use ($request) {
+                $query->where('class_id', $request->class_id);
+            })
+            ->when($request->filled('section_id'), function ($query) use ($request) {
+                $query->where('section_id', $request->section_id);
+            })
+            ->when($request->filled('status'), function ($query) use ($request) {
+                $query->where('status', $request->status);
+            })
             ->latest()
             ->paginate(10)
             ->withQueryString();
 
-        return view('school-admin.students.index', compact('students'));
+        $classes = SchoolClass::orderBy('name')->get();
+        $sections = Section::orderBy('name')->get();
+        $academicYears = AcademicYear::orderByDesc('year')->get();
+
+        return view('school-admin.students.index', compact('students', 'classes', 'sections', 'academicYears'));
     }
 
     public function create(): View

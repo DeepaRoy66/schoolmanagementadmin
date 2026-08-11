@@ -12,8 +12,8 @@
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-8 overflow-x-hidden">
+        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 space-y-6 min-w-0">
 
             @if (session('status'))
                 <div class="flex items-center gap-2 border border-emerald-200 bg-emerald-50 text-emerald-700 rounded-md px-4 py-3 text-sm">
@@ -24,15 +24,79 @@
                 </div>
             @endif
 
-            <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+            {{-- Add Student button --}}
+            <div class="flex justify-end">
+                <a href="{{ route('school-admin.students.create') }}"
+                   class="inline-flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2.5 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Student
+                </a>
+            </div>
 
-                {{-- Search + Add Student --}}
-                <div class="flex flex-wrap items-center gap-3 px-6 py-5 border-b border-slate-100">
-                    <label class="text-sm text-slate-600 font-medium">Search:</label>
-                    <form action="{{ route('school-admin.students.index') }}" method="GET" class="flex items-center gap-2 flex-1 min-w-[260px]">
+            {{-- Filter bar --}}
+            <div class="bg-white border border-slate-200 rounded-lg shadow-sm px-6 py-5">
+                <form action="{{ route('school-admin.students.index') }}" method="GET" class="space-y-4">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1.5">Academic Year</label>
+                            <select name="academic_year_id" onchange="this.form.submit()"
+                                    class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                                <option value="">-- Select --</option>
+                                @foreach ($academicYears as $year)
+                                    <option value="{{ $year->id }}" {{ request('academic_year_id') == $year->id ? 'selected' : '' }}>
+                                        {{ $year->year }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1.5">Class</label>
+                            <select name="class_id" onchange="this.form.submit()"
+                                    class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                                <option value="">-- Select --</option>
+                                @foreach ($classes as $class)
+                                    <option value="{{ $class->id }}" {{ request('class_id') == $class->id ? 'selected' : '' }}>
+                                        {{ $class->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1.5">Section</label>
+                            <select name="section_id" onchange="this.form.submit()"
+                                    class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                                <option value="">-- Select --</option>
+                                @foreach ($sections as $section)
+                                    <option value="{{ $section->id }}" {{ request('section_id') == $section->id ? 'selected' : '' }}>
+                                        {{ $section->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1.5">Status</label>
+                            <select name="status" onchange="this.form.submit()"
+                                    class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                                <option value="">-- All --</option>
+                                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                                <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                <option value="dropped_out" {{ request('status') == 'dropped_out' ? 'selected' : '' }}>Dropped Out</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100">
+                        <label class="text-sm text-slate-600 font-medium">Search:</label>
                         <input type="text" name="search" value="{{ request('search') }}"
                                placeholder="Search by name, email or roll number..."
                                class="flex-1 max-w-sm px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-400">
+
                         <button type="submit"
                                 class="inline-flex items-center gap-1.5 bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors shadow-sm">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -40,32 +104,28 @@
                             </svg>
                             Search
                         </button>
-                        @if (request('search'))
-                            <a href="{{ route('school-admin.students.index') }}"
-                               class="text-sm text-slate-400 hover:text-slate-600">Clear</a>
-                        @endif
-                    </form>
 
-                    <a href="{{ route('school-admin.students.create') }}"
-                       class="inline-flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2.5 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm ml-auto">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Student
-                    </a>
-                </div>
+                        @if (request()->anyFilled(['search', 'academic_year_id', 'class_id', 'section_id', 'status']))
+                            <a href="{{ route('school-admin.students.index') }}"
+                               class="text-sm text-slate-400 hover:text-slate-600">Clear all</a>
+                        @endif
+                    </div>
+                </form>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden min-w-0">
 
                 <div class="flex items-center justify-between px-6 py-3 bg-slate-50/40 border-b border-slate-100">
                     <p class="text-sm text-slate-500">Total students: <span class="font-medium text-slate-700">{{ $students->total() }}</span></p>
-                    @if (request('search'))
+                    @if (request()->anyFilled(['search', 'academic_year_id', 'class_id', 'section_id', 'status']))
                         <span class="inline-flex items-center bg-slate-100 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-full">
-                            Showing results for "{{ request('search') }}"
+                            Filters applied
                         </span>
                     @endif
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left border-collapse border border-slate-200">
+                <div class="overflow-x-auto w-full max-w-full">
+                    <table class="w-full min-w-[900px] text-sm text-left border-collapse border border-slate-200">
                         <thead>
                             <tr class="bg-slate-50 text-slate-600">
                                 <th class="py-3 px-4 font-semibold border border-slate-200">ID</th>
@@ -137,9 +197,9 @@
                                             <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-2.13a4 4 0 10-4-4 4 4 0 004 4zm6-6a4 4 0 11-8 0 4 4 0 018 0z" />
                                             </svg>
-                                            @if (request('search'))
-                                                <p class="text-slate-500 text-sm">No students match "{{ request('search') }}".</p>
-                                                <a href="{{ route('school-admin.students.index') }}" class="text-blue-600 text-sm font-medium hover:underline">Clear search</a>
+                                            @if (request()->anyFilled(['search', 'academic_year_id', 'class_id', 'section_id', 'status']))
+                                                <p class="text-slate-500 text-sm">No students match your filters.</p>
+                                                <a href="{{ route('school-admin.students.index') }}" class="text-blue-600 text-sm font-medium hover:underline">Clear filters</a>
                                             @else
                                                 <p class="text-slate-500 text-sm">No students added.</p>
                                             @endif
