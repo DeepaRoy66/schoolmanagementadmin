@@ -156,7 +156,7 @@
                     {{-- Emergency Contact --}}
                     <div class="px-6 pt-6 pb-2">
                         <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">Emergency contact</h3>
-                        <p class="text-slate-400 text-xs mb-4 -mt-2">Parent bhetna nasakda call garne ko lagi (jastai relative, local guardian).</p>
+                        <p class="text-slate-400 text-xs mb-4 -mt-2">If the student needs to be contacted in an emergency, please provide the name and phone number of a trusted individual.</p>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-1">
                             <div>
