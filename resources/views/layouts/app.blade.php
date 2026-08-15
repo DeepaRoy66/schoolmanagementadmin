@@ -15,16 +15,21 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
-            @include('layouts.navigation')
+        <div class="h-screen flex flex-col bg-gray-100 overflow-hidden">
 
-            <div class="flex">
+            {{-- Top nav: fixed height, ye row bata height ghataudaina --}}
+            <div class="shrink-0">
+                @include('layouts.navigation')
+            </div>
 
-                {{-- Sidebar: sabai pages ma persistent --}}
+            {{-- Sidebar + content row: remaining height matra, ra yo row afai scroll hudaina --}}
+            <div class="flex flex-1 min-h-0 overflow-hidden">
+
+                {{-- Sidebar: parent jati height, aafai bhitra scroll --}}
                 @include('layouts.sidebar')
 
-                {{-- Right side: page heading + content --}}
-                <div class="flex-1 min-w-0">
+                {{-- Right side: page heading + content, yehi matra scroll hune --}}
+                <div class="flex-1 min-w-0 overflow-y-auto">
 
                     @isset($header)
                         <header class="bg-white shadow">

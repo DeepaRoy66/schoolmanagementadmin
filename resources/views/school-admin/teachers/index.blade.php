@@ -78,12 +78,17 @@
                             @forelse ($teachers as $teacher)
                                 <tr class="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
                                     <td class="py-3 px-6 border-r border-slate-100">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold text-xs shrink-0">
-                                                {{ strtoupper(substr($teacher->full_name, 0, 1)) }}
-                                            </div>
+                                        <a href="{{ route('school-admin.teachers.show', $teacher) }}" class="flex items-center gap-3">
+                                            @if ($teacher->photo)
+                                                <img src="{{ asset('storage/' . $teacher->photo) }}"
+                                                     class="w-8 h-8 rounded-full object-cover shrink-0 border border-slate-200" alt="{{ $teacher->full_name }}">
+                                            @else
+                                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold text-xs shrink-0">
+                                                    {{ strtoupper(substr($teacher->full_name, 0, 1)) }}
+                                                </div>
+                                            @endif
                                             <span class="font-medium text-blue-700">{{ $teacher->full_name }}</span>
-                                        </div>
+                                        </a>
                                     </td>
                                     <td class="py-3 px-6 text-slate-600 border-r border-slate-100">{{ $teacher->phone }} · {{ $teacher->email }}</td>
                                     <td class="py-3 px-6 text-slate-600 border-r border-slate-100">{{ $teacher->designation ?? '—' }}</td>

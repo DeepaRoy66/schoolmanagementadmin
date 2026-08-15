@@ -28,6 +28,7 @@ class Teacher extends Model
         'pan_no',
         'address',
         'designation',
+        'photo',
         'is_active',
         'class_teacher_of_class',
         'class_teacher_of_section',

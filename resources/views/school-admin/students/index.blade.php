@@ -125,9 +125,10 @@
                 </div>
 
                 <div class="overflow-x-auto w-full max-w-full">
-                    <table class="w-full min-w-[900px] text-sm text-left border-collapse border border-slate-200">
+                    <table class="w-full min-w-[980px] text-sm text-left border-collapse border border-slate-200">
                         <thead>
                             <tr class="bg-slate-50 text-slate-600">
+                                <th class="py-3 px-4 font-semibold border border-slate-200">Photo</th>
                                 <th class="py-3 px-4 font-semibold border border-slate-200">ID</th>
                                 <th class="py-3 px-4 font-semibold border border-slate-200">Name</th>
                                 <th class="py-3 px-4 font-semibold border border-slate-200">Email</th>
@@ -142,6 +143,11 @@
                         <tbody>
                             @forelse ($students as $student)
                                 <tr class="hover:bg-slate-50/70 transition-colors">
+                                    <td class="py-3 px-4 border border-slate-200">
+                                        <img src="{{ $student->photo ? asset('storage/' . $student->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($student->full_name) . '&background=e2e8f0&color=64748b&size=64' }}"
+                                             class="w-10 h-10 rounded-full object-cover border border-slate-200 bg-slate-100"
+                                             alt="{{ $student->full_name }}">
+                                    </td>
                                     <td class="py-3 px-4 border border-slate-200 text-slate-500">{{ $student->student_uid ?? '—' }}</td>
                                     <td class="py-3 px-4 border border-slate-200 font-medium text-slate-900">{{ $student->full_name }}</td>
                                     <td class="py-3 px-4 border border-slate-200 text-slate-600">{{ $student->email }}</td>
@@ -149,13 +155,24 @@
                                     <td class="py-3 px-4 border border-slate-200 text-slate-600">{{ $student->section->name ?? '—' }}</td>
                                     <td class="py-3 px-4 border border-slate-200 text-slate-600">{{ $student->roll_number ?? '—' }}</td>
                                     <td class="py-3 px-4 border border-slate-200 text-slate-600">
-                                        @if ($student->emergency_contact_phone)
-                                            <div class="font-medium text-slate-800">{{ $student->emergency_contact_name ?? '—' }}</div>
+                                        @php
+                                            // Priority: Parent > Father > Mother > Local Guardian
+                                            $emergency = null;
+                                            if ($student->parent_phone) {
+                                                $emergency = ['name' => $student->parent_name, 'phone' => $student->parent_phone, 'relation' => 'Parent'];
+                                            } elseif ($student->father_phone) {
+                                                $emergency = ['name' => $student->father_name, 'phone' => $student->father_phone, 'relation' => 'Father'];
+                                            } elseif ($student->mother_phone) {
+                                                $emergency = ['name' => $student->mother_name, 'phone' => $student->mother_phone, 'relation' => 'Mother'];
+                                            } elseif ($student->local_guardian_phone) {
+                                                $emergency = ['name' => $student->local_guardian_name, 'phone' => $student->local_guardian_phone, 'relation' => 'Local Guardian'];
+                                            }
+                                        @endphp
+                                        @if ($emergency)
+                                            <div class="font-medium text-slate-800">{{ $emergency['name'] ?? '—' }}</div>
                                             <div class="text-xs text-slate-500">
-                                                {{ $student->emergency_contact_phone }}
-                                                @if ($student->emergency_contact_relation)
-                                                    <span class="text-slate-400">({{ $student->emergency_contact_relation }})</span>
-                                                @endif
+                                                {{ $emergency['phone'] }}
+                                                <span class="text-slate-400">({{ $emergency['relation'] }})</span>
                                             </div>
                                         @else
                                             <span class="text-slate-400 text-xs">Not added</span>
@@ -200,7 +217,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="py-16 text-center border border-slate-200">
+                                    <td colspan="10" class="py-16 text-center border border-slate-200">
                                         <div class="flex flex-col items-center gap-2">
                                             <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-2.13a4 4 0 10-4-4 4 4 0 004 4zm6-6a4 4 0 11-8 0 4 4 0 018 0z" />

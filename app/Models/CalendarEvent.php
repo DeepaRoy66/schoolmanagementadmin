@@ -22,6 +22,7 @@ class CalendarEvent extends Model
         'start_date',
         'end_date',
         'type',
+        'custom_type',
         'is_recurring',
         'created_by',
     ];

@@ -55,12 +55,20 @@ class FeeDiscountController extends Controller
                     ->where('is_active', true)
                     ->get();
 
+                // Check which of these fees have actually been assigned to
+                // this student (i.e. a StudentFee row exists). Discounts can
+                // only be meaningfully applied to fees that exist.
+                $assignedFeeNameIds = StudentFee::where('student_id', $selectedStudent->id)
+                    ->where('billing_period_id', $request->billing_period_id)
+                    ->pluck('fee_name_id')
+                    ->flip();
+
                 $existingDiscounts = FeeDiscount::where('student_id', $selectedStudent->id)
                     ->where('billing_period_id', $request->billing_period_id)
                     ->get()
                     ->keyBy('fee_name_id');
 
-                $feeRows = $rates->map(function ($rate) use ($existingDiscounts) {
+                $feeRows = $rates->map(function ($rate) use ($existingDiscounts, $assignedFeeNameIds) {
                     $discount = $existingDiscounts->get($rate->fee_name_id);
 
                     $discountPercent = $discount->discount_percent ?? 0;
@@ -77,6 +85,11 @@ class FeeDiscountController extends Controller
                         'discount_amount' => $discountAmount,
                         'net_amount' => $netAmount,
                         'remarks' => $discount->remarks ?? '',
+                        // True once the fee has actually been assigned to
+                        // this student (a StudentFee row exists). If false,
+                        // saving a discount here won't have any visible
+                        // effect until the fee is assigned via Fee Assign.
+                        'is_assigned' => $assignedFeeNameIds->has($rate->fee_name_id),
                     ];
                 });
             }
@@ -102,7 +115,6 @@ class FeeDiscountController extends Controller
 
         $schoolId = auth()->user()->school_id;
 
-        
         $student = Student::where('id', $validated['student_id'])
             ->where('school_id', $schoolId)
             ->first();
@@ -111,12 +123,29 @@ class FeeDiscountController extends Controller
             return redirect()->back()->withErrors(['student_id' => 'Invalid student.'])->withInput();
         }
 
+        $unassignedFeeNames = [];
+        $savedCount = 0;
+
         foreach ($validated['discounts'] as $row) {
             $percent = $row['discount_percent'] ?? 0;
             $amount = $row['discount_amount'] ?? 0;
 
-            
             if ($percent == 0 && $amount == 0) {
+                continue;
+            }
+
+            $studentFee = StudentFee::where('student_id', $validated['student_id'])
+                ->where('fee_name_id', $row['fee_name_id'])
+                ->where('billing_period_id', $validated['billing_period_id'])
+                ->where('school_id', $schoolId)
+                ->first();
+
+            // Guard against the exact issue we hit: saving a discount for a
+            // fee that was never actually assigned to this student. Instead
+            // of silently doing nothing, record which fee names were
+            // skipped so we can tell the user.
+            if (!$studentFee) {
+                $unassignedFeeNames[] = $row['fee_name_id'];
                 continue;
             }
 
@@ -134,41 +163,41 @@ class FeeDiscountController extends Controller
                 ]
             );
 
-            $studentFee = StudentFee::where('student_id', $validated['student_id'])
-                ->where('fee_name_id', $row['fee_name_id'])
+            $rate = FeeRate::where('class_id', $student->class_id)
                 ->where('billing_period_id', $validated['billing_period_id'])
-                ->where('school_id', $schoolId)
+                ->where('fee_name_id', $row['fee_name_id'])
+                ->where('is_active', true)
                 ->first();
 
-            if ($studentFee) {
-                $rate = FeeRate::where('class_id', $student->class_id)
-                    ->where('billing_period_id', $validated['billing_period_id'])
-                    ->where('fee_name_id', $row['fee_name_id'])
-                    ->where('is_active', true)
-                    ->first();
+            $originalAmount = $rate->amount ?? $studentFee->amount;
 
-        
-                $originalAmount = $rate->amount ?? $studentFee->amount;
+            $discountedAmount = $originalAmount - $amount - ($originalAmount * $percent / 100);
+            $discountedAmount = max(0, round($discountedAmount, 2));
 
-                $discountedAmount = $originalAmount - $amount - ($originalAmount * $percent / 100);
-                $discountedAmount = max(0, round($discountedAmount, 2));
+            $discountedAmount = max($discountedAmount, (float) $studentFee->paid_amount);
 
-            
-                $discountedAmount = max($discountedAmount, (float) $studentFee->paid_amount);
+            $studentFee->amount = $discountedAmount;
+            $studentFee->status = $studentFee->paid_amount >= $discountedAmount
+                ? 'paid'
+                : ($studentFee->paid_amount > 0 ? 'partial' : 'unpaid');
+            $studentFee->save();
 
-                $studentFee->amount = $discountedAmount;
-                $studentFee->status = $studentFee->paid_amount >= $discountedAmount
-                    ? 'paid'
-                    : ($studentFee->paid_amount > 0 ? 'partial' : 'unpaid');
-                $studentFee->save();
-            }
+            $savedCount++;
         }
 
+        if (!empty($unassignedFeeNames)) {
+            $names = \App\Models\FeeName::whereIn('id', $unassignedFeeNames)->pluck('name')->implode(', ');
+
+            return redirect()->back()->withInput()->withErrors([
+                'discounts' => "These fees haven't been assigned to this student yet, so the discount couldn't be saved: {$names}. Assign the fee first via Fee Assign, then apply the discount.",
+            ]);
+        }
+
+        // Redirect back with only class/section preserved so the fee table
+        // (billing period + student) clears after a successful save.
         return redirect()->route('school-admin.fee-discounts.create', [
             'class_id' => request('class_id'),
             'section_id' => request('section_id'),
-            'billing_period_id' => $validated['billing_period_id'],
-            'student_id' => $validated['student_id'],
-        ])->with('status', 'Discounts saved successfully.');
+        ])->with('status', "Discounts saved successfully ({$savedCount} fee(s) updated).");
     }
 }

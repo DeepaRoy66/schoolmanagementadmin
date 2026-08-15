@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
-use App\Models\Fee;
+use App\Models\StudentFee;
 use App\Models\Result;
 use App\Models\Student;
 use App\Models\Teacher;
@@ -15,9 +15,12 @@ class ReportController extends Controller
     public function index(): View
     {
         $schoolId = auth()->user()->school_id;
-        $totalTeachers = Teacher::count();
-        $totalStudents = Student::count();
-        $thisMonthAttendance = Attendance::whereMonth('date', now()->month)
+
+        $totalTeachers = Teacher::where('school_id', $schoolId)->count();
+        $totalStudents = Student::where('school_id', $schoolId)->count();
+
+        $thisMonthAttendance = Attendance::where('school_id', $schoolId)
+            ->whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
             ->get();
 
@@ -30,18 +33,22 @@ class ReportController extends Controller
             ? round(($presentCount / $totalAttendanceRecords) * 100, 1)
             : 0;
 
-        
-        $totalFeeAmount = Fee::sum('amount');
-        $totalCollected = Fee::sum('paid_amount');
+        $totalFeeAmount = StudentFee::where('school_id', $schoolId)->sum('amount');
+        $totalCollected = StudentFee::where('school_id', $schoolId)->sum('paid_amount');
         $totalPending = $totalFeeAmount - $totalCollected;
-        $unpaidCount = Fee::where('status', 'unpaid')->count();
-        $averageMarks = Result::selectRaw('AVG(marks_obtained / full_marks * 100) as avg_percentage')
+        $unpaidCount = StudentFee::where('school_id', $schoolId)->where('status', 'unpaid')->count();
+
+        $averageMarks = Result::where('school_id', $schoolId)
+            ->selectRaw('AVG(marks_obtained / full_marks * 100) as avg_percentage')
             ->value('avg_percentage');
 
         $averageMarks = $averageMarks ? round($averageMarks, 1) : 0;
-        $classCounts = Student::select('class', DB::raw('count(*) as total'))
-            ->groupBy('class')
-            ->orderBy('class')
+
+        $classCounts = Student::select('classes.name as class', DB::raw('count(*) as total'))
+            ->join('classes', 'students.class_id', '=', 'classes.id')
+            ->where('students.school_id', $schoolId)
+            ->groupBy('classes.name')
+            ->orderBy('classes.name')
             ->get();
 
         return view('school-admin.reports.index', compact(

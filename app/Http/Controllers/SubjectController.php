@@ -39,18 +39,31 @@ class SubjectController extends Controller
         $validated = $request->validate([
             'subject_name' => 'required|string|max:255',
             'subject_code' => 'required|string|max:50',
-            'class_id' => 'required|exists:classes,id',
+            'class_ids' => 'required|array|min:1',
+            'class_ids.*' => 'exists:classes,id',
         ]);
 
-        Subject::create([
-            'school_id' => auth()->user()->school_id,
-            'class_id' => $validated['class_id'],
-            'subject_name' => $validated['subject_name'],
-            'subject_code' => $validated['subject_code'],
-        ]);
+        $schoolId = auth()->user()->school_id;
+
+        foreach ($validated['class_ids'] as $classId) {
+            Subject::firstOrCreate(
+                [
+                    'class_id' => $classId,
+                    'subject_code' => $validated['subject_code'],
+                ],
+                [
+                    'school_id' => $schoolId,
+                    'subject_name' => $validated['subject_name'],
+                ]
+            );
+        }
+
+        $count = count($validated['class_ids']);
 
         return redirect()->route('school-admin.subjects.index')
-            ->with('status', 'Subject successfully added.');
+            ->with('status', $count > 1
+                ? "Subject successfully added to {$count} classes."
+                : 'Subject successfully added.');
     }
 
     public function edit(Subject $subject): View

@@ -10,6 +10,7 @@ use App\Models\Student;
 use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 
 class HomeworkController extends Controller
 {
@@ -53,6 +54,7 @@ class HomeworkController extends Controller
             'class_id' => 'required|exists:classes,id',
             'subject' => 'nullable|string|max:255',
             'due_date' => 'nullable|date',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         $teacher = Teacher::where('user_id', $user->id)->first();
@@ -69,6 +71,11 @@ class HomeworkController extends Controller
             return response()->json(['message' => 'This class is not assigned to you.'], 403);
         }
 
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('homework', 'public');
+        }
+
         $homework = Homework::create([
             'school_id' => $user->school_id,
             'teacher_id' => $teacher->id,
@@ -77,6 +84,7 @@ class HomeworkController extends Controller
             'class_id' => $validated['class_id'],
             'subject' => $validated['subject'] ?? null,
             'due_date' => $validated['due_date'] ?? null,
+            'image' => $imagePath,
         ]);
 
         $homework->load('schoolClass:id,name');
@@ -96,6 +104,10 @@ class HomeworkController extends Controller
 
         if (!$teacher || $homework->teacher_id !== $teacher->id) {
             return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        if ($homework->image) {
+            Storage::disk('public')->delete($homework->image);
         }
 
         $homework->delete();
@@ -142,6 +154,7 @@ class HomeworkController extends Controller
                 'description' => $hw->description,
                 'subject' => $hw->subject,
                 'due_date' => $hw->due_date,
+                'image_url' => $hw->image_url,
                 'status' => $submission->status,
                 'submitted_at' => $submission->submitted_at,
             ];

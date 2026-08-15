@@ -51,7 +51,8 @@ class CalendarEventController extends Controller
             'description' => 'nullable|string|max:1000',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
-            'type' => 'required|in:holiday,event,exam,other',
+            'type' => 'required|in:holiday,event,exam,meeting,other',
+            'custom_type' => 'required_if:type,other|nullable|string|max:255',
             'is_recurring' => 'boolean',
         ]);
 
@@ -62,6 +63,7 @@ class CalendarEventController extends Controller
             'start_date' => $validated['start_date'],
             'end_date' => $validated['end_date'] ?? null,
             'type' => $validated['type'],
+            'custom_type' => $validated['type'] === 'other' ? ($validated['custom_type'] ?? null) : null,
             'is_recurring' => $validated['is_recurring'] ?? false,
             'created_by' => $user->id,
         ]);
@@ -88,9 +90,19 @@ class CalendarEventController extends Controller
             'description' => 'nullable|string|max:1000',
             'start_date' => 'sometimes|required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
-            'type' => 'sometimes|required|in:holiday,event,exam,other',
+            'type' => 'sometimes|required|in:holiday,event,exam,meeting,other',
+            'custom_type' => 'required_if:type,other|nullable|string|max:255',
             'is_recurring' => 'boolean',
         ]);
+
+        // Determine the effective type (new value if provided, else existing) to decide custom_type.
+        $effectiveType = $validated['type'] ?? $calendarEvent->type;
+
+        if ($effectiveType === 'other') {
+            $validated['custom_type'] = $validated['custom_type'] ?? $calendarEvent->custom_type;
+        } else {
+            $validated['custom_type'] = null;
+        }
 
         $calendarEvent->update($validated);
 

@@ -13,7 +13,7 @@ use App\Models\ClassTeacherAssignment;
 
 class AttendanceController extends Controller
 {
-   
+
     public function assignedClasses(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -44,7 +44,11 @@ class AttendanceController extends Controller
         );
     }
 
-   
+    /**
+     * Full student details for the class/section this teacher is the
+     * class teacher of (photo, contact, parent/guardian, emergency
+     * contacts, academic info — everything from the student profile).
+     */
     public function students(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -83,20 +87,54 @@ class AttendanceController extends Controller
         return response()->json(
             $students->map(function ($student) {
                 return [
+                    // Identity
                     'student_id' => $student->id,
                     'user_id' => $student->user_id,
+                    'student_uid' => $student->student_uid,
+                    'photo_url' => $student->photo ? asset('storage/' . $student->photo) : null,
+
+                    // Personal information
+                    'first_name' => $student->first_name,
+                    'middle_name' => $student->middle_name,
+                    'last_name' => $student->last_name,
                     'name' => $student->full_name,
-                    'roll_number' => $student->roll_number,
+                    'dob' => $student->dob?->format('Y-m-d'),
+                    'gender' => $student->gender,
+
+                    // Contact details
+                    'phone' => $student->phone,
+                    'email' => $student->email,
+                    'address' => $student->address,
+
+                    // Parent / guardian
+                    'parent_name' => $student->parent_name,
+                    'parent_phone' => $student->parent_phone,
+                    'telephone_no' => $student->telephone_no,
+
+                    // Emergency contacts
+                    'mother_name' => $student->mother_name,
+                    'mother_phone' => $student->mother_phone,
+                    'father_name' => $student->father_name,
+                    'father_phone' => $student->father_phone,
+                    'local_guardian_name' => $student->local_guardian_name,
+                    'local_guardian_phone' => $student->local_guardian_phone,
+                    'emergency_contact_name' => $student->emergency_contact_name,
+                    'emergency_contact_relation' => $student->emergency_contact_relation,
+                    'emergency_contact_phone' => $student->emergency_contact_phone,
+
+                    // Academic details
                     'class_id' => $student->class_id,
                     'class_name' => $student->schoolClass?->name,
                     'section_id' => $student->section_id,
                     'section_name' => $student->section?->name,
+                    'roll_number' => $student->roll_number,
+                    'status' => $student->status,
                 ];
             })
         );
     }
 
-    
+
     public function myTeachers(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -111,7 +149,7 @@ class AttendanceController extends Controller
             return response()->json(['message' => 'Student profile not found.'], 404);
         }
 
-        
+
         $subjectTeachers = TeacherSubjectAllocation::with('teacher:id,user_id,first_name,middle_name,last_name', 'subject:id,subject_name')
             ->where('section_id', $student->section_id)
             ->get()
@@ -126,7 +164,7 @@ class AttendanceController extends Controller
                 ];
             });
 
-        
+
         $classTeacherAssignment = ClassTeacherAssignment::with('teacher:id,user_id,first_name,middle_name,last_name')
             ->where('class_id', $student->class_id)
             ->where('section_id', $student->section_id)
@@ -143,7 +181,7 @@ class AttendanceController extends Controller
             ]]);
         }
 
-     
+
         $allTeachers = $subjectTeachers->concat($classTeacher)
             ->unique('teacher_id')
             ->values();
@@ -228,7 +266,7 @@ class AttendanceController extends Controller
         ]);
     }
 
-    
+
     public function myAttendance(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -250,7 +288,7 @@ class AttendanceController extends Controller
         return response()->json($attendance);
     }
 
-  
+
     public function myAttendanceSummary(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -285,7 +323,7 @@ class AttendanceController extends Controller
         ]);
     }
 
-   
+
     public function viewByDate(Request $request): JsonResponse
     {
         $user = $request->user();

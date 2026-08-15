@@ -1,5 +1,4 @@
-<aside class="w-72 min-h-screen bg-[#0f1b2d] border-r border-black/20 flex flex-col font-['Inter',_'Segoe_UI',_sans-serif]">
-
+<aside class="w-72 h-full bg-[#0f1b2d] border-r border-black/20 flex flex-col font-['Inter',_'Segoe_UI',_sans-serif]">
     {{-- Logo / Brand --}}
     <div class="flex items-center gap-3 px-6 py-6 border-b border-white/10">
         <div class="w-11 h-11 rounded-lg bg-gradient-to-br from-[#1e4ed8] to-[#1e3a8a] flex items-center justify-center shadow-lg shrink-0 ring-1 ring-white/10">
@@ -14,7 +13,7 @@
         </div>
     </div>
 
-    <nav class="flex-1 overflow-y-auto px-3 py-5 space-y-6 scrollbar-thin">
+    <nav id="sidebarNav" class="flex-1 overflow-y-auto px-3 py-5 space-y-6 scrollbar-thin">
 
         @php
             $item = 'group relative flex items-center gap-3 pl-4 pr-3 py-2.5 rounded-md text-[13.5px] font-medium transition-colors duration-150';
@@ -301,6 +300,16 @@
                         Timetable
                     </a>
 
+                    <!-- <a href="{{ route('school-admin.period-timetable.index') }}"
+                       class="{{ $item }} {{ request()->routeIs('school-admin.period-timetable.*') ? $active : $inactive }}">
+                        @if(request()->routeIs('school-admin.period-timetable.*')) {!! $bar !!} @endif
+                        <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Period Timetable
+                    </a> -->
+
                     <a href="{{ route('school-admin.reports.index') }}"
                        class="{{ $item }} {{ request()->routeIs('school-admin.reports.*') ? $active : $inactive }}">
                         @if(request()->routeIs('school-admin.reports.*')) {!! $bar !!} @endif
@@ -325,8 +334,27 @@
                         </svg>
                         Health Reports
                     </a>
+                    <a href="{{ route('school-admin.emergency-contacts.index') }}"
+                       class="{{ $item }} {{ request()->routeIs('school-admin.emergency-contacts.*') ? $active : $inactive }}">
+                        @if(request()->routeIs('school-admin.emergency-contacts.*')) {!! $bar !!} @endif
+                        <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                        </svg>
+                        Emergency Contacts
+                    </a>
+                    <a href="{{ route('school-admin.calendar-events.index') }}"
+                       class="{{ $item }} {{ request()->routeIs('school-admin.calendar-events.*') ? $active : $inactive }}">
+                        @if(request()->routeIs('school-admin.calendar-events.*')) {!! $bar !!} @endif
+                        <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Calendar Events
+                    </a>
                 </div>
             </div>
+            
 
             {{-- Communication --}}
             <div>
@@ -395,6 +423,19 @@
                                   d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5S13.657 14 12 14m0-6c1.11 0 2.08.402 2.599 1M12 8V6.5M12 14v1.5m0-1.5c-1.11 0-2.08-.402-2.599-1M12 21a9 9 0 100-18 9 9 0 000 18z" />
                         </svg>
                         Fee Rates
+                    </a>
+
+                    {{-- Fee Assign: was missing from this sidebar even though the
+                         routes/controller/views for it already exist
+                         (school-admin.fee-assign.*). --}}
+                    <a href="{{ route('school-admin.fee-assign.index') }}"
+                       class="{{ $item }} {{ request()->routeIs('school-admin.fee-assign.*') ? $active : $inactive }}">
+                        @if(request()->routeIs('school-admin.fee-assign.*')) {!! $bar !!} @endif
+                        <svg class="w-[18px] h-[18px] shrink-0 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                        </svg>
+                        Fee Assign
                     </a>
 
                     <a href="{{ route('school-admin.fee-discounts.create') }}"
@@ -471,3 +512,28 @@
         </div>
     </div>
 </aside>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const sidebarNav = document.getElementById('sidebarNav');
+    if (!sidebarNav) return;
+
+    // Restore saved scroll position on page load
+    const savedScroll = sessionStorage.getItem('sidebarScrollPos');
+    if (savedScroll !== null) {
+        sidebarNav.scrollTop = parseInt(savedScroll, 10);
+    }
+
+    // Keep saving scroll position as user scrolls (covers back/forward nav too)
+    sidebarNav.addEventListener('scroll', function () {
+        sessionStorage.setItem('sidebarScrollPos', sidebarNav.scrollTop);
+    });
+
+    // Save scroll position right before a sidebar link navigates to a new page
+    sidebarNav.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', function () {
+            sessionStorage.setItem('sidebarScrollPos', sidebarNav.scrollTop);
+        });
+    });
+});
+</script>

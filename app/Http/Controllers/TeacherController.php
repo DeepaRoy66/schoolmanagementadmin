@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class TeacherController extends Controller
 {
@@ -50,12 +51,18 @@ class TeacherController extends Controller
             'email'           => ['required', 'email', 'max:255', 'unique:users,email'],
             'address'         => ['nullable', 'string'],
             'designation'     => ['nullable', 'string', 'max:255'],
+            'photo'           => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             'password'        => ['required', 'string', 'min:6'],
         ]);
 
         $schoolId = auth()->user()->school_id;
 
-        DB::transaction(function () use ($validated, $schoolId) {
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('teachers/photos', 'public');
+        }
+
+        DB::transaction(function () use ($validated, $schoolId, $photoPath) {
             $user = User::create([
                 'name'      => trim($validated['first_name'] . ' ' . $validated['last_name']),
                 'email'     => $validated['email'],
@@ -78,6 +85,7 @@ class TeacherController extends Controller
                 'pan_no'         => $validated['pan_no'] ?? null,
                 'address'        => $validated['address'] ?? null,
                 'designation'    => $validated['designation'] ?? null,
+                'photo'          => $photoPath,
                 'is_active'      => true,
             ]);
         });
@@ -111,11 +119,20 @@ class TeacherController extends Controller
             'email'           => ['required', 'email', 'max:255', 'unique:users,email,' . $teacher->user_id],
             'address'         => ['nullable', 'string'],
             'designation'     => ['nullable', 'string', 'max:255'],
+            'photo'           => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             'status'          => ['required', 'in:active,inactive'],
             'password'        => ['nullable', 'string', 'min:6'],
         ]);
 
-        DB::transaction(function () use ($validated, $teacher) {
+        $photoPath = $teacher->photo;
+        if ($request->hasFile('photo')) {
+            if ($teacher->photo) {
+                Storage::disk('public')->delete($teacher->photo);
+            }
+            $photoPath = $request->file('photo')->store('teachers/photos', 'public');
+        }
+
+        DB::transaction(function () use ($validated, $teacher, $photoPath) {
             $teacher->update([
                 'first_name'     => $validated['first_name'],
                 'middle_name'    => $validated['middle_name'] ?? null,
@@ -128,6 +145,7 @@ class TeacherController extends Controller
                 'pan_no'         => $validated['pan_no'] ?? null,
                 'address'        => $validated['address'] ?? null,
                 'designation'    => $validated['designation'] ?? null,
+                'photo'          => $photoPath,
                 'is_active'      => $validated['status'] === 'active',
             ]);
 

@@ -12,8 +12,8 @@
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-8 overflow-x-hidden">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-6 min-w-0">
 
             @if ($errors->any())
                 <div class="border border-red-200 bg-red-50 rounded-md px-4 py-3">
@@ -27,12 +27,41 @@
             @endif
 
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-                <form method="POST" action="{{ route('school-admin.students.store') }}">
+                <form method="POST" action="{{ route('school-admin.students.store') }}" enctype="multipart/form-data">
                     @csrf
 
                     {{-- Personal Information --}}
                     <div class="px-6 pt-6 pb-2">
                         <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">Personal information</h3>
+
+                        {{-- Photo Upload --}}
+                        <div class="flex items-center gap-4 mb-5">
+                            <input type="file" name="photo" id="photo" accept="image/*" onchange="previewPhoto(event)" class="hidden">
+
+                            <div id="photo_dropzone" onclick="document.getElementById('photo').click()"
+                                 ondragover="event.preventDefault(); this.classList.add('ring-2','ring-blue-400')"
+                                 ondragleave="this.classList.remove('ring-2','ring-blue-400')"
+                                 ondrop="handlePhotoDrop(event)"
+                                 class="relative w-24 h-24 rounded-full cursor-pointer shrink-0 group">
+                                <img id="photo_preview" src="https://ui-avatars.com/api/?name=Student&background=e2e8f0&color=64748b&size=96"
+                                     class="w-24 h-24 rounded-full object-cover border border-slate-200 bg-slate-100 group-hover:brightness-90 transition" alt="Student photo preview">
+                                <span class="absolute bottom-0 right-0 flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 border-2 border-white text-white shadow-sm group-hover:bg-blue-700 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 17a4 4 0 100-8 4 4 0 000 8z" />
+                                    </svg>
+                                </span>
+                            </div>
+
+                            <div class="min-w-0">
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Photo</label>
+                                <p id="photo_filename" class="text-sm text-slate-500">Click the photo to upload</p>
+                                <p class="text-slate-400 text-xs mt-0.5">JPG or PNG, max 2MB</p>
+                                @error('photo')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div>
@@ -90,7 +119,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
-                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Phone</label>
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Phone <span class="text-slate-400 text-xs">(student's own number)</span></label>
                                 <input type="text" name="phone" value="{{ old('phone') }}"
                                        class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
                                 @error('phone')
@@ -153,38 +182,68 @@
 
                     <div class="mx-6 border-t border-slate-100"></div>
 
-                    {{-- Emergency Contact --}}
+                    {{-- Emergency / Family Contacts --}}
                     <div class="px-6 pt-6 pb-2">
-                        <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">Emergency contact</h3>
-                        <p class="text-slate-400 text-xs mb-4 -mt-2">If the student needs to be contacted in an emergency, please provide the name and phone number of a trusted individual.</p>
+                        <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">Emergency contacts</h3>
+                        <p class="text-slate-400 text-xs mb-4 -mt-2">These contacts will be used for emergency communication.</p>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-1">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
-                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Contact Name</label>
-                                <input type="text" name="emergency_contact_name" value="{{ old('emergency_contact_name') }}"
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Mother's Name</label>
+                                <input type="text" name="mother_name" value="{{ old('mother_name') }}"
                                        class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
-                                @error('emergency_contact_name')
+                                @error('mother_name')
                                     <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Relationship</label>
-                                <input type="text" name="emergency_contact_relation" value="{{ old('emergency_contact_relation') }}"
-                                       placeholder="e.g. Uncle, Neighbor"
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Mother's Contact Number</label>
+                                <input type="text" name="mother_phone" value="{{ old('mother_phone') }}"
                                        class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
-                                @error('emergency_contact_relation')
-                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Phone</label>
-                                <input type="text" name="emergency_contact_phone" value="{{ old('emergency_contact_phone') }}"
-                                       class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
-                                @error('emergency_contact_phone')
+                                @error('mother_phone')
                                     <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Father's Name</label>
+                                <input type="text" name="father_name" value="{{ old('father_name') }}"
+                                       class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                                @error('father_name')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Father's Contact Number</label>
+                                <input type="text" name="father_phone" value="{{ old('father_phone') }}"
+                                       class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                                @error('father_phone')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-1">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Local Guardian's Name</label>
+                                <input type="text" name="local_guardian_name" value="{{ old('local_guardian_name') }}"
+                                       class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                                @error('local_guardian_name')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Local Guardian's Contact Number</label>
+                                <input type="text" name="local_guardian_phone" value="{{ old('local_guardian_phone') }}"
+                                       class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                                @error('local_guardian_phone')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        <p class="text-slate-400 text-xs mt-2"></p>
                     </div>
 
                     <div class="mx-6 border-t border-slate-100"></div>
@@ -321,6 +380,37 @@
             }
 
             document.getElementById('password').value = firstName + '@' + randomPart;
+        }
+
+        function previewPhoto(event) {
+            const file = event.target.files[0];
+            renderPhotoPreview(file);
+        }
+
+        function handlePhotoDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('border-blue-400', 'bg-blue-50/50');
+            const file = event.dataTransfer.files[0];
+            if (!file) return;
+
+            const input = document.getElementById('photo');
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            input.files = dataTransfer.files;
+
+            renderPhotoPreview(file);
+        }
+
+        function renderPhotoPreview(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('photo_preview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            document.getElementById('photo_filename').textContent = file.name;
+            document.getElementById('photo_dropzone').classList.remove('ring-2', 'ring-blue-400');
         }
     </script>
 </x-app-layout>

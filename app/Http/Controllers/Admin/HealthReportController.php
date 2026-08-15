@@ -30,6 +30,13 @@ class HealthReportController extends Controller
         return view('school-admin.health-reports.index', compact('reports'));
     }
 
+    public function show(HealthReport $healthReport)
+    {
+        $healthReport->load(['student', 'schoolClass', 'reporter']);
+
+        return view('school-admin.health-reports.show', compact('healthReport'));
+    }
+
     public function updateStatus(Request $request, HealthReport $healthReport): RedirectResponse
     {
         $request->validate([

@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\GalleryController;
 use App\Http\Controllers\Api\CalendarEventController;
 use App\Http\Controllers\Api\HealthReportController;
 use App\Http\Controllers\Api\FeedbackController;
+use App\Http\Controllers\Api\StudentEmergencyContactController;
+use App\Http\Controllers\Api\TeacherEmergencyContactController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -40,6 +42,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/teacher/total-classes', [TeacherDashboardController::class, 'totalClasses']); 
     Route::get('/teacher/assigned-classes', [AttendanceController::class, 'assignedClasses']); 
     Route::get('/teacher/sections', [AttendanceController::class, 'sections']);
+
+    // Teacher: student emergency contacts (Mother/Father/Local Guardian/Own number)
+    Route::get('/teacher/students/emergency-contacts', [TeacherEmergencyContactController::class, 'index']);
 
     // Teacher: health reports (view + status update)
     Route::get('/teacher/health-reports', [HealthReportController::class, 'index']);
@@ -77,6 +82,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/admin/health-reports/{healthReport}', [HealthReportController::class, 'destroy']);
 
 
+
     // Shared endpoints
     Route::get('/notices', [NoticeController::class, 'index']);
     Route::get('/timetable', [TimetableImageController::class, 'show']);
@@ -90,4 +96,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/calendar-events/{calendarEvent}', [CalendarEventController::class, 'update']);
     Route::delete('/calendar-events/{calendarEvent}', [CalendarEventController::class, 'destroy']);
 
+  
+    Route::get('/student/emergency-contacts', [StudentEmergencyContactController::class, 'index']);
 });

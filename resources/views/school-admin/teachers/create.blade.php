@@ -26,12 +26,41 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('school-admin.teachers.store') }}">
+                <form method="POST" action="{{ route('school-admin.teachers.store') }}" enctype="multipart/form-data">
                     @csrf
 
                     <!-- Personal Details -->
                     <div class="px-6 pt-6">
                         <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Personal Details</h3>
+
+                        <!-- Photo Upload -->
+                        <div class="flex items-center gap-4 mb-5">
+                            <input type="file" name="photo" id="photo" accept="image/*" onchange="previewPhoto(event)" class="hidden">
+
+                            <div id="photo_dropzone" onclick="document.getElementById('photo').click()"
+                                 ondragover="event.preventDefault(); this.classList.add('ring-2','ring-blue-400')"
+                                 ondragleave="this.classList.remove('ring-2','ring-blue-400')"
+                                 ondrop="handlePhotoDrop(event)"
+                                 class="relative w-24 h-24 rounded-full cursor-pointer shrink-0 group">
+                                <img id="photo_preview" src="https://ui-avatars.com/api/?name=Teacher&background=e2e8f0&color=64748b&size=96"
+                                     class="w-24 h-24 rounded-full object-cover border border-gray-200 bg-gray-100 group-hover:brightness-90 transition" alt="Teacher photo preview">
+                                <span class="absolute bottom-0 right-0 flex items-center justify-center w-8 h-8 rounded-full bg-[#3b82f6] border-2 border-white text-white shadow-sm group-hover:bg-[#2563eb] transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 17a4 4 0 100-8 4 4 0 000 8z" />
+                                    </svg>
+                                </span>
+                            </div>
+
+                            <div class="min-w-0">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Photo</label>
+                                <p id="photo_filename" class="text-sm text-gray-500">Click the photo to upload</p>
+                                <p class="text-gray-400 text-xs mt-0.5">JPG or PNG, max 2MB</p>
+                                @error('photo')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
 
                         <div class="grid grid-cols-3 gap-4 mb-4">
                             <div>
@@ -206,6 +235,37 @@
             }
 
             document.getElementById('password').value = firstName + '@' + randomPart;
+        }
+
+        function previewPhoto(event) {
+            const file = event.target.files[0];
+            renderPhotoPreview(file);
+        }
+
+        function handlePhotoDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('ring-2', 'ring-blue-400');
+            const file = event.dataTransfer.files[0];
+            if (!file) return;
+
+            const input = document.getElementById('photo');
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            input.files = dataTransfer.files;
+
+            renderPhotoPreview(file);
+        }
+
+        function renderPhotoPreview(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('photo_preview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            document.getElementById('photo_filename').textContent = file.name;
+            document.getElementById('photo_dropzone').classList.remove('ring-2', 'ring-blue-400');
         }
     </script>
 </x-app-layout>

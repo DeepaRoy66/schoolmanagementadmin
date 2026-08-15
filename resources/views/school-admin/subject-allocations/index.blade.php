@@ -1,199 +1,167 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-2 text-sm">
-            <h2 class="font-semibold text-xl text-slate-700">Subject allocation</h2>
-            <span class="text-slate-300">»</span>
-            <span class="text-slate-400">Assign teachers to subjects</span>
-        </div>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Teacher Subject Allocation</h2>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+    <div class="p-6">
 
-            @if (session('success'))
-                <div class="mb-4 flex items-center gap-2 px-4 py-3 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm">
-                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    {{ session('success') }}
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-semibold text-slate-800">
+                Teacher Subject Allocation
+            </h1>
+        </div>
+
+        @if (session('success'))
+            <div class="mb-4 rounded-md bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="mb-4 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3">
+                @foreach ($errors->all() as $error)
+                    <p>{{ $error }}</p>
+                @endforeach
+            </div>
+        @endif
+
+        {{-- Tabs --}}
+        <div class="border-b border-slate-200 mb-6">
+            <nav class="-mb-px flex gap-6 text-sm font-medium">
+                <a href="{{ route('school-admin.subject-allocations.index') }}"
+                   class="py-3 border-b-2 border-[#1e4ed8] text-[#1e4ed8]">
+                    Teacher Subject Allocation
+                </a>
+                <a href="{{ route('school-admin.class-teacher.form') }}"
+                   class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700">
+                    Class Teacher
+                </a>
+            </nav>
+        </div>
+
+        <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
+
+            {{-- Class + Section filter --}}
+            <form method="GET" class="flex items-end gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Class</label>
+                    <select name="class_id" onchange="this.form.submit()"
+                            class="text-sm border border-slate-300 rounded-md px-3 py-2 w-56 focus:outline-none focus:ring-2 focus:ring-[#1e4ed8]/30 focus:border-[#1e4ed8]">
+                        <option value="">-- Select --</option>
+                        @foreach ($classes as $class)
+                            <option value="{{ $class->id }}" @selected($selectedClassId == $class->id)>
+                                {{ $class->name }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Section</label>
+                    <select name="section_id"
+                            class="text-sm border border-slate-300 rounded-md px-3 py-2 w-56 focus:outline-none focus:ring-2 focus:ring-[#1e4ed8]/30 focus:border-[#1e4ed8]"
+                            @if ($sections->isEmpty()) disabled @endif>
+                        <option value="">-- Select --</option>
+                        @foreach ($sections as $section)
+                            <option value="{{ $section->id }}" @selected($selectedSectionId == $section->id)>
+                                {{ $section->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <button type="submit"
+                        class="inline-flex items-center gap-1.5 rounded-md bg-[#1e4ed8] hover:bg-[#1e3a8a] text-white text-sm font-medium px-4 py-2 transition-colors">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Search
+                </button>
+            </form>
+
+            @if ($selectedClassId && $selectedSectionId)
+
+                {{-- Class Teacher display --}}
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Class Teacher</label>
+                    <div class="text-sm border border-slate-200 rounded-md px-3 py-2 bg-slate-50 text-slate-700 w-56">
+                        @if ($classTeacher)
+                            {{ $classTeacher->teacher->full_name }}
+                        @else
+                            <span class="text-slate-400">Not assigned</span>
+                            <a href="{{ route('school-admin.class-teacher.form') }}" class="text-[#1e4ed8] hover:underline ml-1">
+                                Assign
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Subjects table --}}
+                @if (count($rows) > 0)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-slate-500 border-b border-slate-100">
+                                    <th class="px-5 py-3 font-medium">SN</th>
+                                    <th class="px-5 py-3 font-medium">Subject Name</th>
+                                    <th class="px-5 py-3 font-medium">Subject Code</th>
+                                    <th class="px-5 py-3 font-medium">Teacher</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                @foreach ($rows as $i => $row)
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="px-5 py-3 text-slate-500">{{ $i + 1 }}</td>
+                                        <td class="px-5 py-3 text-slate-700">{{ $row['subject_name'] }}</td>
+                                        <td class="px-5 py-3 text-slate-500">{{ $row['subject_code'] }}</td>
+                                        <td class="px-5 py-3">
+                                            <div class="flex items-center gap-2">
+                                                <form method="POST" action="{{ route('school-admin.subject-allocations.store') }}"
+                                                      class="flex items-center gap-2">
+                                                    @csrf
+                                                    <input type="hidden" name="class_id" value="{{ $selectedClassId }}">
+                                                    <input type="hidden" name="section_id" value="{{ $selectedSectionId }}">
+                                                    <input type="hidden" name="subject_id" value="{{ $row['subject_id'] }}">
+
+                                                    <select name="teacher_id" onchange="this.form.submit()"
+                                                            class="text-sm border border-slate-300 rounded-md px-3 py-1.5 w-56 focus:outline-none focus:ring-2 focus:ring-[#1e4ed8]/30 focus:border-[#1e4ed8]">
+                                                        <option value="">-- Select Teacher --</option>
+                                                        @foreach ($teachers as $teacher)
+                                                            <option value="{{ $teacher->id }}" @selected($row['teacher_id'] == $teacher->id)>
+                                                                {{ $teacher->full_name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </form>
+
+                                                @if ($row['allocation_id'])
+                                                    <form method="POST"
+                                                          action="{{ route('school-admin.subject-allocations.destroy', $row['allocation_id']) }}?class_id={{ $selectedClassId }}&section_id={{ $selectedSectionId }}"
+                                                          onsubmit="return confirm('Unassign this teacher?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="p-1.5 rounded-md bg-red-100 hover:bg-red-200 text-red-700">
+                                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <p class="text-slate-400 text-center py-10">No subjects found for this class.</p>
+                @endif
+
+            @else
+                <p class="text-slate-400 text-center py-10">Select a class and section, then click Search.</p>
             @endif
 
-            <div class="flex justify-end mb-4">
-                <a href="{{ route('school-admin.subject-allocations.create') }}"
-                   class="inline-flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Allocate subject
-                </a>
-            </div>
-
-            <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-
-                <div class="flex flex-wrap items-center gap-3 px-6 py-5 border-b border-slate-100">
-                    <label class="text-sm text-slate-600 font-medium">Search:</label>
-                    <form action="{{ route('school-admin.subject-allocations.index') }}" method="GET" class="flex items-center gap-2 flex-1 min-w-[260px]">
-                        <input type="text" name="search" value="{{ request('search') }}"
-                               placeholder="Search by class, section, subject or teacher..."
-                               class="flex-1 max-w-sm px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400">
-                        <button type="submit"
-                                class="inline-flex items-center gap-1.5 bg-emerald-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-emerald-700 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
-                            </svg>
-                            Search
-                        </button>
-                        @if (request('search'))
-                            <a href="{{ route('school-admin.subject-allocations.index') }}"
-                               class="text-sm text-slate-400 hover:text-slate-600">Clear</a>
-                        @endif
-                    </form>
-
-                    <span class="text-xs text-slate-500 whitespace-nowrap ml-auto">{{ count($rows) }} {{ Str::plural('row', count($rows)) }}</span>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
-                                <th class="py-3 px-6 font-semibold border-r border-slate-200">Class</th>
-                                <th class="py-3 px-6 font-semibold border-r border-slate-200">Section</th>
-                                <th class="py-3 px-6 font-semibold border-r border-slate-200">Subject</th>
-                                <th class="py-3 px-6 font-semibold border-r border-slate-200">Teacher</th>
-                                <th class="py-3 px-6 font-semibold w-28">Option</th>
-                            </tr>
-                        </thead>
-
-                        <tbody id="allocationBody">
-                            @forelse ($rows as $row)
-                                <tr data-section-id="{{ $row['section_id'] }}"
-                                    data-subject-id="{{ $row['subject_id'] }}"
-                                    class="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
-
-                                    <td class="py-3 px-6 border-r border-slate-100 text-slate-700">{{ $row['class_name'] }}</td>
-                                    <td class="py-3 px-6 border-r border-slate-100 text-slate-700">{{ $row['section_name'] }}</td>
-                                    <td class="py-3 px-6 border-r border-slate-100">
-                                        <span class="font-medium text-blue-700">{{ $row['subject_name'] }}</span>
-                                    </td>
-
-                                    <td class="py-3 px-6 border-r border-slate-100 teacher-cell">
-                                        @if ($row['teacher_name'])
-                                            <span class="text-slate-700">{{ $row['teacher_name'] }}</span>
-                                        @else
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-100">
-                                                Not assigned
-                                            </span>
-                                        @endif
-                                    </td>
-
-                                    <td class="py-3 px-6">
-                                        <button
-                                            type="button"
-                                            class="edit-btn inline-flex items-center gap-1.5 bg-amber-500 text-white px-3 py-1.5 rounded-md text-xs font-medium hover:bg-amber-600 transition-colors shadow-sm"
-                                            data-current-teacher="{{ $row['teacher_id'] }}">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
-                                            Edit
-                                        </button>
-                                    </td>
-
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="py-16 text-center">
-                                        <div class="flex flex-col items-center gap-2">
-                                            <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                            </svg>
-                                            @if (request('search'))
-                                                <p class="text-slate-500 text-sm">No allocations match "{{ request('search') }}".</p>
-                                                <a href="{{ route('school-admin.subject-allocations.index') }}" class="text-blue-600 text-sm font-medium hover:underline">Clear search</a>
-                                            @else
-                                                <p class="text-slate-500 text-sm">No subjects to allocate yet.</p>
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-            </div>
         </div>
     </div>
-
-    <script>
-        const teachers = @json(
-            $teachers->map(fn($t) => [
-                'id' => $t->id,
-                'name' => $t->full_name
-            ])
-        );
-
-        const csrfToken = '{{ csrf_token() }}';
-
-        document.getElementById('allocationBody').addEventListener('click', function(e) {
-
-            const btn = e.target.closest('.edit-btn');
-            if (!btn) return;
-
-            const tr = btn.closest('tr');
-            const teacherCell = tr.querySelector('.teacher-cell');
-            const currentTeacherId = btn.dataset.currentTeacher;
-
-            const options = teachers.map(t =>
-                `<option value="${t.id}" ${t.id == currentTeacherId ? 'selected' : ''}>
-                    ${t.name}
-                </option>`
-            ).join('');
-
-            teacherCell.innerHTML = `
-                <select class="teacher-select border border-slate-300 rounded-md px-2 py-1.5 w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
-                    <option value="">Select teacher</option>
-                    ${options}
-                </select>
-            `;
-
-            btn.textContent = 'Save';
-            btn.classList.remove('bg-amber-500', 'hover:bg-amber-600');
-            btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
-
-            btn.onclick = async function() {
-
-                const select = teacherCell.querySelector('select');
-                const teacherId = select.value;
-
-                if (!teacherId) {
-                    alert('Teacher select garnus.');
-                    return;
-                }
-
-                const res = await fetch(
-                    '{{ route("school-admin.subject-allocations.store") }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken,
-                        },
-                        body: JSON.stringify({
-                            subject_id: tr.dataset.subjectId,
-                            section_id: tr.dataset.sectionId,
-                            teacher_id: teacherId,
-                        }),
-                    }
-                );
-
-                if (res.ok) {
-                    location.reload();
-                } else {
-                    alert('Save huna sakena. Feri try garnus.');
-                }
-            };
-
-        });
-    </script>
-
 </x-app-layout>

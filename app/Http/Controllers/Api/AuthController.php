@@ -63,6 +63,7 @@ class AuthController extends Controller
             'email' => $user->email,
             'role' => $user->role,
             'must_change_password' => (bool) $user->must_change_password,
+            'photo' => null,
             'school_id' => $user->school_id,
             'school_name' => $user->school->name ?? null,
         ];
@@ -71,9 +72,28 @@ class AuthController extends Controller
         if ($user->role === 'teacher') {
             $teacher = Teacher::where('user_id', $user->id)->first();
 
-            $userData['is_class_teacher'] = $teacher
-                ? ClassTeacherAssignment::where('teacher_id', $teacher->id)->exists()
-                : false;
+            $userData['photo'] = $teacher && $teacher->photo ? asset('storage/' . $teacher->photo) : null;
+
+            $classTeacherAssignment = $teacher
+                ? ClassTeacherAssignment::with(['schoolClass:id,name', 'section:id,name'])
+                    ->where('teacher_id', $teacher->id)
+                    ->first()
+                : null;
+
+            $userData['is_class_teacher'] = $classTeacherAssignment !== null;
+
+            $userData['class_teacher_of'] = $classTeacherAssignment ? [
+                'class_id' => $classTeacherAssignment->class_id,
+                'class_name' => $classTeacherAssignment->schoolClass?->name,
+                'section_id' => $classTeacherAssignment->section_id,
+                'section_name' => $classTeacherAssignment->section?->name,
+            ] : null;
+        }
+
+        if ($user->role === 'student') {
+            $student = Student::where('user_id', $user->id)->first();
+
+            $userData['photo'] = $student && $student->photo ? asset('storage/' . $student->photo) : null;
         }
 
         return response()->json([
@@ -94,7 +114,7 @@ class AuthController extends Controller
             'email' => $user->email,
             'role' => $user->role,
             'must_change_password' => (bool) $user->must_change_password,
-            'photo' => $user->photo ? asset('storage/' . $user->photo) : null,
+            'photo' => null,
             'school_id' => $user->school_id,
             'school_name' => $user->school->name ?? null,
         ];
@@ -105,43 +125,90 @@ class AuthController extends Controller
 
             if ($teacher) {
 
-                $subjectAllocations = TeacherSubjectAllocation::with('subject:id,class_id,subject_name,subject_code')
+                $response['photo'] = $teacher->photo ? asset('storage/' . $teacher->photo) : null;
+
+                // Subjects this teacher is allocated to, per (class_id, section_id).
+                $subjectAllocations = TeacherSubjectAllocation::with([
+                        'subject:id,class_id,subject_name,subject_code',
+                        'section:id,name',
+                    ])
+                    ->where('teacher_id', $teacher->id)
+                    ->get()
+                    ->filter(fn($alloc) => $alloc->subject !== null && $alloc->section !== null);
+
+                // Class-teacher assignments for this teacher.
+                $classTeacherAssignments = ClassTeacherAssignment::with(['schoolClass:id,name', 'section:id,name'])
                     ->where('teacher_id', $teacher->id)
                     ->get();
 
-                $subjectsByClass = $subjectAllocations
-                    ->filter(fn($alloc) => $alloc->subject !== null)
-                    ->groupBy(fn($alloc) => $alloc->subject->class_id)
-                    ->map(function ($allocations) {
-                        return $allocations->map(function ($alloc) {
-                            return [
+                // Quick lookup: "class_id-section_id" => true, for class-teacher sections.
+                $classTeacherKeys = $classTeacherAssignments->mapWithKeys(
+                    fn($a) => ["{$a->class_id}-{$a->section_id}" => true]
+                );
+
+                // Group subject allocations by class_id + section_id (a teacher can teach
+                // multiple subjects in the same section, so group before building the list).
+                $bySection = $subjectAllocations->groupBy(
+                    fn($alloc) => "{$alloc->subject->class_id}-{$alloc->section_id}"
+                );
+
+                $assignedClasses = collect();
+
+                foreach ($bySection as $key => $allocations) {
+                    [$classId, $sectionId] = explode('-', $key);
+                    $first = $allocations->first();
+
+                    $assignedClasses->push([
+                        'class_id' => (int) $classId,
+                        'class_name' => $first->subject->schoolClass?->name,
+                        'section_id' => (int) $sectionId,
+                        'section_name' => $first->section->name,
+                        'is_class_teacher' => $classTeacherKeys->has($key),
+                        'subjects' => $allocations
+                            ->map(fn($alloc) => [
                                 'subject_id' => $alloc->subject->id,
                                 'subject_name' => $alloc->subject->subject_name,
                                 'subject_code' => $alloc->subject->subject_code,
-                            ];
-                        })->unique('subject_id')->values();
-                    });
+                            ])
+                            ->unique('subject_id')
+                            ->values(),
+                    ]);
+                }
 
-                $assignedClasses = ClassTeacherAssignment::with(['schoolClass:id,name', 'section:id,name'])
-                    ->where('teacher_id', $teacher->id)
-                    ->get();
+                // Add class-teacher assignments that have no subject allocation at all
+                // in that section (e.g. class teacher who doesn't teach a subject there).
+                foreach ($classTeacherAssignments as $cta) {
+                    $key = "{$cta->class_id}-{$cta->section_id}";
 
-                $response['assigned_classes'] = $assignedClasses
-                    ->map(function ($item) use ($subjectsByClass) {
-                        return [
-                            'class_id' => $item->class_id,
-                            'class_name' => $item->schoolClass?->name,
-                            'section_id' => $item->section_id,
-                            'section_name' => $item->section?->name,
-                            'subjects' => $subjectsByClass->get($item->class_id, collect())->values(),
-                        ];
-                    })
-                    ->values();
+                    if (!$bySection->has($key)) {
+                        $assignedClasses->push([
+                            'class_id' => $cta->class_id,
+                            'class_name' => $cta->schoolClass?->name,
+                            'section_id' => $cta->section_id,
+                            'section_name' => $cta->section?->name,
+                            'is_class_teacher' => true,
+                            'subjects' => [],
+                        ]);
+                    }
+                }
 
-                
-                $response['is_class_teacher'] = $assignedClasses->isNotEmpty();
+                $response['assigned_classes'] = $assignedClasses->values();
+                $response['is_class_teacher'] = $classTeacherAssignments->isNotEmpty();
+
+                // Direct "which class/section" info, so the app doesn't have to
+                // loop through assigned_classes to find the is_class_teacher: true entry.
+                $firstAssignment = $classTeacherAssignments->first();
+
+                $response['class_teacher_of'] = $firstAssignment ? [
+                    'class_id' => $firstAssignment->class_id,
+                    'class_name' => $firstAssignment->schoolClass?->name,
+                    'section_id' => $firstAssignment->section_id,
+                    'section_name' => $firstAssignment->section?->name,
+                ] : null;
             } else {
+                $response['assigned_classes'] = [];
                 $response['is_class_teacher'] = false;
+                $response['class_teacher_of'] = null;
             }
         }
 
@@ -153,6 +220,7 @@ class AuthController extends Controller
                 ->first();
 
             if ($student) {
+                $response['photo'] = $student->photo ? asset('storage/' . $student->photo) : null;
                 $response['class_id'] = $student->class_id;
                 $response['class_name'] = $student->schoolClass?->name;
                 $response['section_id'] = $student->section_id;

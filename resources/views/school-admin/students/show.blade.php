@@ -13,19 +13,7 @@
     </x-slot>
 
     <div class="py-8 overflow-x-hidden">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 space-y-6 min-w-0">
-
-            {{-- Breadcrumb row (matches reference: page title left, breadcrumb right) --}}
-            <div class="flex items-center justify-between">
-                <h1 class="text-lg font-semibold text-blue-600">Student</h1>
-                <div class="text-sm text-slate-400">
-                    <a href="{{ route('school-admin.students.index') }}" class="hover:text-slate-600">Dashboard</a>
-                    <span class="mx-1">/</span>
-                    <a href="{{ route('school-admin.students.index') }}" class="hover:text-slate-600">Students</a>
-                    <span class="mx-1">/</span>
-                    <span class="text-slate-600">{{ $student->full_name }}</span>
-                </div>
-            </div>
+        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8 space-y-6 min-w-0">
 
             @if (session('status'))
                 <div class="flex items-center gap-2 border border-emerald-200 bg-emerald-50 text-emerald-700 rounded-md px-4 py-3 text-sm">
@@ -36,132 +24,145 @@
                 </div>
             @endif
 
-            {{-- Main two-column layout --}}
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
 
-                {{-- LEFT: Avatar / summary card --}}
-                <div class="lg:col-span-1 space-y-6">
-
-                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-6 py-8 flex flex-col items-center text-center">
-                        <div class="w-28 h-28 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-4xl font-semibold ring-4 ring-blue-50">
+                {{-- Profile header --}}
+                <div class="flex items-center gap-4 px-8 py-6">
+                    @if ($student->photo)
+                        <img src="{{ asset('storage/' . $student->photo) }}"
+                             class="w-14 h-14 rounded-full object-cover border border-slate-200 flex-shrink-0"
+                             alt="{{ $student->full_name }}">
+                    @else
+                        <div class="w-14 h-14 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-lg font-semibold flex-shrink-0">
                             {{ strtoupper(substr($student->first_name, 0, 1)) }}
                         </div>
-                        <h2 class="mt-4 text-base font-semibold text-slate-900">{{ $student->full_name }}</h2>
-
-                        @php
-                            $statusColors = [
-                                'active' => 'bg-green-100 text-green-700',
-                                'inactive' => 'bg-gray-100 text-gray-600',
-                                'dropped_out' => 'bg-red-100 text-red-700',
-                            ];
-                            $statusLabels = [
-                                'active' => 'Active',
-                                'inactive' => 'Inactive',
-                                'dropped_out' => 'Dropped Out',
-                            ];
-                        @endphp
-                        <span class="mt-2 inline-block px-3 py-1 rounded-md text-xs font-medium {{ $statusColors[$student->status] ?? 'bg-gray-100 text-gray-600' }}">
-                            {{ $statusLabels[$student->status] ?? ucfirst($student->status) }}
-                        </span>
+                    @endif
+                    <div>
+                        <h2 class="text-lg font-semibold text-slate-900">{{ $student->full_name }}</h2>
+                        <p class="text-sm text-slate-400">Student profile</p>
                     </div>
 
-                    {{-- Class / roll quick facts card, styled like the "wallet balance" card in the reference --}}
-                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-6 py-6 text-center">
-                        <p class="text-xs font-semibold text-slate-400 tracking-wide uppercase">Class</p>
-                        <p class="text-2xl font-bold text-slate-800 mt-1">{{ $student->schoolClass->name ?? '—' }}</p>
+                    @php
+                        $statusColors = [
+                            'active' => 'bg-green-100 text-green-700',
+                            'inactive' => 'bg-gray-100 text-gray-600',
+                            'dropped_out' => 'bg-red-100 text-red-700',
+                        ];
+                        $statusLabels = [
+                            'active' => 'Active',
+                            'inactive' => 'Inactive',
+                            'dropped_out' => 'Dropped Out',
+                        ];
+                    @endphp
+                    <span class="ml-auto px-3 py-1.5 rounded-md text-xs font-medium {{ $statusColors[$student->status] ?? 'bg-gray-100 text-gray-600' }}">
+                        {{ $statusLabels[$student->status] ?? ucfirst($student->status) }}
+                    </span>
+                </div>
 
-                        <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-sm">
-                            <span class="text-slate-400">Roll No.</span>
-                            <span class="font-medium text-slate-700">{{ $student->roll_number ?? '—' }}</span>
-                        </div>
+                <div class="mx-8 border-t border-slate-100"></div>
 
-                        <div class="mt-4 grid grid-cols-2 gap-3">
-                            <a href="{{ route('school-admin.students.edit', $student) }}"
-                               class="inline-flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors">
-                                Edit
-                            </a>
-                            <a href="{{ route('school-admin.students.index') }}"
-                               class="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium px-4 py-2 rounded-md transition-colors">
-                                Back
-                            </a>
-                        </div>
+                {{-- Info grid --}}
+                <div class="px-8 py-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <div class="border border-slate-200 rounded-lg px-4 py-3">
+                        <p class="text-xs font-semibold text-slate-400 tracking-wide uppercase mb-1">Email</p>
+                        <p class="text-sm text-slate-800">{{ $student->email }}</p>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-lg px-4 py-3">
+                        <p class="text-xs font-semibold text-slate-400 tracking-wide uppercase mb-1">Phone</p>
+                        <p class="text-sm text-slate-800">{{ $student->phone ?? '—' }}</p>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-lg px-4 py-3">
+                        <p class="text-xs font-semibold text-slate-400 tracking-wide uppercase mb-1">Class</p>
+                        <p class="text-sm text-slate-800">{{ $student->schoolClass->name ?? '—' }}</p>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-lg px-4 py-3">
+                        <p class="text-xs font-semibold text-slate-400 tracking-wide uppercase mb-1">Roll Number</p>
+                        <p class="text-sm text-slate-800">{{ $student->roll_number ?? '—' }}</p>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-lg px-4 py-3">
+                        <p class="text-xs font-semibold text-slate-400 tracking-wide uppercase mb-1">Parent Name</p>
+                        <p class="text-sm text-slate-800">{{ $student->parent_name ?? '—' }}</p>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-lg px-4 py-3">
+                        <p class="text-xs font-semibold text-slate-400 tracking-wide uppercase mb-1">Parent Phone</p>
+                        <p class="text-sm text-slate-800">{{ $student->parent_phone ?? '—' }}</p>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-lg px-4 py-3 md:col-span-2">
+                        <p class="text-xs font-semibold text-slate-400 tracking-wide uppercase mb-1">Telephone No.</p>
+                        <p class="text-sm text-slate-800">{{ $student->telephone_no ?? '—' }}</p>
                     </div>
 
                 </div>
 
-                {{-- RIGHT: Personal information panel --}}
-                <div class="lg:col-span-2 space-y-6">
+                <div class="mx-8 border-t border-slate-100"></div>
 
-                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-8 py-6">
-                        <p class="text-xs font-semibold text-slate-500 tracking-wide uppercase mb-4">Personal Information</p>
-
-                        <div class="divide-y divide-slate-100">
-                            <div class="flex items-center justify-between py-3">
-                                <span class="text-sm text-slate-500">Full Name</span>
-                                <span class="text-sm font-medium text-slate-800">{{ $student->full_name }}</span>
-                            </div>
-                            <div class="flex items-center justify-between py-3">
-                                <span class="text-sm text-slate-500">Email</span>
-                                <span class="text-sm font-medium text-slate-800">{{ $student->email ?? '—' }}</span>
-                            </div>
-                            <div class="flex items-center justify-between py-3">
-                                <span class="text-sm text-slate-500">Phone</span>
-                                <span class="text-sm font-medium text-slate-800">{{ $student->phone ?? '—' }}</span>
-                            </div>
-                            <div class="flex items-center justify-between py-3">
-                                <span class="text-sm text-slate-500">Telephone No.</span>
-                                <span class="text-sm font-medium text-slate-800">{{ $student->telephone_no ?? '—' }}</span>
-                            </div>
-                            <div class="flex items-center justify-between py-3">
-                                <span class="text-sm text-slate-500">Parent Name</span>
-                                <span class="text-sm font-medium text-slate-800">{{ $student->parent_name ?? '—' }}</span>
-                            </div>
-                            <div class="flex items-center justify-between py-3">
-                                <span class="text-sm text-slate-500">Parent Phone</span>
-                                <span class="text-sm font-medium text-slate-800">{{ $student->parent_phone ?? '—' }}</span>
-                            </div>
-                            <div class="flex items-center justify-between py-3">
-                                <span class="text-sm text-slate-500">Account Status</span>
-                                <span class="px-2.5 py-1 rounded-md text-xs font-medium {{ $statusColors[$student->status] ?? 'bg-gray-100 text-gray-600' }}">
-                                    {{ $statusLabels[$student->status] ?? ucfirst($student->status) }}
-                                </span>
-                            </div>
-                        </div>
+                {{-- Emergency Contacts --}}
+                <div class="px-8 py-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-xs font-semibold text-slate-500 tracking-wide uppercase">Emergency Contacts</p>
                     </div>
 
-                    {{-- Emergency contact panel, same row style as above --}}
-                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-8 py-6">
-                        <div class="flex items-center gap-2 mb-4">
-                            <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <p class="text-xs font-semibold text-slate-500 tracking-wide uppercase">Emergency Contact</p>
-                        </div>
-
-                        @if ($student->emergency_contact_name || $student->emergency_contact_phone)
-                            <div class="divide-y divide-slate-100">
-                                <div class="flex items-center justify-between py-3">
-                                    <span class="text-sm text-slate-500">Contact Name</span>
-                                    <span class="text-sm font-medium text-slate-800">{{ $student->emergency_contact_name ?? '—' }}</span>
-                                </div>
-                                <div class="flex items-center justify-between py-3">
-                                    <span class="text-sm text-slate-500">Relationship</span>
-                                    <span class="text-sm font-medium text-slate-800">{{ $student->emergency_contact_relation ?? '—' }}</span>
-                                </div>
-                                <div class="flex items-center justify-between py-3">
-                                    <span class="text-sm text-slate-500">Phone</span>
-                                    <span class="text-sm font-semibold text-red-600">{{ $student->emergency_contact_phone ?? '—' }}</span>
-                                </div>
-                            </div>
-                        @else
-                            <p class="text-sm text-slate-400">
-                                Emergency contact thapieko chaina.
-                                <a href="{{ route('school-admin.students.edit', $student) }}" class="text-blue-600 hover:underline">Add garnus</a>.
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="border border-red-100 bg-red-50/40 rounded-lg px-4 py-3">
+                            <p class="text-xs font-semibold text-slate-400 tracking-wide uppercase mb-1">Mother's Contact Number</p>
+                            <p class="text-sm text-slate-800">
+                                {{ $student->mother_phone ?? '—' }}
+                                @if ($student->mother_name)
+                                    <span class="text-slate-400 text-xs">({{ $student->mother_name }})</span>
+                                @endif
                             </p>
-                        @endif
-                    </div>
+                        </div>
 
+                        <div class="border border-red-100 bg-red-50/40 rounded-lg px-4 py-3">
+                            <p class="text-xs font-semibold text-slate-400 tracking-wide uppercase mb-1">Father's Contact Number</p>
+                            <p class="text-sm text-slate-800">
+                                {{ $student->father_phone ?? '—' }}
+                                @if ($student->father_name)
+                                    <span class="text-slate-400 text-xs">({{ $student->father_name }})</span>
+                                @endif
+                            </p>
+                        </div>
+
+                        <div class="border border-red-100 bg-red-50/40 rounded-lg px-4 py-3">
+                            <p class="text-xs font-semibold text-slate-400 tracking-wide uppercase mb-1">Local Guardian's Contact Number</p>
+                            <p class="text-sm text-slate-800">
+                                {{ $student->local_guardian_phone ?? '—' }}
+                                @if ($student->local_guardian_name)
+                                    <span class="text-slate-400 text-xs">({{ $student->local_guardian_name }})</span>
+                                @endif
+                            </p>
+                        </div>
+
+                        <div class="border border-red-100 bg-red-50/40 rounded-lg px-4 py-3">
+                            <p class="text-xs font-semibold text-slate-400 tracking-wide uppercase mb-1">Student's Own Contact Number</p>
+                            <p class="text-sm text-slate-800">{{ $student->phone ?? '—' }}</p>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="mx-8 border-t border-slate-100"></div>
+
+                {{-- Back --}}
+                <div class="px-8 py-6">
+                    <a href="{{ route('school-admin.students.index') }}"
+                       class="inline-flex items-center gap-1.5 text-slate-600 text-sm font-medium hover:text-slate-800 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to list
+                    </a>
+                </div>
+
             </div>
 
         </div>

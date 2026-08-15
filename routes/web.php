@@ -33,7 +33,10 @@ use App\Http\Controllers\TimetableImageController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AcademicYearRunController;
 use App\Http\Controllers\ClassChangeController;
+use App\Http\Controllers\PeriodTimetableController;
 use App\Http\Controllers\Admin\FeedbackController;
+use App\Http\Controllers\EmergencyContactController;
+use App\Http\Controllers\CalendarEventController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -115,12 +118,11 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
         Route::get('/subject-allocations', [SubjectAllocationController::class, 'index'])
             ->name('subject-allocations.index');
 
-        Route::get('/subject-allocations/create', [SubjectAllocationController::class, 'create'])
-            ->name('subject-allocations.create');
-
         Route::post('/subject-allocations', [SubjectAllocationController::class, 'store'])
             ->name('subject-allocations.store');
 
+        Route::delete('/subject-allocations/{allocation}', [SubjectAllocationController::class, 'destroy'])
+            ->name('subject-allocations.destroy');
 
         Route::get('class-teacher', [TeacherController::class, 'assignClassTeacherForm'])
             ->name('class-teacher.form');
@@ -208,6 +210,15 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
         Route::get('fee-payments/{student}/pay', [FeePaymentController::class, 'payFeeForm'])
             ->name('fee-payments.pay-form');
 
+        Route::post('fee-payments/{student}/pay', [FeePaymentController::class, 'payStore'])
+            ->name('fee-payments.pay-store');
+
+        Route::get('fee-payments/{student}/statement', [FeePaymentController::class, 'statement'])
+            ->name('fee-payments.statement');
+
+        Route::get('fee-payments/{student}/fine-waive', [FeePaymentController::class, 'fineWaiveForm'])
+            ->name('fee-payments.fine-waive');
+
         Route::get('fee-payments/receipt/{paymentGroup}', [FeePaymentController::class, 'receipt'])
             ->name('fee-payments.receipt');
 
@@ -229,6 +240,12 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
         Route::delete('health-reports/{healthReport}', [HealthReportController::class, 'destroy'])
             ->name('health-reports.destroy');
 
+            Route::get('health-reports', [HealthReportController::class, 'index'])
+    ->name('health-reports.index');
+
+Route::get('health-reports/{healthReport}', [HealthReportController::class, 'show'])
+    ->name('health-reports.show');
+
         // -------------------------------
         // Academic Year
         // -------------------------------
@@ -249,6 +266,22 @@ Route::middleware(['auth', 'role:school_admin', 'license'])
         // -------------------------------
         Route::resource('classes', ClassController::class)->except(['show']);
         Route::resource('sections', SectionController::class)->except(['show']);
+
+        // -------------------------------
+        // Period Timetable
+        // -------------------------------
+        Route::resource('period-timetable', PeriodTimetableController::class)
+            ->except(['create', 'show']);
+
+        // -------------------------------
+        // Emergency Contacts
+        // -------------------------------
+        Route::resource('emergency-contacts', EmergencyContactController::class);
+
+        // -------------------------------
+        // Calendar Events
+        // -------------------------------
+        Route::resource('calendar-events', CalendarEventController::class);
     });
 
 

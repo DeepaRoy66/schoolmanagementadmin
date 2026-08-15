@@ -28,12 +28,19 @@ class Student extends Model
         'email',
         'phone',
         'address',
+        'photo',
         'parent_name',
         'parent_phone',
         'telephone_no',
         'emergency_contact_name',
         'emergency_contact_relation',
         'emergency_contact_phone',
+        'mother_name',
+        'mother_phone',
+        'father_name',
+        'father_phone',
+        'local_guardian_name',
+        'local_guardian_phone',
         'class_id',
         'section_id',
         'roll_number',
@@ -75,9 +82,13 @@ class Student extends Model
         return $this->belongsTo(AcademicYear::class);
     }
 
-    public static function generateStudentUid(): string
+    public static function generateStudentUid(int $schoolId): string
     {
-        $last = static::withoutGlobalScopes()->orderByDesc('id')->value('student_uid');
+        $last = static::withoutGlobalScopes()
+            ->where('school_id', $schoolId)
+            ->orderByDesc('id')
+            ->value('student_uid');
+
         $next = $last ? ((int) $last) + 1 : 1;
 
         if ($next > 999) {

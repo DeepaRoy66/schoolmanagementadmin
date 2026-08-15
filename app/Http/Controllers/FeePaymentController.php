@@ -80,8 +80,199 @@ class FeePaymentController extends Controller
 
         $netPayable = $studentFees->sum(fn ($fee) => $fee->amount - $fee->paid_amount);
 
-        return view('school-admin.fee-payments.pay', compact('student', 'studentFees', 'netPayable'));
+        // Fixed list of payment types. payment_method is stored as a plain
+        // string on FeePayment, so these are simple value => label pairs
+        // rather than a related model.
+        $paymentTypes = [
+            'cash' => 'Cash',
+            'card' => 'Card',
+            'bank_transfer' => 'Bank Transfer',
+            'cheque' => 'Cheque',
+            'online' => 'Online',
+        ];
+
+        // TODO: replace these placeholders with real data once
+        // Sponsor / Project models exist.
+        $sponsors = collect();
+        $projects = collect();
+        $dateFrom = null;
+        $paymentDate = now()->format('Y-m-d');
+
+        // Build the transaction ledger: every fee charge is a Dr entry,
+        // every payment against it is a Cr entry. Sorted chronologically
+        // with a running balance.
+        $payments = FeePayment::with('studentFee')
+            ->whereIn('student_fee_id', $studentFees->pluck('id'))
+            ->orderBy('payment_date')
+            ->orderBy('id')
+            ->get();
+
+        $entries = collect();
+
+        foreach ($studentFees as $fee) {
+            $entries->push((object) [
+                'date' => optional($fee->billing_date)->format('Y-m-d') ?? optional($fee->created_at)->format('Y-m-d'),
+                'sort_key' => $fee->billing_date ?? $fee->created_at,
+                'transaction_type' => 'Fee Charge: ' . ($fee->feeName->name ?? '-'),
+                'transaction_no' => null,
+                'transaction_url' => null,
+                'period' => $fee->billingPeriod->name ?? '-',
+                'remarks' => $fee->notes,
+                'dr_amount' => $fee->amount,
+                'fine' => 0,
+                'cr_amount' => 0,
+                'fine_waive' => 0,
+                'rebate' => 0,
+            ]);
+        }
+
+        foreach ($payments as $payment) {
+            $entries->push((object) [
+                'date' => optional($payment->payment_date)->format('Y-m-d') ?? $payment->payment_date,
+                'sort_key' => $payment->payment_date ?? $payment->created_at,
+                'transaction_type' => 'Payment',
+                'transaction_no' => $payment->reference_no ?? ('#' . $payment->id),
+                'transaction_url' => route('school-admin.fee-payments.receipt', $payment->payment_group),
+                'period' => $payment->studentFee->billingPeriod->name ?? '-',
+                'remarks' => $payment->notes,
+                'dr_amount' => 0,
+                'fine' => 0,
+                'cr_amount' => $payment->amount,
+                'fine_waive' => 0,
+                'rebate' => 0,
+            ]);
+        }
+
+        $entries = $entries->sortBy('sort_key')->values();
+
+        $runningBalance = 0;
+        $transactions = $entries->map(function ($entry) use (&$runningBalance) {
+            $runningBalance += $entry->dr_amount - $entry->cr_amount;
+            $entry->balance = $runningBalance;
+            $entry->balance_type = $runningBalance >= 0 ? 'Dr' : 'Cr';
+            return $entry;
+        });
+
+        $netPayableType = $netPayable >= 0 ? 'Dr' : 'Cr';
+
+        return view('school-admin.fee-payments.pay', compact(
+            'student',
+            'studentFees',
+            'netPayable',
+            'paymentTypes',
+            'sponsors',
+            'projects',
+            'transactions',
+            'netPayableType',
+            'dateFrom',
+            'paymentDate'
+        ));
     }
+
+    /**
+     * Handle submission of the payment form on the pay.blade.php page.
+     *
+     * FIXED: previously this ignored the submitted `payment_date` and
+     * always stored now()->format('Y-m-d'), so whatever date the user
+     * picked on the form was silently discarded. `payment_date` is now
+     * validated and actually used when creating each FeePayment row.
+     */
+    public function payStore(Request $request, Student $student): RedirectResponse
+    {
+        abort_unless($student->school_id === auth()->user()->school_id, 403);
+
+        $validated = $request->validate([
+            'payment_amount' => ['required', 'numeric', 'min:0.01'],
+            'payment_type' => ['required', 'string', 'max:50'],
+            'payment_date' => ['required', 'date_format:Y-m-d'],
+            'apply_discount' => ['nullable', 'boolean'],
+            'discount_amount' => ['nullable', 'numeric', 'min:0'],
+            'narration' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $pendingFees = StudentFee::where('student_id', $student->id)
+            ->where('status', '!=', 'paid')
+            ->orderBy('id')
+            ->get();
+
+        $netPayable = $pendingFees->sum(fn ($fee) => $fee->amount - $fee->paid_amount);
+
+        if ($validated['payment_amount'] > $netPayable) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'payment_amount' => 'Payment amount cannot exceed the net payable of Rs. '
+                        . number_format($netPayable, 2) . '.',
+                ]);
+        }
+
+        $paymentGroup = (string) \Illuminate\Support\Str::uuid();
+
+        DB::transaction(function () use ($pendingFees, $validated, $paymentGroup) {
+            $remaining = $validated['payment_amount'];
+
+            foreach ($pendingFees as $fee) {
+                if ($remaining <= 0) {
+                    break;
+                }
+
+                $due = $fee->amount - $fee->paid_amount;
+                $allocate = min($due, $remaining);
+
+                if ($allocate <= 0) {
+                    continue;
+                }
+
+                FeePayment::create([
+                    'student_fee_id' => $fee->id,
+                    'payment_group' => $paymentGroup,
+                    'school_id' => auth()->user()->school_id,
+                    'amount' => $allocate,
+                    'payment_date' => $validated['payment_date'],
+                    'payment_method' => $validated['payment_type'],
+                    'notes' => $validated['narration'] ?? null,
+                ]);
+
+                $fee->paid_amount += $allocate;
+                $fee->status = $fee->paid_amount >= $fee->amount ? 'paid' : 'partial';
+                $fee->save();
+
+                $remaining -= $allocate;
+            }
+        });
+
+        return redirect()
+            ->route('school-admin.fee-payments.receipt', $paymentGroup)
+            ->with('success', 'Payment recorded successfully.');
+    }
+
+    /**
+     * Fee Statement page for a student.
+     * STUB: replace with real statement logic once requirements are known.
+     */
+    public function statement(Student $student): View
+    {
+        abort_unless($student->school_id === auth()->user()->school_id, 403);
+
+        $studentFees = StudentFee::with('feeName')
+            ->where('student_id', $student->id)
+            ->orderBy('id')
+            ->get();
+
+        return view('school-admin.fee-payments.statement', compact('student', 'studentFees'));
+    }
+
+    /**
+     * Fine Waive form for a student.
+     * STUB: replace with real fine/waiver logic once requirements are known.
+     */
+    public function fineWaiveForm(Student $student): View
+    {
+        abort_unless($student->school_id === auth()->user()->school_id, 403);
+
+        return view('school-admin.fee-payments.fine-waive', compact('student'));
+    }
+
     public function receipt(string $paymentGroup): View
     {
         $schoolId = auth()->user()->school_id;

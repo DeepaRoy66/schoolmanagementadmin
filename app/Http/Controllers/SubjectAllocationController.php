@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ClassTeacherAssignment;
+use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\TeacherSubjectAllocation;
@@ -11,61 +13,67 @@ class SubjectAllocationController extends Controller
 {
     public function index(Request $request)
     {
-        $subjects = Subject::with('schoolClass.sections')->orderBy('subject_name')->get();
+        $classes = SchoolClass::orderBy('name')->get();
+
+        $selectedClassId = $request->integer('class_id') ?: null;
+        $selectedSectionId = $request->integer('section_id') ?: null;
+
+        $sections = collect();
+        if ($selectedClassId) {
+            $selectedClass = SchoolClass::find($selectedClassId);
+            $sections = $selectedClass?->sections()->orderBy('name')->get() ?? collect();
+        }
+
         $teachers = Teacher::where('is_active', true)->orderBy('first_name')->get();
 
-        $allocations = TeacherSubjectAllocation::with('teacher')
-            ->get()
-            ->keyBy(fn ($a) => $a->subject_id . '-' . $a->section_id);
-
+        $classTeacher = null;
         $rows = [];
-        foreach ($subjects as $subject) {
-            $sections = $subject->schoolClass?->sections ?? collect();
 
-            foreach ($sections as $section) {
-                $key = $subject->id . '-' . $section->id;
-                $existing = $allocations->get($key);
+        if ($selectedClassId && $selectedSectionId) {
+            $classTeacher = ClassTeacherAssignment::with('teacher')
+                ->where('class_id', $selectedClassId)
+                ->where('section_id', $selectedSectionId)
+                ->first();
+
+            $subjects = Subject::where('class_id', $selectedClassId)
+                ->orderBy('subject_name')
+                ->get();
+
+            $allocations = TeacherSubjectAllocation::where('section_id', $selectedSectionId)
+                ->whereIn('subject_id', $subjects->pluck('id'))
+                ->get()
+                ->keyBy('subject_id');
+
+            foreach ($subjects as $subject) {
+                $existing = $allocations->get($subject->id);
 
                 $rows[] = [
-                    'class_name'   => $subject->schoolClass->name,
-                    'section_id'   => $section->id,
-                    'section_name' => $section->name,
-                    'subject_id'   => $subject->id,
-                    'subject_name' => $subject->subject_name,
-                    'teacher_id'   => $existing?->teacher_id,
-                    'teacher_name' => $existing?->teacher?->full_name,
+                    'subject_id'    => $subject->id,
+                    'subject_name'  => $subject->subject_name,
+                    'subject_code'  => $subject->subject_code,
+                    'teacher_id'    => $existing?->teacher_id,
+                    'allocation_id' => $existing?->id,
                 ];
             }
         }
 
-        if ($request->filled('search')) {
-            $search = mb_strtolower($request->search);
-
-            $rows = array_values(array_filter($rows, function ($row) use ($search) {
-                return str_contains(mb_strtolower($row['class_name']), $search)
-                    || str_contains(mb_strtolower($row['section_name']), $search)
-                    || str_contains(mb_strtolower($row['subject_name']), $search)
-                    || str_contains(mb_strtolower($row['teacher_name'] ?? ''), $search);
-            }));
-        }
-
-        return view('school-admin.subject-allocations.index', compact('rows', 'teachers'));
-    }
-
-    public function create()
-    {
-    
-        $subjects = Subject::with('schoolClass.sections')->orderBy('subject_name')->get();
-        $teachers = Teacher::where('is_active', true)->orderBy('first_name')->get();
-
-        return view('school-admin.subject-allocations.create', compact('subjects', 'teachers'));
+        return view('school-admin.subject-allocations.index', [
+            'classes'           => $classes,
+            'sections'          => $sections,
+            'teachers'          => $teachers,
+            'rows'              => $rows,
+            'classTeacher'      => $classTeacher,
+            'selectedClassId'   => $selectedClassId,
+            'selectedSectionId' => $selectedSectionId,
+        ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'subject_id' => ['required', 'exists:subjects,id'],
+            'class_id'   => ['required', 'exists:classes,id'],
             'section_id' => ['required', 'exists:sections,id'],
+            'subject_id' => ['required', 'exists:subjects,id'],
             'teacher_id' => ['required', 'exists:teachers,id'],
         ]);
 
@@ -81,7 +89,25 @@ class SubjectAllocationController extends Controller
         );
 
         return redirect()
-            ->route('school-admin.subject-allocations.index')
-            ->with('success', 'Subject assigned successfully.');
+            ->route('school-admin.subject-allocations.index', [
+                'class_id'   => $validated['class_id'],
+                'section_id' => $validated['section_id'],
+            ])
+            ->with('success', 'Teacher assigned successfully.');
+    }
+
+    public function destroy(Request $request, TeacherSubjectAllocation $allocation)
+    {
+        $classId = $request->query('class_id');
+        $sectionId = $request->query('section_id');
+
+        $allocation->delete();
+
+        return redirect()
+            ->route('school-admin.subject-allocations.index', [
+                'class_id'   => $classId,
+                'section_id' => $sectionId,
+            ])
+            ->with('success', 'Teacher unassigned successfully.');
     }
 }
