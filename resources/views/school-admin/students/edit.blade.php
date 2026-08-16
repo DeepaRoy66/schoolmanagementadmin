@@ -270,7 +270,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div>
                                 <label class="block text-sm font-medium text-slate-600 mb-1.5">Class</label>
-                                <select name="class_id" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                                <select name="class_id" id="class_id" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
                                     <option value="">-- Select Class --</option>
                                     @foreach ($classes as $class)
                                         <option value="{{ $class->id }}" {{ old('class_id', $student->class_id) == $class->id ? 'selected' : '' }}>
@@ -300,10 +300,12 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-slate-600 mb-1.5">Section</label>
-                                <select name="section_id" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                                <select name="section_id" id="section_id" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
                                     <option value="">-- Select Section --</option>
                                     @foreach ($sections as $section)
-                                        <option value="{{ $section->id }}" {{ old('section_id', $student->section_id) == $section->id ? 'selected' : '' }}>
+                                        <option value="{{ $section->id }}"
+                                                data-class-ids="{{ $section->classes->pluck('id')->implode(',') }}"
+                                                {{ old('section_id', $student->section_id) == $section->id ? 'selected' : '' }}>
                                             {{ $section->name }}
                                         </option>
                                     @endforeach
@@ -453,5 +455,31 @@
                 document.getElementById('photo_filename').textContent = 'Click the photo to replace';
             }
         }
+
+        function filterSections() {
+            const classId = document.getElementById('class_id').value;
+            const sectionSelect = document.getElementById('section_id');
+            const options = sectionSelect.querySelectorAll('option[data-class-ids]');
+
+            let hasSelectedVisible = false;
+
+            options.forEach(option => {
+                const classIds = option.dataset.classIds.split(',').filter(Boolean);
+                const matches = !classId || classIds.includes(classId);
+
+                option.hidden = !matches;
+                option.disabled = !matches;
+
+                if (matches && option.selected) hasSelectedVisible = true;
+                if (!matches) option.selected = false;
+            });
+
+            if (!hasSelectedVisible) {
+                sectionSelect.value = '';
+            }
+        }
+
+        document.getElementById('class_id').addEventListener('change', filterSections);
+        document.addEventListener('DOMContentLoaded', filterSections);
     </script>
 </x-app-layout>

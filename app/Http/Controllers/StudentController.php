@@ -60,7 +60,7 @@ class StudentController extends Controller
     public function create(): View
     {
         $classes = SchoolClass::orderBy('name')->get();
-        $sections = Section::orderBy('name')->get();
+        $sections = Section::with('classes')->orderBy('name')->get();
         $academicYears = AcademicYear::orderByDesc('year')->get();
 
         return view('school-admin.students.create', compact('classes', 'sections', 'academicYears'));
@@ -160,7 +160,7 @@ class StudentController extends Controller
     public function edit(Student $student): View
     {
         $classes = SchoolClass::orderBy('name')->get();
-        $sections = Section::orderBy('name')->get();
+        $sections = Section::with('classes')->orderBy('name')->get();
         $academicYears = AcademicYear::orderByDesc('year')->get();
 
         return view('school-admin.students.edit', compact('student', 'classes', 'sections', 'academicYears'));
