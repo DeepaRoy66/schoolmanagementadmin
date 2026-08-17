@@ -10,6 +10,7 @@ use App\Models\TeacherSubjectAllocation;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\ClassTeacherAssignment;
+use Illuminate\Support\Facades\Http;
 
 class AttendanceController extends Controller
 {
@@ -234,6 +235,7 @@ class AttendanceController extends Controller
             ->toArray();
 
         $savedCount = 0;
+        $savedRecords = [];
 
         foreach ($validated['records'] as $record) {
             if (!in_array($record['student_id'], $validStudentIds)) {
@@ -253,6 +255,7 @@ class AttendanceController extends Controller
                 ]
             );
 
+            $savedRecords[] = $record;
             $savedCount++;
         }
 
@@ -260,10 +263,67 @@ class AttendanceController extends Controller
             return response()->json(['message' => 'No valid students found to mark attendance for.'], 422);
         }
 
+        $this->sendAttendancePushNotifications($savedRecords, $validated['date']);
+
         return response()->json([
             'message' => 'Attendance saved successfully.',
             'saved' => $savedCount,
         ]);
+    }
+
+    /**
+     * Attendance mark vaisakepachi, harek student lai (jasko onesignal_player_id
+     * cha) status anusar push notification pathaune. Status anusar group garera
+     * (present/absent/leave) euta-euta OneSignal call ma batch garincha.
+     */
+    private function sendAttendancePushNotifications(array $records, string $date): void
+    {
+        $appId = config('services.onesignal.app_id');
+        $restApiKey = config('services.onesignal.rest_api_key');
+
+        if (empty($appId) || empty($restApiKey)) {
+            return;
+        }
+
+        $studentIds = collect($records)->pluck('student_id')->unique();
+
+        $students = Student::with('user:id,onesignal_player_id')
+            ->whereIn('id', $studentIds)
+            ->get(['id', 'user_id'])
+            ->keyBy('id');
+
+        $byStatus = collect($records)->groupBy('status');
+
+        $statusLabels = [
+            'present' => 'Present',
+            'absent' => 'Absent',
+            'leave' => 'On Leave',
+        ];
+
+        foreach ($byStatus as $status => $group) {
+            $playerIds = $group
+                ->map(fn($record) => $students->get($record['student_id'])?->user?->onesignal_player_id)
+                ->filter()
+                ->values()
+                ->toArray();
+
+            if (empty($playerIds)) {
+                continue;
+            }
+
+            $label = $statusLabels[$status] ?? ucfirst($status);
+
+            Http::withHeaders([
+                'Authorization' => 'Basic ' . $restApiKey,
+                'Content-Type' => 'application/json',
+            ])->post('https://onesignal.com/api/v1/notifications', [
+                'app_id' => $appId,
+                'include_player_ids' => $playerIds,
+                'headings' => ['en' => 'Attendance Update'],
+                'contents' => ['en' => "You were marked {$label} on {$date}."],
+                'data' => ['type' => 'attendance', 'date' => $date, 'status' => $status],
+            ]);
+        }
     }
 
 

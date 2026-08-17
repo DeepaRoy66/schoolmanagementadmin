@@ -226,6 +226,12 @@ class AuthController extends Controller
                 $response['section_id'] = $student->section_id;
                 $response['section_name'] = $student->section?->name;
                 $response['roll_number'] = $student->roll_number;
+
+                // Father / Mother details
+                $response['father_name'] = $student->father_name;
+                $response['father_phone'] = $student->father_phone;
+                $response['mother_name'] = $student->mother_name;
+                $response['mother_phone'] = $student->mother_phone;
             }
         }
 
@@ -254,6 +260,22 @@ class AuthController extends Controller
         $user->save();
 
         return response()->json(['message' => 'Password changed successfully.']);
+    }
+
+    
+    public function updatePlayerId(Request $request): JsonResponse
+    {
+        $request->validate([
+            'player_id' => 'required|string',
+        ]);
+
+        $request->user()->update([
+            'onesignal_player_id' => $request->player_id,
+        ]);
+
+        return response()->json([
+            'message' => 'Player ID updated successfully.',
+        ]);
     }
 
     

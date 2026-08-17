@@ -25,6 +25,7 @@ class User extends Authenticatable
     'school_id',
     'role',
     'must_change_password',
+    'onesignal_player_id',
 ];
 
     /**

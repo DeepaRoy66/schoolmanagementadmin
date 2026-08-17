@@ -1,20 +1,25 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Gallery;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 class GalleryController extends Controller
 {
-    
-    public function index(Request $request): JsonResponse
+    /**
+     * List gallery photos/videos for the school admin's school.
+     * View-only + moderate (delete). Upload is not available here —
+     * teachers and students upload from the mobile app (POST /api/gallery).
+     */
+    public function index(Request $request): View
     {
         $user = $request->user();
 
-        $query = Gallery::with(['schoolClass:id,name', 'uploader:id,name'])
+        $query = Gallery::with(['schoolClass:id,name', 'uploader:id,name,role'])
             ->where('school_id', $user->school_id)
             ->latest();
 
@@ -22,59 +27,62 @@ class GalleryController extends Controller
             $query->where('class_id', $request->query('class_id'));
         }
 
-        if ($user->role === 'student' && !$request->filled('class_id')) {
-            $student = \App\Models\Student::where('user_id', $user->id)->first();
-            if ($student) {
-                $query->where('class_id', $student->class_id);
-            }
+        if ($request->filled('media_type')) {
+            $query->where('media_type', $request->query('media_type'));
         }
 
-        $photos = $query->paginate(20);
+        if ($request->filled('role')) {
+            $role = $request->query('role');
+            $query->whereHas('uploader', function ($q) use ($role) {
+                $q->where('role', $role);
+            });
+        }
 
-        return response()->json($photos);
+        if ($request->filled('search')) {
+            $search = $request->query('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('caption', 'like', "%{$search}%")
+                  ->orWhereHas('uploader', function ($uq) use ($search) {
+                      $uq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $gallery = $query->paginate(24)->withQueryString();
+
+        // Old records uploaded before video support existed may have a null
+        // media_type — treat those as photos so the counts stay accurate.
+        $photoCount = Gallery::where('school_id', $user->school_id)
+            ->where(function ($q) {
+                $q->where('media_type', 'image')->orWhereNull('media_type');
+            })->count();
+
+        $videoCount = Gallery::where('school_id', $user->school_id)
+            ->where('media_type', 'video')
+            ->count();
+
+        $classes = \App\Models\SchoolClass::where('school_id', $user->school_id)->get();
+
+        return view('school-admin.gallery.index', compact('gallery', 'photoCount', 'videoCount', 'classes'));
     }
 
-    public function store(Request $request): JsonResponse
+    /**
+     * Delete a photo/video. School admin may delete any item in their school
+     * (moderation), regardless of who uploaded it.
+     */
+    public function destroy(Request $request, Gallery $gallery): RedirectResponse
     {
         $user = $request->user();
 
-        if (!in_array($user->role, ['teacher', 'school_admin'])) {
-            return response()->json(['message' => 'You are not authorized to upload photos.'], 403);
+        if ($gallery->school_id !== $user->school_id) {
+            abort(403);
         }
 
-        $validated = $request->validate([
-            'class_id' => 'nullable|exists:classes,id',
-            'caption' => 'nullable|string|max:255',
-            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
-        ]);
-
-        $path = $request->file('image')->store('gallery', 'public');
-
-        $gallery = Gallery::create([
-            'school_id' => $user->school_id,
-            'class_id' => $validated['class_id'] ?? null,
-            'uploaded_by' => $user->id,
-            'caption' => $validated['caption'] ?? null,
-            'image_path' => $path,
-        ]);
-
-        return response()->json([
-            'message' => 'Photo uploaded successfully.',
-            'gallery' => $gallery,
-        ], 201);
-    }
-
-    public function destroy(Request $request, Gallery $gallery): JsonResponse
-    {
-        $user = $request->user();
-
-        if ($user->role !== 'school_admin' && $gallery->uploaded_by !== $user->id) {
-            return response()->json(['message' => 'You are not authorized to delete this photo.'], 403);
-        }
-
-        \Illuminate\Support\Facades\Storage::disk('public')->delete($gallery->image_path);
+        Storage::disk('public')->delete($gallery->image_path);
         $gallery->delete();
 
-        return response()->json(['message' => 'Photo deleted successfully.']);
+        return redirect()
+            ->route('school-admin.gallery.index')
+            ->with('success', 'Photo deleted successfully.');
     }
 }

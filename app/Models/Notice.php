@@ -22,10 +22,16 @@ class Notice extends Model
         'posted_by',
         'title',
         'message',
+        'target_type',
     ];
 
     public function poster()
     {
         return $this->belongsTo(User::class, 'posted_by');
+    }
+
+    public function targets()
+    {
+        return $this->hasMany(NoticeTarget::class);
     }
 }

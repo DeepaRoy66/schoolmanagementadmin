@@ -37,7 +37,7 @@ class GalleryController extends Controller
     {
         $user = $request->user();
 
-        if ($user->role !== 'student') {
+        if (!in_array($user->role, ['teacher', 'student'])) {
             return response()->json(['message' => 'You are not authorized to upload photos.'], 403);
         }
 
@@ -48,8 +48,9 @@ class GalleryController extends Controller
             'video' => 'required_without:image|nullable|mimetypes:video/mp4,video/quicktime,video/x-msvideo,video/webm|max:204800',
         ]);
 
-        // student ko aphno class_id auto-assign garne, unless explicitly nil pathaएको cha
-        if (empty($validated['class_id'])) {
+        // student ko aphno class_id auto-assign garne, unless explicitly pathaएको cha
+        // teacher le explicitly class_id pathaउनुपर्छ, auto-assign teacher ko lagi lagu hudaina
+        if (empty($validated['class_id']) && $user->role === 'student') {
             $student = \App\Models\Student::where('user_id', $user->id)->first();
             $validated['class_id'] = $student->class_id ?? null;
         }

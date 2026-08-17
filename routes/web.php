@@ -37,6 +37,7 @@ use App\Http\Controllers\PeriodTimetableController;
 use App\Http\Controllers\Admin\FeedbackController;
 use App\Http\Controllers\EmergencyContactController;
 use App\Http\Controllers\CalendarEventController;
+use App\Http\Controllers\GalleryController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -282,6 +283,15 @@ Route::get('health-reports/{healthReport}', [HealthReportController::class, 'sho
         // Calendar Events
         // -------------------------------
         Route::resource('calendar-events', CalendarEventController::class);
+
+        // -------------------------------
+// Gallery (view + moderate only — upload happens from teacher/student app)
+// -------------------------------
+Route::get('gallery', [GalleryController::class, 'index'])
+    ->name('gallery.index');
+
+Route::delete('gallery/{gallery}', [GalleryController::class, 'destroy'])
+    ->name('gallery.destroy');
     });
 
 

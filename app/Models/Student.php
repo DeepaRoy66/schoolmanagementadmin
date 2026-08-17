@@ -56,7 +56,7 @@ class Student extends Model
     {
         return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
     }
-
+     
     public function school()
     {
         return $this->belongsTo(School::class);
@@ -92,7 +92,7 @@ class Student extends Model
         $next = $last ? ((int) $last) + 1 : 1;
 
         if ($next > 999) {
-            throw new \Exception('Student ID limit (999) pugisakyo.');
+            throw new \Exception('Student ID limit (999) already reached.');
         }
 
         return str_pad($next, 3, '0', STR_PAD_LEFT);

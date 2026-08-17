@@ -23,6 +23,7 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/update-player-id', [AuthController::class, 'updatePlayerId']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
 
@@ -67,6 +68,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/student/homework/{homework}/complete', [HomeworkController::class, 'markComplete']);
     Route::get('/student/results', [ResultController::class, 'myResults']);
     Route::get('/student/fees', [FeeController::class, 'myFees']);
+    Route::get('/student/payment-history', [FeeController::class, 'myPaymentHistory']);
     Route::get('/student/materials', [MaterialController::class, 'myMaterials']);
     Route::get('/student/teachers', [AttendanceController::class, 'myTeachers']);
 

@@ -21,6 +21,7 @@ class Gallery extends Model
         'uploaded_by',
         'caption',
         'image_path',
+        'media_type',
     ];
 
     protected $appends = ['image_url'];
