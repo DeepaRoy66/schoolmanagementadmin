@@ -18,6 +18,24 @@
                 </div>
             @endif
 
+            {{-- Validation / Save Errors --}}
+            @if ($errors->any())
+                <div class="rounded-2xl bg-rose-50 border border-rose-200 px-5 py-3.5 text-sm text-rose-800 shadow-sm">
+                    <div class="flex items-start gap-3">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-100">
+                            <svg class="w-4.5 h-4.5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                            </svg>
+                        </div>
+                        <ul class="space-y-1 font-medium">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            @endif
+
             {{-- MAIN CARD --}}
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 
@@ -191,8 +209,15 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     @foreach ($feeRows as $i => $row)
-                                        <tr class="hover:bg-blue-50/40 transition-colors" data-amount="{{ $row->amount_before }}">
-                                            <td class="py-3.5 px-5 font-medium text-gray-800">{{ $row->fee_name }}</td>
+                                        <tr class="hover:bg-blue-50/40 transition-colors {{ !$row->is_assigned ? 'opacity-60' : '' }}" data-amount="{{ $row->amount_before }}">
+                                            <td class="py-3.5 px-5 font-medium text-gray-800">
+                                                {{ $row->fee_name }}
+                                                @if (!$row->is_assigned)
+                                                    <span class="ml-2 inline-flex items-center rounded-full bg-amber-50 text-amber-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
+                                                        Not assigned
+                                                    </span>
+                                                @endif
+                                            </td>
                                             <td class="py-3.5 px-5 text-right text-gray-500 tabular-nums js-amount">
                                                 Rs. {{ number_format($row->amount_before, 2) }}
                                             </td>
@@ -201,13 +226,15 @@
                                                 <input type="number" step="0.01" min="0" max="100"
                                                        name="discounts[{{ $i }}][discount_percent]"
                                                        value="{{ $row->discount_percent }}"
-                                                       class="js-percent w-20 mx-auto block rounded-lg border border-gray-200 bg-white py-1.5 text-center text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                                                       {{ !$row->is_assigned ? 'disabled' : '' }}
+                                                       class="js-percent w-20 mx-auto block rounded-lg border border-gray-200 bg-white py-1.5 text-center text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:bg-gray-50 disabled:text-gray-400">
                                             </td>
                                             <td class="py-3.5 px-5">
                                                 <input type="number" step="0.01" min="0"
                                                        name="discounts[{{ $i }}][discount_amount]"
                                                        value="{{ $row->discount_amount }}"
-                                                       class="js-discount w-24 mx-auto block rounded-lg border border-gray-200 bg-white py-1.5 text-center text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                                                       {{ !$row->is_assigned ? 'disabled' : '' }}
+                                                       class="js-discount w-24 mx-auto block rounded-lg border border-gray-200 bg-white py-1.5 text-center text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:bg-gray-50 disabled:text-gray-400">
                                             </td>
                                             <td class="py-3.5 px-5 text-right">
                                                 <span class="js-net inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 px-2.5 py-1 text-xs font-semibold tabular-nums">
@@ -218,7 +245,8 @@
                                                 <input type="text" name="discounts[{{ $i }}][remarks]"
                                                        value="{{ $row->remarks }}"
                                                        placeholder="Optional note..."
-                                                       class="w-full rounded-lg border border-gray-200 bg-white py-1.5 px-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                                                       {{ !$row->is_assigned ? 'disabled' : '' }}
+                                                       class="w-full rounded-lg border border-gray-200 bg-white py-1.5 px-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:bg-gray-50 disabled:text-gray-400">
                                             </td>
                                         </tr>
                                     @endforeach
@@ -235,6 +263,10 @@
                                 </tfoot>
                             </table>
                         </div>
+
+                        <p class="mt-3 text-xs text-gray-400">
+                            Rows marked <span class="text-amber-600 font-medium">Not assigned</span> haven't been assigned to this student for this billing period yet — discounts on them won't save until the fee is assigned via Fee Assign.
+                        </p>
 
                         <script>
                             (function () {

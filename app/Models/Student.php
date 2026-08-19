@@ -56,7 +56,7 @@ class Student extends Model
     {
         return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
     }
-     
+
     public function school()
     {
         return $this->belongsTo(School::class);
@@ -82,11 +82,20 @@ class Student extends Model
         return $this->belongsTo(AcademicYear::class);
     }
 
+    /**
+     * Generate the next student_uid for a given school.
+     *
+     * IMPORTANT: This must always be called from inside a DB::transaction()
+     * in the caller (e.g. StudentController@store), because lockForUpdate()
+     * only takes effect within an active transaction. Calling this outside
+     * a transaction will NOT prevent race conditions / duplicate UIDs.
+     */
     public static function generateStudentUid(int $schoolId): string
     {
         $last = static::withoutGlobalScopes()
             ->where('school_id', $schoolId)
             ->orderByDesc('id')
+            ->lockForUpdate()
             ->value('student_uid');
 
         $next = $last ? ((int) $last) + 1 : 1;

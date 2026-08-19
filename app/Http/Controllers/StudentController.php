@@ -9,6 +9,7 @@ use App\Models\Section;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -106,47 +107,61 @@ class StudentController extends Controller
             $photoPath = $request->file('photo')->store('students/photos', 'public');
         }
 
-        $user = User::create([
-            'name' => $fullName,
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'school_id' => $schoolId,
-            'role' => 'student',
-            'email_verified_at' => now(),
-        ]);
+        try {
+            DB::transaction(function () use ($validated, $schoolId, $fullName, $photoPath) {
+                $user = User::create([
+                    'name' => $fullName,
+                    'email' => $validated['email'],
+                    'password' => Hash::make($validated['password']),
+                    'school_id' => $schoolId,
+                    'role' => 'student',
+                    'email_verified_at' => now(),
+                ]);
 
-        Student::create([
-            'school_id' => $schoolId,
-            'academic_year_id' => $validated['academic_year_id'] ?? null,
-            'user_id' => $user->id,
-            'first_name' => $validated['first_name'],
-            'middle_name' => $validated['middle_name'] ?? null,
-            'last_name' => $validated['last_name'],
-            'dob' => $validated['dob'] ?? null,
-            'gender' => $validated['gender'] ?? null,
-            'student_uid' => Student::generateStudentUid($schoolId),
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
-            'address' => $validated['address'] ?? null,
-            'photo' => $photoPath,
-            'parent_name' => $validated['parent_name'] ?? null,
-            'parent_phone' => $validated['parent_phone'] ?? null,
-            'telephone_no' => $validated['telephone_no'] ?? null,
-            'emergency_contact_name' => $validated['emergency_contact_name'] ?? null,
-            'emergency_contact_relation' => $validated['emergency_contact_relation'] ?? null,
-            'emergency_contact_phone' => $validated['emergency_contact_phone'] ?? null,
-            'mother_name' => $validated['mother_name'] ?? null,
-            'mother_phone' => $validated['mother_phone'] ?? null,
-            'father_name' => $validated['father_name'] ?? null,
-            'father_phone' => $validated['father_phone'] ?? null,
-            'local_guardian_name' => $validated['local_guardian_name'] ?? null,
-            'local_guardian_phone' => $validated['local_guardian_phone'] ?? null,
-            'class_id' => $validated['class_id'] ?? null,
-            'section_id' => $validated['section_id'] ?? null,
-            'roll_number' => $validated['roll_number'] ?? null,
-            'status' => $validated['status'],
-            'is_active' => $validated['status'] === 'active',
-        ]);
+                Student::create([
+                    'school_id' => $schoolId,
+                    'academic_year_id' => $validated['academic_year_id'] ?? null,
+                    'user_id' => $user->id,
+                    'first_name' => $validated['first_name'],
+                    'middle_name' => $validated['middle_name'] ?? null,
+                    'last_name' => $validated['last_name'],
+                    'dob' => $validated['dob'] ?? null,
+                    'gender' => $validated['gender'] ?? null,
+                    'student_uid' => Student::generateStudentUid($schoolId),
+                    'email' => $validated['email'],
+                    'phone' => $validated['phone'] ?? null,
+                    'address' => $validated['address'] ?? null,
+                    'photo' => $photoPath,
+                    'parent_name' => $validated['parent_name'] ?? null,
+                    'parent_phone' => $validated['parent_phone'] ?? null,
+                    'telephone_no' => $validated['telephone_no'] ?? null,
+                    'emergency_contact_name' => $validated['emergency_contact_name'] ?? null,
+                    'emergency_contact_relation' => $validated['emergency_contact_relation'] ?? null,
+                    'emergency_contact_phone' => $validated['emergency_contact_phone'] ?? null,
+                    'mother_name' => $validated['mother_name'] ?? null,
+                    'mother_phone' => $validated['mother_phone'] ?? null,
+                    'father_name' => $validated['father_name'] ?? null,
+                    'father_phone' => $validated['father_phone'] ?? null,
+                    'local_guardian_name' => $validated['local_guardian_name'] ?? null,
+                    'local_guardian_phone' => $validated['local_guardian_phone'] ?? null,
+                    'class_id' => $validated['class_id'] ?? null,
+                    'section_id' => $validated['section_id'] ?? null,
+                    'roll_number' => $validated['roll_number'] ?? null,
+                    'status' => $validated['status'],
+                    'is_active' => $validated['status'] === 'active',
+                ]);
+            });
+        } catch (\Exception $e) {
+            // Clean up the uploaded photo if the transaction failed,
+            // so we don't leave orphaned files on disk.
+            if ($photoPath) {
+                Storage::disk('public')->delete($photoPath);
+            }
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Could not add student: ' . $e->getMessage());
+        }
 
         return redirect()->route('school-admin.students.index')
             ->with('status', 'Student successfully added. They can now log in with their email and password.');

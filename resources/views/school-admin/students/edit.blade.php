@@ -27,7 +27,7 @@
             @endif
 
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-                <form method="POST" action="{{ route('school-admin.students.update', $student) }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('school-admin.students.update', $student) }}" enctype="multipart/form-data" id="studentEditForm">
                     @csrf
                     @method('PUT')
 
@@ -376,12 +376,12 @@
                     </div>
 
                     <div class="flex items-center gap-3 px-6 py-5 mt-2 border-t border-slate-100 bg-slate-50/50">
-                        <button type="submit"
-                                class="inline-flex items-center gap-1.5 bg-blue-600 text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm">
+                        <button type="submit" id="updateStudentBtn"
+                                class="inline-flex items-center gap-1.5 bg-blue-600 text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            Update Student
+                            <span id="updateStudentBtnText">Update Student</span>
                         </button>
                         <a href="{{ route('school-admin.students.index') }}"
                            class="inline-flex items-center gap-1.5 border border-slate-300 text-slate-600 px-4 py-2.5 rounded-md text-sm font-medium hover:bg-slate-100 transition-colors">
@@ -481,5 +481,17 @@
 
         document.getElementById('class_id').addEventListener('change', filterSections);
         document.addEventListener('DOMContentLoaded', filterSections);
+
+        // Prevent double-submit on update too — same reasoning as the create form.
+        document.getElementById('studentEditForm').addEventListener('submit', function () {
+            const btn = document.getElementById('updateStudentBtn');
+            const btnText = document.getElementById('updateStudentBtnText');
+            btn.disabled = true;
+            btnText.textContent = 'Updating...';
+            setTimeout(() => {
+                btn.disabled = false;
+                btnText.textContent = 'Update Student';
+            }, 8000);
+        });
     </script>
 </x-app-layout>

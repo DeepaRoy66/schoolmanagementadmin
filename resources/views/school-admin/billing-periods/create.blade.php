@@ -11,7 +11,6 @@
                     <p class="font-semibold mb-1">Tips</p>
                     <ul class="list-disc list-inside space-y-0.5">
                         <li>Hierarchy should be unique for each period (used for ordering, e.g. 0, 1, 2...).</li>
-                        <li>Quantity defaults to 1.00 if left blank.</li>
                     </ul>
                 </div>
 
@@ -41,15 +40,6 @@
                         <input type="number" name="hierarchy" value="{{ old('hierarchy') }}"
                                class="w-full border-gray-300 rounded-lg" placeholder="e.g. 0" required>
                         @error('hierarchy')
-                            <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-                        <input type="number" step="0.01" name="quantity" value="{{ old('quantity', '1.00') }}"
-                               class="w-full border-gray-300 rounded-lg">
-                        @error('quantity')
                             <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>

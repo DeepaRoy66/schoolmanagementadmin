@@ -27,7 +27,7 @@
             @endif
 
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-                <form method="POST" action="{{ route('school-admin.students.store') }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('school-admin.students.store') }}" enctype="multipart/form-data" id="studentCreateForm">
                     @csrf
 
                     {{-- Personal Information --}}
@@ -353,12 +353,12 @@
                     </div>
 
                     <div class="flex items-center gap-3 px-6 py-5 mt-2 border-t border-slate-100 bg-slate-50/50">
-                        <button type="submit"
-                                class="inline-flex items-center gap-1.5 bg-blue-600 text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm">
+                        <button type="submit" id="saveStudentBtn"
+                                class="inline-flex items-center gap-1.5 bg-blue-600 text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            Save Student
+                            <span id="saveStudentBtnText">Save Student</span>
                         </button>
                         <a href="{{ route('school-admin.students.index') }}"
                            class="inline-flex items-center gap-1.5 border border-slate-300 text-slate-600 px-4 py-2.5 rounded-md text-sm font-medium hover:bg-slate-100 transition-colors">
@@ -440,5 +440,21 @@
 
         document.getElementById('class_id').addEventListener('change', filterSections);
         document.addEventListener('DOMContentLoaded', filterSections);
+
+        // Prevent double-submit: disable the button on submit so a double-click
+        // or slow network doesn't fire two insert requests (which could still
+        // race on student_uid generation even with the server-side lock).
+        document.getElementById('studentCreateForm').addEventListener('submit', function () {
+            const btn = document.getElementById('saveStudentBtn');
+            const btnText = document.getElementById('saveStudentBtnText');
+            btn.disabled = true;
+            btnText.textContent = 'Saving...';
+            // Page will redirect on success. Auto re-enable after 8s as a
+            // safety net in case of a network hang so the form doesn't get stuck.
+            setTimeout(() => {
+                btn.disabled = false;
+                btnText.textContent = 'Save Student';
+            }, 8000);
+        });
     </script>
 </x-app-layout>
